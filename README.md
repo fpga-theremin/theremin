@@ -36,3 +36,7 @@ Theoretically, modern hardware allows to simulate any analog theremin cirquit be
 
 Digital theremins don't need to have audible frequency as input - it can do frequency conversion and linearization internally before output signal synthesis.
 
+## FPGA
+
+MCUs are not powerful enough for precise measure of oscillator frequencies.
+
