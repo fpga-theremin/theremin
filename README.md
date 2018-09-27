@@ -8,3 +8,10 @@ It is named after the Westernized name of its Soviet inventor, LÃ©on Theremin (Ð
 This GitHub project is created to share some details of my design.
 
 See [Wiki](https://github.com/fpga-theremin/theremin/wiki) for project details.
+
+## Shared design files
+
+* [Theremin cabinet plywood laser cut design](https://github.com/fpga-theremin/theremin/tree/master/hardware/cabinet)
+* [Oscillator shematics and PCB design](https://github.com/fpga-theremin/theremin/tree/master/hardware/oscillator)
+
+
