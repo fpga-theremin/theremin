@@ -1,0 +1,7 @@
+body { background-color: #cee; padding-left: 5%; padding-right: 5%; text-color: #112; font-family: sans-serif }
+table { border: 2px solid #888 }
+th, td { margin: 8px; padding: 8px }
+th { text-align: left; font-weight: bold; text-color: #217; background-color: #fff }
+td { text-align: left; text-color: #121 }
+tr:nth-child(even) { background: #dee }
+tr:nth-child(odd) { background: #def }
