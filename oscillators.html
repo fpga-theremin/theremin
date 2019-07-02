@@ -21,7 +21,7 @@ Unlike analog theremins and some digital theremin designs, we will not use secon
 <p>Actually, antenna C is being changed in range 7..9pF for different hand distances.</p>
 
 <p>For better sensitivity, we need LC oscillator with high Q. Air core inductors provide better Q than ferrite core ones. Let's wind our own inductors.</p>
-<img src="images/new_cora_theremin/cora_theremin_air_core_coils.jpg">
+<img width="300px" src="images/new_cora_theremin/cora_theremin_air_core_coils.jpg">
 <p>I'm using 60mm pieces of 32mm PPL water pipe as a frame for inductors.</p>
 <p>One layer coil-to-coil copper wire 0.1 or 0.2mm with winding length up to 45mm.</p>
 <p>Pitch and volume oscillators should have inductors with L different by 1.5..2 times</p>
@@ -36,7 +36,7 @@ Unlike analog theremins and some digital theremin designs, we will not use secon
 <h3>Simulation</h3>
 
 <p>LTSpice tool is useful for simulation and playing with different part values.</p>
-<p>LTSpice model:</p>
+<p>LTSpice model (click on image to download .asc file):</p>
 <a href="ltspice/theremin_oscillator_npn_3v3_v01_2019.asc"><img src="images/new_cora_theremin/cora_theremin_oscillator_ltspice_model_v01.png"></a>
 <p>Using simulation with different part parameters, we are trying to maximize voltage swing on antenna as well as frequency response (difference of output frequency for min and max antenna capacity)</p>
 <p>Simulation results:</p>
@@ -45,6 +45,7 @@ Unlike analog theremins and some digital theremin designs, we will not use secon
 
 <p>D-trigger is used to make 3.3V digital 50% duty cycle output, and to use most sharp edge of oscillator waveform for switching.</p>
 
+<p>U2 (SP721 IC) is needed for ESD protection.</p>
 
 <h3>PCB design</h3>
 
