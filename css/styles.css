@@ -11,3 +11,4 @@ th { text-align: left; font-weight: bold; text-color: #217; background-color: #f
 td { text-align: left; text-color: #121; vertical-align: top }
 tr:nth-child(even) { background: #dee }
 tr:nth-child(odd) { background: #def }
+.button { margin: 8px; padding: 8px; background-color: #89a; border: 1px solid #33c }

@@ -1,0 +1,92 @@
+<html>
+<head>
+<title>FPGA Based Theremin Project: Oscillators and Inductors</title>
+<link rel="stylesheet" type="text/css" href="css/styles.css">
+</head>
+<body>
+<h1>FPGA Based Theremin Project: : Oscillators and Inductors</h1>
+
+<p>This page describes design of theremin's heart: oscillators</p>
+
+<h2>Analog part</h2>
+
+<p>For digital theremins, oscillator should provide 3.3V digital signal which changes its frequency when hand approaches to antenna. 
+Unlike analog theremins and some digital theremin designs, we will not use second oscillator and heterodyning thechniques. Instea, FPGA based solution allows to measure frequency of oscillator directly.</p>
+<p>We will need two oscillators: one for Pitch antenna sensor, second for Volume antenna sensor.</p>
+<p>Oscillator operating ranges for volume and pitch should not overlap. Usually, volume oscillator frequency is chosen ~1.5 times less than one frequency of pitch oscillator.</p>
+<p></p>
+
+<p>For better sensitivity, we have to maximize change of oscillator frequency when capacity of antenna is being changed as a reaction on hand movement.</p>
+<p>In analog theremins, sensitivity of pitch oscillator is often reduced to get frequency change in audible range. In digital theremin sensor oscillator, we will try to maximize change of frequency.</p>
+<p>Actually, antenna C is being changed in range 7..9pF for different hand distances.</p>
+<p>For better sensitivity, we need LC oscillator with high Q. Air core inductors provide better Q than ferrite core ones. Let's wind our own inductors.</p>
+<p>I'm using 60mm pieces of 32mm PPL water pipe as a frame for inductors.</p>
+<p>One layer coil-to-coil copper wire 0.1 or 0.2mm with winding length up to 45mm.</p>
+<p>Pitch and volume oscillators should have inductors with L different by 1.5..2 times</p>
+
+<p>As a base for oscillator schematics we are taking one of designs provided in really long <a href="http://thereminworld.com/Forums/T/28554/lets-design-and-build-a-mostly-digital-theremin">Dewster's topic</a></p>
+
+<h3>Simulation</h3>
+
+<p>LTSpice tool is useful for simulation and playing with different part values.</p>
+<p>LTSpice model:</p>
+<a href="ltspice/theremin_oscillator_npn_3v3_v01_2019.asc"><img src="images/new_cora_theremin/cora_theremin_oscillator_ltspice_model_v01.png"></a>
+<p>Using simulation with different part parameters, we are trying to maximize voltage swing on antenna as well as frequency response (difference of output frequency for min and max antenna capacity)</p>
+<p>Simulation results:</p>
+<img src="images/new_cora_theremin/cora_theremin_oscillator_ltspice_simulation_results_v01.png">
+<p>Voltage swing on antenna according to LTSpice simulation will be up to 70V</p>
+
+<p>D-trigger is used to make 3.3V digital 50% duty cycle output, and to use most sharp edge of oscillator waveform for switching.</p>
+
+
+<h3>PCB design</h3>
+
+<p>Schematic and PCB is designed in KiCAD based on LTSpice simulation results.</p>
+
+<table width="100%">
+<col width="25%"></col><col width="50%"></col><col width="25%"></col>
+<tr><th>Board</th><th>KiCAD Schematic</th><th>Gerber file</th></tr>
+<tr>
+  <td>Oscillator<br><img width="90%" src="images/new_cora_theremin/cora_theremin_oscillators_and_coils.jpg"></td>
+  <td><a href="pdfs/fpga_theremin_oscillator_schematic_v01.pdf"><img width="90%" src="images/new_cora_theremin/cora_theremin_oscillator_board_schematic_v01.png"></a></td>
+  <td><a href="gerber/theremin_sensor_pcb_v01.zip"><img width="90%" src="images/new_cora_theremin/cora_theremin_oscillator_pcb_gerber_preview_v01.png"></a></td>
+</tr>
+</table>
+
+<h2>FPGA part</h2>
+
+<p>FPGA receives oscillator output via digital input pin. (One pin for pitch, one for volume)</p>
+
+<h3>Measure of input pin signal frequency.</h3>
+
+<p>todo</p>
+
+<h3>Averaging of measured signal period.</h3>
+
+<p>todo</p>
+
+<h3>Converting of signal period to hand distance.</h3>
+
+<p>todo</p>
+
+<h3>Converting of signal hand distance to note pitch.</h3>
+
+<p>todo</p>
+
+<h3>Converting of signal hand distance to volume multiplier.</h3>
+
+<p>todo</p>
+
+<h2>Theremin Sensor Controller IP</h2>
+
+<p>todo</p>
+
+<h2>Theremin Sensor Controller IP Driver for standalone mode</h2>
+
+<p>todo</p>
+
+<p>
+<a href="index.html"><span class="button" >Back to main page</span></a>
+</p>
+
+</body>
