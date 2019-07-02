@@ -4,9 +4,15 @@
 <link rel="stylesheet" type="text/css" href="css/styles.css">
 </head>
 <body>
+
 <h1>FPGA Based Theremin Project</h1>
-<p>The goal of this project is to provide easy build of FPGA based digital <a href="https://en.wikipedia.org/wiki/Theremin">Theremin</a></p>
-<h2>Table of Contents
+
+<p>The goal of this project is to provide open source DIY build of FPGA based digital <a href="https://en.wikipedia.org/wiki/Theremin">Theremin</a></p>
+
+<p>Unlike analog theremins, digital theremin is in general capacitive sensor which measures distance from hands to antennas, and digital synthesizer which generates sound.
+
+<h2>Table of Contents</h2>
+
 <ul>
   <li><a href="#hardware">Hardware</a></li>
   <ul>
@@ -18,9 +24,90 @@
   <li><a href="#links">Useful links</a></li>
 </ul>
 
+<h2>Existing digital theremins available</h2>
+
+<p>There is one well known digital theremin on market, Moog Theremini.
+<p><img width="200px" src="https://images-na.ssl-images-amazon.com/images/I/61s-UjpnH7L._SL1500_.jpg">
+<p>Due to high latency, it's mostrly unplayable, just a toy.
+
+<p>There is a good digital theremin project, <a href="https://www.gaudi.ch/OpenTheremin/">Open.Theremin</a> but it still uses too poor hardware (Arduino UNO) as a base.
+<p><img width="200px" src="https://www.gaudi.ch/OpenTheremin/images/stories/OpenTheremin/OTV3/otv3.jpg">
+
+<p>In this project, we will try to provide better DIY theremin design.
+
+
 <h2 id="hardware">Hardware</h2>
 
 <h3 id="3rdparty_hardware">Choosing FPGA board and other third party hardware</h3>
+
+<p>Why FPGA?
+<ul>
+  <li>Allows to implement high precision very sensitive antenna capacity sensors - cannot be done with general purpose MCUs</li>
+  <li>Wide range of audio DSP algorithms may be implemented in FPGA</li>
+  <li>Low latency: FPGA is able to update pitch and volume for each audio sample</li>
+  <li>Hardware acceleration of display is possible (e.g. update current note in on-screen tuner in realtime)</li>
+</ul>
+
+<p>Why PSOC?
+<ul>
+  <li>PSOC FPGA development boards provide one or more ARM cores which may handle a lot of non-realtime functionality like GUI and reduce FPGA resources usage</li>
+  <li>ARM hardware cores in PSOC provide better performance than softcores, and have hardware floating point support</li>
+  <li>Rich GUI may be implemented using PSOC</li>
+  <li>PSOC development boards have a lot of SDRAM which is needed, e.g. for reverberation effects</li>
+  <li>Harware SDRAM controller with DMA support in PSOC - with softcore, you will spend a lot of resources for SDRAM controller even if board contains SDRAM</li>
+</ul>
+
+<p>Why Xilinx
+<ul>
+  <li>The only choice is between Xilinx and Intel(Altera). Other vendors provide less mature tools, with lower functionality.</li>
+  <li>I'm more familiar with Xilinx solutions</li>
+  <li>Xilinx provides free license for bare metal programming of PSOC (Vivado WebPack). (AFAIK, there is no free license for bare-metal applications for Intel)</li>
+  <li>Xilinx Series 7 devices have bigger LUTs, DSP modules, BRAMs</li>
+</ul>
+
+<p>Digilent Cora Z7 board (either 7007 or 7010) is inexpensive solution which mets all hardware requirements for this project.
+
+<p>For audio playback / recording, we need some audio codec board(s). Digilent PMod I2S2 and AMP3 were selected.
+
+<p>It makes sense to add touch screen LCD for rich GUI functionality and advanced controls. Waveshare 4.3inch display was selected.
+
+<p>Even with touch screen, it makes sense to have hardware controls: encoders, buttons, pedals.
+
+<h4>List of third party devices or boards needed for this design</h4>
+<table width="100%">
+<col width="35%"></col><col width="35%"></col><col width="15%"></col><col width="15%"></col>
+<tr><th>Device</th><th>Features</th><th>Store link</th><th>Datasheet</th></tr>
+<tr>
+  <td>Digilent Cora Z7<br><img width="50%" src="https://cdn10.bigcommerce.com/s-7gavg/products/616/images/5062/Cora-obl-600__34871.1527186771.1280.1280.png?c=2"></td>
+  <td>Xilinx Zynq 7007/7010 based development board</td>
+  <td><a href="https://store.digilentinc.com/cora-z7-zynq-7000-single-core-and-dual-core-options-for-arm-fpga-soc-development/">Digilent store</a> $99/$129</td>
+  <td><a href="https://reference.digilentinc.com/reference/programmable-logic/cora-z7/reference-manual?_ga=2.138121072.1989832465.1562070957-922137789.1552552836">Reference manual</a></td>
+</tr>
+<tr>
+  <td>Digilent PMod I2S2<br><img width="30%" src="https://cdn10.bigcommerce.com/s-7gavg/products/614/images/4977/Pmod_I2S2_-_Oblique_-_600__05682.1522959592.1280.1280.png?c=2"></td>
+  <td>24bit I2S 48000Hz stereo Line In / Line Out</td>
+  <td><a href="https://store.digilentinc.com/pmod-i2s2-stereo-audio-input-and-output/">Digilent store</a> $21.99</td>
+  <td><a href="https://reference.digilentinc.com/reference/pmod/pmodi2s2/reference-manual?_ga=2.129018060.1989832465.1562070957-922137789.1552552836">Reference manual</a></td>
+</tr>
+<tr>
+  <td>Digilent PMod AMP3<br><img width="30%" src="https://cdn10.bigcommerce.com/s-7gavg/products/164/images/3829/Pmod_AMP3__98407.1456865842.1280.1280.png?c=2"></td>
+  <td>24bit I2S 48000Hz stereo Phones Amplifier</td>
+  <td><a href="https://store.digilentinc.com/pmod-amp3-stereo-power-amplifier/">Digilent store</a> $9.99</td>
+  <td><a href="https://cdn10.bigcommerce.com/s-7gavg/products/164/images/3829/Pmod_AMP3__98407.1456865842.1280.1280.png?c=2">Reference manual</a></td>
+</tr>
+<tr>
+  <td>5V 2.5A Switching Power Supply<br><img width="30%" src="https://cdn10.bigcommerce.com/s-7gavg/products/270/images/3786/5V_2.5A_Power_Supply_box_600__75335.1455146831.1280.1280.png?c=2"></td>
+  <td>5V, 2.5A</td>
+  <td><a href="https://store.digilentinc.com/5v-2-5a-switching-power-supply/">Digilent store</a> $12.99</td>
+  <td>No reference manual</td>
+</tr>
+<tr>
+  <td>4.3inch Capacitive Touch LCD, 800x480<br><img width="40%" src="https://www.waveshare.com/media/catalog/product/cache/1/image/800x800/9df78eab33525d08d6e5fb8d27136e95/4/_/4.3inch-capacitive-touch-lcd-1.jpg"> <img width="40%" src="https://www.waveshare.com/media/catalog/product/cache/1/image/800x800/9df78eab33525d08d6e5fb8d27136e95/4/_/4.3inch-capacitive-touch-lcd-4.jpg"></td>
+  <td>RGB interface<br>2x20 2.54mm pin header or FPC connector<br>Touch screen controller accessible via I2C</td>
+  <td><a href="https://www.waveshare.com/product/modules/oleds-lcds/graphic-lcd/4.3inch-capacitive-touch-lcd.htm">Waveshare store</a> $27.99</td>
+  <td><a href="https://www.waveshare.com/wiki/4.3inch_Capacitive_Touch_LCD">Wiki</a><br><a href="https://www.waveshare.com/w/upload/0/00/4.3inch_Capacitive_Touch_LCD_user_manual_en.pdf">User manual</a></td>
+</tr>
+<table>
 
 <h3 id="antennas">Antennas and cabinet construction</h3>
 
@@ -64,7 +151,11 @@
   <td><a href="gerber/lcd_mount_pcb_v01.zip"><img width="90%" src="images/new_cora_theremin/cora_theremin_lcd_mount_board_pcb_gerber_preview_v01.png"></a></td>
 </tr>
 </table>
+
+<h2 id="hardware">Software</h2>
+
 <h2 id="links">Useful links</h2>
+
 <ul>
   <li><a href="http://thereminworld.com/Forums/Topics/theremin-construction">Theremin World Forum: Theremin Construction</a></li>
   <li><a href="http://thereminworld.com/Forums/T/28554/lets-design-and-build-a-mostly-digital-theremin">Theremin World Forum: Dewster's epic topic about FPGA theremin construction (started 2012)</a></li>

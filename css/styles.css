@@ -1,4 +1,10 @@
 body { background-color: #cee; padding-left: 5%; padding-right: 5%; text-color: #112; font-family: sans-serif }
+
+h1 { font-size: 150%; font-weight: bold }
+h2 { font-size: 135%; font-weight: bold }
+h3 { font-size: 120%; font-weight: bold }
+h4 { font-size: 110%; font-weight: bold }
+
 table { border: 2px solid #888; border-collapse: collapse; }
 th, td { border: 2px solid #888; margin: 8px; padding: 8px }
 th { text-align: left; font-weight: bold; text-color: #217; background-color: #fff }
