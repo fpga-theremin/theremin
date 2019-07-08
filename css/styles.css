@@ -1,15 +1,26 @@
-body { background-color: #cee; padding-left: 5%; padding-right: 5%; text-color: #112; font-family: sans-serif }
+body { 
+  background-image: url("../images/pcb_background_tiled_green_small.png"); 
+  background-position: left top; 
+  background-repeat: repeat; 
+  color: #112; font-family: sans-serif 
+}
 
-h1 { font-size: 150%; font-weight: bold }
-h2 { font-size: 135%; font-weight: bold }
-h3 { font-size: 120%; font-weight: bold }
-h4 { font-size: 110%; font-weight: bold }
+div.page { margin: 24px; padding: 24px; background-color: #fff9 }
 
-table { border: 2px solid #888; border-collapse: collapse; }
-th, td { border: 2px solid #888; margin: 8px; padding: 8px }
-th { text-align: left; font-weight: bold; text-color: #217; background-color: #fff }
-td { text-align: left; text-color: #121; vertical-align: top }
-tr:nth-child(even) { background: #dee }
-tr:nth-child(odd) { background: #def }
-.button { margin: 8px; padding: 8px; background-color: #89a; border: 1px solid #33c }
-div.code { white-space: pre; font-family: monospace; background-color: #eee; border: 1px solid #ccc }
+div.code { white-space: pre; font-family: monospace; background-color: #efe8; border: 1px solid #fff; padding: 6px; max-width: 80em }
+
+h1 { font-size: 150%; font-weight: bold; margin-top: 0.8em; margin-bottom: 0.8em; color: #130 }
+h2 { font-size: 135%; font-weight: bold; margin-top: 0.7em; margin-bottom: 0.7em; color: #130 }
+h3 { font-size: 120%; font-weight: bold; margin-top: 0.6em; margin-bottom: 0.6em; color: #130 }
+h4 { font-size: 110%; font-weight: bold; margin-top: 0.4em; margin-bottom: 0.4em; color: #130 }
+
+table { border: 2px solid #8886; border-collapse: collapse; }
+th, td { border: 2px solid #8886; margin: 8px; padding: 8px }
+th { text-align: left; font-weight: bold; color: #217; background-color: #eee2 }
+td { text-align: left; color: #121; vertical-align: top }
+tr:nth-child(even) { background: #dee4 }
+tr:nth-child(odd) { background: #def4 }
+.button { margin: 8px; padding: 8px; background-color: #89a6; border: 1px solid #393 }
+
+.sectionlink { font-size: 110%; font-weight: bold; margin: 4px }
+
