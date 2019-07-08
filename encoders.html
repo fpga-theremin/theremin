@@ -9,6 +9,7 @@
 <p>This page describes design of control board - with 5 encoders and one button</p>
 
 
+
 <h3>PCB design</h3>
 
 <p>Schematic and PCB is designed in KiCAD based on LTSpice simulation results.</p>
@@ -25,8 +26,70 @@
 
 <h2>FPGA part</h2>
 
+<p>Mux is used to minimize number of pins needed. Without mux, 3*5+1 = 16 pins would be used.
+<p>With mux, board is connected to FPGA using 5 pins: 4 output pins for MUX address, 1 input pin for reading addressed button/encoder pin state.
+<p>
+<p>Encodes module interface:</p>
+<div class="code">module encoders_board(
+    input CLK,
+    input RESET,
+    
+    // for reading encoders and button signals using MUX
+    
+    // MUX address for multiplexing N buttons into one MUX_OUT
+    output logic [3:0] MUX_ADDR,
+    // input value from MUX (MUX_OUT <= button[MUX_ADDR])
+    input logic MUX_OUT,
 
-<p>todo</p>
+    // exposing processed state as controller registers
+    
+    // packed state of encoders 0, 1
+    // [31]    encoder1 button state
+    // [30:24] encoder1 button state duration
+    // [23:20] encoder1 pressed state position
+    // [19:16] encoder1 normal state position
+    // [15]    encoder0 button state
+    // [14:8]  encoder0 button state duration
+    // [7:4]   encoder0 pressed state position
+    // [3:0]   encoder0 normal state position
+    output logic[31:0] R0,
+    // packed state of encoders 2, 3
+    // [31]    encoder3 button state
+    // [30:24] encoder3 button state duration
+    // [23:20] encoder3 pressed state position
+    // [19:16] encoder3 normal state position
+    // [15]    encoder2 button state
+    // [14:8]  encoder2 button state duration
+    // [7:4]   encoder2 pressed state position
+    // [3:0]   encoder2 normal state position
+    output logic[31:0] R1,
+    // packed state of encoder 4, button and last change counter
+    // [31]    button state
+    // [30:24] button state duration
+    // [23:16] duration (in 100ms intervals) since last change of any control
+    // [15]    encoder4 button state
+    // [14:8]  encoder4 button state duration
+    // [7:4]   encoder4 pressed state position
+    // [3:0]   encoder4 normal state position
+    output logic[31:0] R2
+);
+</div>
+
+<p>Input address is changed at 100MHz/32 == 3MHz frequency. All pins are checked in one 100MHz/32/16 = 200KHz clock cycle.
+Debouncer uses 12 bit counter - only if input has the same value for 4096 cycles, it can switch its state.
+So, minimal time for switching is 1/50 of second. Output of debouncer is 16bit of button/encoder pin states, 16 bit change flags (1 for corresponding bit if it's changed since last cycle) and UPDATE signal, which is set to 1 for one 100MHz clock cycle once per 10ms.
+
+<p>To minimize CPU (PS) part of driver, some useful logic has been implemented inside FPGA.
+
+<p>For each button, encoders module provides 8 bits: one flag (current button state) and 7 bit counter - number of 0.1s intervals since last change (can measure up to 12 seconds, stays at 127 if interval exceeds number of bits available for counter).
+
+<p>For each encoder, there are two 4 bit counters - one for pressed encoder button state, one for normal state.
+If encoder shaft is being rotated, corresponding counter is being increased or decreased depending on rotation direction.
+So, UI will be able to detect all changed even if checks board state 2-3 times per second - up to 7 rotation ticks will be remembered in counters.
+If more than 7-8 ticks are made since last check, there will be overflow: e.g. 10 rotation ticks CW give the same value as 6 ticks CCW.
+
+<p>This design utilizes 184 LUTs (1.05%), 12 of which are used as register bank (distributed RAM 12x16).</p>
+
 
 <h2>Encoders Board IP Driver for standalone mode</h2>
 
