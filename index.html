@@ -7,7 +7,7 @@
 <div class="page">
 
 <h1>FPGA Based Theremin Project</h1>
-<h4>(c) Vadim Lopatin, 2019 coolreader.org@gmail.com</h4>
+
 <p>The goal of this project is to provide open source DIY build of FPGA based digital <a href="https://en.wikipedia.org/wiki/Theremin">Theremin</a></p>
 
 <p>Unlike analog theremins, digital theremin is in general capacitive sensor which measures distance from hands to antennas, and digital synthesizer which generates sound.
@@ -125,45 +125,88 @@
 <col width="25%"></col><col width="50%"></col><col width="25%"></col>
 <tr><th>Board</th><th>KiCAD Schematic</th><th>Gerber file</th></tr>
 <tr>
-  <td><div class="sectionlink">Cora Z7 Theremin Shield</div><p></td>
+  <td><div class="sectionlink">Cora Z7 Theremin Shield</div>
+    <p>Connected to Cora Z7 board using Arduino/Chipkit connector.</p>
+    <p>Two on-board PMods of Cora board are left unused for future extensions.</p>
+    <p>Contains additional microSD card socket.</p>
+    <p>Used to connect other boards</p>
+    <ul>
+      <li>Theremin Pitch and Volume sensor oscillators</li>
+      <li>TFT Touch Screen</li>
+      <li>Encoders board</li>
+      <li>Expression pedals board</li>
+      <li>Audio I/O PMods: I2S2 and AMP3</li>
+    </ul>
+  </td>
   <td><a href="pdfs/cora_theremin_shield_schematic_v01.pdf"><img width="90%" src="images/new_cora_theremin/cora_theremin_shield_schematic_v01.png"></a></td>
-  <td><a href="gerber/cora_theremin_shield_pcb_v01.zip"><img width="90%" src="images/new_cora_theremin/cora_theremin_pcb_gerber_preview_v01.png"></a></td>
+  <td><a href="gerber/cora_theremin_shield_pcb_v01.zip"><img width="90%" src="images/new_cora_theremin/cora_theremin_pcb_gerber_preview_v01.png"></a>
+      <p><a href="https://www.pcbway.com/project/shareproject/Cora_Z7_Theremin___FPGA_based_theremin__theremin_shield_PCB.html"><img src="https://www.pcbway.com/project/img/images/frompcbway.png" alt="PCB from=From pcbway"=Pcbway" /></a>
+  </td>
 </tr>
 <tr>
-  <td><div class="sectionlink"><a href="oscillators.html">Oscillator</a></div><p><img width="90%" src="images/new_cora_theremin/cora_theremin_oscillators_and_coils.jpg"></td>
+  <td><div class="sectionlink"><a href="oscillators.html">Oscillator</a></div>
+    <p>Two identical oscillator boards are needed for theremin: Pitch oscillator and Volume oscillator.</p>
+    <p>Oscillator output is 3.3V digital signal with frequency which depends on coils (0.3..2MHz).</p>
+    <p>Each oscillator requires air core inductors with L 0.5..3 mH with high Q (most likely manual winding is required)</p>
+    <p><img width="70%" src="images/new_cora_theremin/cora_theremin_oscillators_and_coils.jpg">
+  </td>
   <td><a href="pdfs/fpga_theremin_oscillator_schematic_v01.pdf"><img width="90%" src="images/new_cora_theremin/cora_theremin_oscillator_board_schematic_v01.png"></a></td>
-  <td><a href="gerber/theremin_sensor_pcb_v01.zip"><img width="90%" src="images/new_cora_theremin/cora_theremin_oscillator_pcb_gerber_preview_v01.png"></a></td>
+  <td><a href="gerber/theremin_sensor_pcb_v01.zip"><img width="70%" src="images/new_cora_theremin/cora_theremin_oscillator_pcb_gerber_preview_v01.png"></a>
+      <p><a href="https://www.pcbway.com/project/shareproject/Cora_Z7_Theremin___FPGA_based_theremin__theremin_sensor_oscillator_PCB.html"><img src="https://www.pcbway.com/project/img/images/frompcbway.png" alt="PCB from=From pcbway"=Pcbway"></a>
+  </td>
 </tr>
 <tr>
-  <td><div class="sectionlink"><a href="encoders.html">Encoders Board</a></div><p><img width="90%" src="images/new_cora_theremin/cora_theremin_encoders_board_assembled_top.jpg"><br><img width="90%" src="images/new_cora_theremin/cora_theremin_encoders_board_assembled_bottom.jpg"></td>
+  <td><div class="sectionlink"><a href="encoders.html">Encoders Board</a></div>
+    <ul>
+      <li>5 EC11 rotary encoders with push button</li>
+      <li>One tact button</li>
+      <li>Analog debounding filters for each of 16 signals</li>
+      <li>Multiplexer based solution to use 5 FPGA pins instead of 16</li>
+    </ul>
+    <p><img width="90%" src="images/new_cora_theremin/cora_theremin_encoders_board_assembled_top.jpg"><br><img width="90%" src="images/new_cora_theremin/cora_theremin_encoders_board_assembled_bottom.jpg">
+  </td>
   <td><a href="pdfs/fpga_theremin_encoders_board_v01.pdf"><img width="90%" src="images/new_cora_theremin/cora_theremin_encoders_board_schematic_v01.png"></a></td>
-  <td><a href="gerber/fpga_theremin_encoders_board_pcb_v01.zip"><img width="90%" src="images/new_cora_theremin/cora_theremin_encoders_board_pcb_gerber_preview_v01.png"></a></td>
+  <td><a href="gerber/fpga_theremin_encoders_board_pcb_v01.zip"><img width="90%" src="images/new_cora_theremin/cora_theremin_encoders_board_pcb_gerber_preview_v01.png"></a>
+      <p><a href="https://www.pcbway.com/project/shareproject/Cora_Z7_Theremin___FPGA_based_theremin__encoders_PCB.html"><img src="https://www.pcbway.com/project/img/images/frompcbway.png" alt="PCB from=From pcbway"=Pcbway"></a>
+  </td>
 </tr>
 <tr>
   <td><div class="sectionlink">Expression Pedal Connectors</div><p></td>
   <td><a href="pdfs/cora_theremin_expression_pedal_connectors_board_schematic_v01.pdf"><img width="90%" src="images/new_cora_theremin/cora_theremin_expression_pedal_connectors_board_schematic_v01.png"></a></td>
-  <td><a href="gerber/pedal_board_pcb_v01.zip"><img width="90%" src="images/new_cora_theremin/cora_theremin_expression_pedal_connectors_board_pcb_gerber_preview_v01.png"></a></td>
+  <td><a href="gerber/pedal_board_pcb_v01.zip"><img width="90%" src="images/new_cora_theremin/cora_theremin_expression_pedal_connectors_board_pcb_gerber_preview_v01.png"></a>
+      <p><a href="https://www.pcbway.com/project/shareproject/Cora_Z7_Theremin___FPGA_based_theremin__expression_pedal_connectors_PCB.html"><img src="https://www.pcbway.com/project/img/images/frompcbway.png" alt="PCB from=From pcbway"=Pcbway"></a>
+  </td>
 </tr>
 <tr>
   <td><div class="sectionlink">Audio Connectors</div><p></td>
   <td><a href="pdfs/cora_theremin_audio_connectors_board_schematic_v01.pdf"><img width="90%" src="images/new_cora_theremin/cora_theremin_audio_connector_board_schematic_v01.png"></a></td>
-  <td><a href="gerber/audio_connectors_board_pcb_v01.zip"><img width="90%" src="images/new_cora_theremin/cora_theremin_audio_connectors_board_pcb_gerber_preview_v01.png"></a></td>
+  <td><a href="gerber/audio_connectors_board_pcb_v01.zip"><img width="60%" src="images/new_cora_theremin/cora_theremin_audio_connectors_board_pcb_gerber_preview_v01.png"></a>
+      <p><a href="https://www.pcbway.com/project/shareproject/Cora_Z7_Theremin___FPGA_based_theremin__audio_connectors_PCB.html"><img src="https://www.pcbway.com/project/img/images/frompcbway.png" alt="PCB from=From pcbway"=Pcbway"></a>
+  </td>
 </tr>
 <tr>
-  <td><div class="sectionlink">PMod adapter</div><p></td>
+  <td><div class="sectionlink">PMod adapter</div>
+     <p>Used to mount two (I2S2 and AMP3) PMods on top of shield board, leaving on-board PMod ports of Cora Z7 board unused for future extension.</p>
+  </td>
   <td><a href="pdfs/cora_theremin_pmod_connector_board_schematic_v01.pdf"><img width="90%" src="images/new_cora_theremin/cora_theremin_pmod_adapter_board_schematic_v01.png"></a></td>
-  <td><a href="gerber/pmod_connector_board_pcb_v01.zip"><img width="90%" src="images/new_cora_theremin/cora_theremin_pmod_adapter_board_pcb_gerber_preview_v01.png"></a></td>
+  <td><a href="gerber/pmod_connector_board_pcb_v01.zip"><img width="50%" src="images/new_cora_theremin/cora_theremin_pmod_adapter_board_pcb_gerber_preview_v01.png"></a>
+      <p><a href="https://www.pcbway.com/project/shareproject/Cora_Z7_Theremin___FPGA_based_theremin__PMod_adapter_PCB.html"><img src="https://www.pcbway.com/project/img/images/frompcbway.png" alt="PCB from=From pcbway"=Pcbway"></a>
+  </td>
 </tr>
 <tr>
   <td><div class="sectionlink">LCD Mount</div><p><img width="60%" src="images/new_cora_theremin/core_theremin_display_mounting.jpg"></td>
   <td>No schematic. It's just for mounting of Waveshare 4.3inch 800x480 touch LCD</td>
-  <td><a href="gerber/lcd_mount_pcb_v01.zip"><img width="90%" src="images/new_cora_theremin/cora_theremin_lcd_mount_board_pcb_gerber_preview_v01.png"></a></td>
+  <td><a href="gerber/lcd_mount_pcb_v01.zip"><img width="90%" src="images/new_cora_theremin/cora_theremin_lcd_mount_board_pcb_gerber_preview_v01.png"></a>
+      <p><a href="https://www.pcbway.com/project/shareproject/Cora_Z7_Theremin___FPGA_based_theremin__LCD_mount_PCB.html"><img src="https://www.pcbway.com/project/img/images/frompcbway.png" alt="PCB from=From pcbway"=Pcbway"></a>
+  </td>
 </tr>
 </table>
 
 <h2 id="software">Software</h2>
 
+<p>This is FPGA PSOC project. Source code consists of two parts: PL (FPGA) and PS (C++ code for ARM core).</p>
 <p>Source code is available on <a href="https://github.com/fpga-theremin/theremin/tree/master/fpga/ip_repo">GitHub</a></p>
+<p>Design of FPGA IP (SystemVerilog modules) and standalone drivers can be found on separate board related pages</p>
 
 <h2 id="links">Useful links</h2>
 
@@ -171,8 +214,9 @@
   <li><a href="http://thereminworld.com/Forums/Topics/theremin-construction">Theremin World Forum: Theremin Construction</a></li>
   <li><a href="http://thereminworld.com/Forums/T/28554/lets-design-and-build-a-mostly-digital-theremin">Theremin World Forum: Dewster's epic topic about FPGA theremin construction (started 2012)</a></li>
   <li><a href="http://thereminworld.com/Forums/T/32203/lets-design-and-build-cool-but-expensive-fpga-based-theremin">Theremin World Forum: topic about this project</a></li>
-  <li><a href="https://github.com/fpga-theremin/theremin/"></a>
+  <li><a href="https://github.com/fpga-theremin/theremin/">Project page on GitHub</a>
 </ul>
 </div>
 </body>
+<p class="footer">FPGA Theremin Project (c) Vadim Lopatin 2019 coolreader.org@gmail.com</p>
 </html>

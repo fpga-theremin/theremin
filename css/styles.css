@@ -7,12 +7,13 @@ body {
   padding: 1em
 }
 
-div.page { margin: 24px; padding: 24px; background-color: #fff9 }
+div.page { margin: 1em; padding: 1em; background-color: #fff9 }
+.footer { margin-left: 1em; margin-right: 1em; padding-left: 1em; padding-right: 1em; color: #fff } 
 
 div.code { white-space: pre; font-family: monospace; background-color: #efe8; border: 1px solid #fff; padding: 6px; max-width: 80em }
 
-h1 { font-size: 170%; font-weight: bold; margin-top: 0.8em; margin-bottom: 0.8em; color: #130 }
-h2 { font-size: 145%; font-weight: bold; margin-top: 0.7em; margin-bottom: 0.7em; color: #130 }
+h1 { font-size: 170%; font-weight: bold; margin-top: 1em; margin-bottom: 1em; color: #130 }
+h2 { font-size: 145%; font-weight: bold; margin-top: 0.8em; margin-bottom: 0.8em; color: #130 }
 h3 { font-size: 130%; font-weight: bold; margin-top: 0.6em; margin-bottom: 0.6em; color: #130 }
 h4 { font-size: 115%; font-weight: bold; margin-top: 0.4em; margin-bottom: 0.4em; color: #130 }
 
@@ -29,3 +30,4 @@ tr:nth-child(odd) { background: #9df3 }
 
 p { max-width: 70em } 
 ul { max-width: 70em } 
+
