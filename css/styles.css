@@ -2,25 +2,30 @@ body {
   background-image: url("../images/pcb_background_tiled_green_small.png"); 
   background-position: left top; 
   background-repeat: repeat; 
-  color: #112; font-family: sans-serif 
+  color: #112; font-family: sans-serif;
+  margin: 0.5em
+  padding: 1em
 }
 
 div.page { margin: 24px; padding: 24px; background-color: #fff9 }
 
 div.code { white-space: pre; font-family: monospace; background-color: #efe8; border: 1px solid #fff; padding: 6px; max-width: 80em }
 
-h1 { font-size: 150%; font-weight: bold; margin-top: 0.8em; margin-bottom: 0.8em; color: #130 }
-h2 { font-size: 135%; font-weight: bold; margin-top: 0.7em; margin-bottom: 0.7em; color: #130 }
-h3 { font-size: 120%; font-weight: bold; margin-top: 0.6em; margin-bottom: 0.6em; color: #130 }
-h4 { font-size: 110%; font-weight: bold; margin-top: 0.4em; margin-bottom: 0.4em; color: #130 }
+h1 { font-size: 170%; font-weight: bold; margin-top: 0.8em; margin-bottom: 0.8em; color: #130 }
+h2 { font-size: 145%; font-weight: bold; margin-top: 0.7em; margin-bottom: 0.7em; color: #130 }
+h3 { font-size: 130%; font-weight: bold; margin-top: 0.6em; margin-bottom: 0.6em; color: #130 }
+h4 { font-size: 115%; font-weight: bold; margin-top: 0.4em; margin-bottom: 0.4em; color: #130 }
 
-table { border: 2px solid #8886; border-collapse: collapse; }
-th, td { border: 2px solid #8886; margin: 8px; padding: 8px }
-th { text-align: left; font-weight: bold; color: #217; background-color: #eee2 }
+table { border: 3px solid #fff6; border-collapse: collapse; }
+th, td { border: 3px solid #fff6; margin: 1em; padding: 1em }
+th { text-align: left; font-weight: bold; color: #217; background-color: #eee5 }
 td { text-align: left; color: #121; vertical-align: top }
-tr:nth-child(even) { background: #dee4 }
-tr:nth-child(odd) { background: #def4 }
-.button { margin: 8px; padding: 8px; background-color: #89a6; border: 1px solid #393 }
+tr:nth-child(even) { background: #cdf3 }
+tr:nth-child(odd) { background: #9df3 }
 
-.sectionlink { font-size: 110%; font-weight: bold; margin: 4px }
+.button { margin: 0.8em; padding: 0.8em; background-color: #89a6; border: 1px solid #393 }
 
+.sectionlink { font-size: 110%; font-weight: bold; margin: 0.5em }
+
+p { max-width: 70em } 
+ul { max-width: 70em } 
