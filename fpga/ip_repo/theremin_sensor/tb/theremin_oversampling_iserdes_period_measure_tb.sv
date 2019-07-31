@@ -165,7 +165,7 @@ always begin
     `TB_OVS_PERIOD_MEASURE_CLK_GEN_DELAY CLK_SHIFT=1; CLK_SHIFTB = 0; CLK_PARALLEL = 1;// CLK = 1;
 end
 
-always @(posedge CLK) begin
+always @(posedge CLK_PARALLEL) begin
     #5 ;
     $display("%d: >>>>  %d   %h          %d   %h", clock_counter, 
         //PITCH_PERIOD_NOFILTER, 

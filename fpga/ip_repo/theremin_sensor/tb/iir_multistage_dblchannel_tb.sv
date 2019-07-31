@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 07/09/2019 09:22:11 AM
+// Create Date: 07/31/2019 09:51:25 AM
 // Design Name: 
-// Module Name: iir_filter_pow2_k_tb
+// Module Name: iir_multistage_dblchannel_tb
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -20,12 +20,11 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module iir_filter_pow2_k_tb(
+module iir_multistage_dblchannel_tb(
 
     );
 
-
-localparam FILTER_K_SHIFT = 6;
+localparam FILTER_K_SHIFT = 8;
 localparam DATA_BITS = 32;
 localparam STAGE_COUNT = 4;
 
@@ -38,19 +37,23 @@ logic [31:0] IN_VALUE_B;
 logic [31:0] OUT_VALUE_B;
 logic [2:0] MAX_STAGE;
 
-always_comb MAX_STAGE <= 3'b011;
+always_comb MAX_STAGE <= STAGE_COUNT - 1;
+
+//logic [DATA_BITS + FILTER_K_SHIFT - 1:0] debug_diff_reg;
+//logic [DATA_BITS + FILTER_K_SHIFT - 1:0] debug_adder_reg;
 
 //logic [DATA_BITS + FILTER_K_SHIFT - 1:0] debug_state_rd_data;
 //logic [DATA_BITS + FILTER_K_SHIFT - 1:0] debug_state_wr_data;
-//logic [DATA_BITS + FILTER_K_SHIFT - 1:0] debug_in_value;
+//logic [DATA_BITS + FILTER_K_SHIFT - 1:0] debug_new_value;
 //logic [3:0] debug_stage_index;
+//logic debug_init_done;
 
-iir_filter_pow2_k
+iir_multistage_dblchannel
 #(
     .FILTER_K_SHIFT(FILTER_K_SHIFT),
     .DATA_BITS(DATA_BITS)
 )
-iir_filter_pow2_k_inst
+iir_multistage_dblchannel_inst
 (
     .*
 );
@@ -64,19 +67,33 @@ end
 int clk_counter = 0;
 
 always begin
-    // 100MHz
-    #5 CLK = 0;
-    #5 CLK = 1;
-    clk_counter++;
-    #5 CLK = 0;
-    #5 CLK = 1;
-    if ((clk_counter & 4'b1111) == 'b1111)
-        $display("%f    %h   %h         %h   %h", clk_counter / 50000.0, IN_VALUE_A, OUT_VALUE_A, IN_VALUE_B, OUT_VALUE_B);
+    // 150MHz
+    #3.333 CLK = 0;
+    #3.333 CLK = 1;
 end
+
+always  begin
+    @(posedge CLK) #4 if ((clk_counter & 3'b111) == 3'b111)
+        $display("%f    %h   %h         %h   %h", clk_counter / 50000.0, IN_VALUE_A, OUT_VALUE_A, IN_VALUE_B, OUT_VALUE_B);
+    clk_counter++;
+end
+
+//always  begin
+//    @(posedge CLK) #5
+//        $display("%f:    %h %h    %h %h    [%h]  new = %h  diff = %h  add = %h  rd = %h  wr = %h", clk_counter / 50000.0, IN_VALUE_A, OUT_VALUE_A, IN_VALUE_B, OUT_VALUE_B
+//        , debug_stage_index
+//        , debug_new_value
+//        , debug_diff_reg
+//        , debug_adder_reg
+//        , debug_state_rd_data
+//        , debug_state_wr_data
+////logic [DATA_BITS + FILTER_K_SHIFT - 1:0] debug_in_value;
+//            );
+//end
 
 initial begin
     IN_VALUE_A = 0;
-    #300;
+    #234;
     
     #124300 @(posedge CLK) #1 IN_VALUE_A = 32'h12000000;
     #132300 @(posedge CLK) #1 IN_VALUE_A = 32'h23000000;
@@ -97,17 +114,17 @@ end
 
 initial begin
     IN_VALUE_B = 0;
-    #300;
+    #558;
     
-    #135678 @(posedge CLK) #1 IN_VALUE_B = 32'h12000000;
-    #131234 @(posedge CLK) #1 IN_VALUE_B = 32'h23000000;
-    #131876 @(posedge CLK) #1 IN_VALUE_B = 32'h45000000;
-    #173251 @(posedge CLK) #1 IN_VALUE_B = 32'h15000000;
-    #138721 @(posedge CLK) #1 IN_VALUE_B = 32'h55000000;
+    #135678 @(posedge CLK) #1 IN_VALUE_B = 32'h56700000;
+    #131234 @(posedge CLK) #1 IN_VALUE_B = 32'h45600000;
+    #131876 @(posedge CLK) #1 IN_VALUE_B = 32'habcd0000;
+    #173251 @(posedge CLK) #1 IN_VALUE_B = 32'h01000000;
+    #138721 @(posedge CLK) #1 IN_VALUE_B = 32'h66660000;
     
     repeat(200) begin
-    #12412 @(posedge CLK) #1 IN_VALUE_B = 32'h25670000;
-    #13123 @(posedge CLK) #1 IN_VALUE_B = 32'h25660000;
+    #12412 @(posedge CLK) #1 IN_VALUE_B = 32'h12345000;
+    #13123 @(posedge CLK) #1 IN_VALUE_B = 32'h12346000;
     end
     
     #310000 $finish();

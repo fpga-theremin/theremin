@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineer: Vadim Lopatin 
 // 
 // Create Date: 07/30/2019 11:03:32 AM
 // Design Name: 
@@ -10,7 +10,7 @@
 // Target Devices: 
 // Tool Versions: 
 // Description: 
-// 
+//      Theremin sensor frequency measure module.
 // Dependencies: 
 // 
 // Revision:
@@ -93,25 +93,25 @@ IDELAYCTRL delayctrl_instance (
 
 logic pitch_change_flag;
 logic [PITCH_PERIOD_BITS-1:0] pitch_period;
-logic pitch_change_flag_sync;
-logic [PITCH_PERIOD_BITS-1:0] pitch_period_sync;
+//logic pitch_change_flag_sync;
+//logic [PITCH_PERIOD_BITS-1:0] pitch_period_sync;
 
-clock_domain_adapter
-#(
-    .DATA_WIDTH(PITCH_PERIOD_BITS)
-) pitch_clock_domain_adapter_inst
-(
-    .CLK_IN(CLK_PARALLEL),
-    .CLK_OUT(CLK),
+//clock_domain_adapter
+//#(
+//    .DATA_WIDTH(PITCH_PERIOD_BITS)
+//) pitch_clock_domain_adapter_inst
+//(
+//    .CLK_IN(CLK_PARALLEL),
+//    .CLK_OUT(CLK),
 
-    .RESET(reset_sync),
+//    .RESET(reset_sync),
     
-    .CHANGE_FLAG_IN(pitch_change_flag),
-    .DATA_IN(pitch_period),
+//    .CHANGE_FLAG_IN(pitch_change_flag),
+//    .DATA_IN(pitch_period),
     
-    .CHANGE_FLAG_OUT(pitch_change_flag_sync),
-    .DATA_OUT(pitch_period_sync)
-);
+//    .CHANGE_FLAG_OUT(pitch_change_flag_sync),
+//    .DATA_OUT(pitch_period_sync)
+//);
 
 oversampling_iserdes_period_measure
 #(
@@ -147,24 +147,24 @@ oversampling_iserdes_period_measure
 logic volume_change_flag;
 logic [VOLUME_PERIOD_BITS-1:0] volume_period;
 
-logic volume_change_flag_sync;
-logic [VOLUME_PERIOD_BITS-1:0] volume_period_sync;
-clock_domain_adapter
-#(
-    .DATA_WIDTH(VOLUME_PERIOD_BITS)
-) volume_clock_domain_adapter_inst
-(
-    .CLK_IN(CLK_PARALLEL),
-    .CLK_OUT(CLK),
+//logic volume_change_flag_sync;
+//logic [VOLUME_PERIOD_BITS-1:0] volume_period_sync;
+//clock_domain_adapter
+//#(
+//    .DATA_WIDTH(VOLUME_PERIOD_BITS)
+//) volume_clock_domain_adapter_inst
+//(
+//    .CLK_IN(CLK_PARALLEL),
+//    .CLK_OUT(CLK),
 
-    .RESET(reset_sync),
+//    .RESET(reset_sync),
     
-    .CHANGE_FLAG_IN(volume_change_flag),
-    .DATA_IN(volume_period),
+//    .CHANGE_FLAG_IN(volume_change_flag),
+//    .DATA_IN(volume_period),
     
-    .CHANGE_FLAG_OUT(volume_change_flag_sync),
-    .DATA_OUT(volume_period_sync)
-);
+//    .CHANGE_FLAG_OUT(volume_change_flag_sync),
+//    .DATA_OUT(volume_period_sync)
+//);
 
 
 oversampling_iserdes_period_measure
@@ -206,8 +206,10 @@ logic [DATA_BITS-1:0] filter_in_a;
 // input value for channel B    
 logic [DATA_BITS-1:0] filter_in_b;
 
-always_comb filter_in_a <= { pitch_period_sync, { (DATA_BITS - PITCH_PERIOD_BITS) {1'b0}} };
-always_comb filter_in_b <= { volume_period_sync, { (DATA_BITS - VOLUME_PERIOD_BITS) {1'b0}} };
+//always_comb filter_in_a <= { pitch_period_sync, { (DATA_BITS - PITCH_PERIOD_BITS) {1'b0}} };
+//always_comb filter_in_b <= { volume_period_sync, { (DATA_BITS - VOLUME_PERIOD_BITS) {1'b0}} };
+always_comb filter_in_a <= { pitch_period, { (DATA_BITS - PITCH_PERIOD_BITS) {1'b0}} };
+always_comb filter_in_b <= { volume_period, { (DATA_BITS - VOLUME_PERIOD_BITS) {1'b0}} };
 
 // output value for channel A    
 logic [DATA_BITS-1:0] filter_out_a;
@@ -215,14 +217,16 @@ logic [DATA_BITS-1:0] filter_out_a;
 logic [DATA_BITS-1:0] filter_out_b;
 
 
-iir_filter_pow2_k
+//iir_filter_pow2_k
+iir_multistage_dblchannel
 #(
     .FILTER_K_SHIFT(FILTER_SHIFT_BITS),
     .DATA_BITS(DATA_BITS)
-) iir_filter_pow2_k_inst
+) iir_multistage_dblchannel_inst
+//iir_filter_pow2_k_inst
 (
     // input clock, ~100MHz
-    .CLK(CLK),
+    .CLK(CLK_PARALLEL),
     // reset signal, active 1
     .RESET,
     
