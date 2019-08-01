@@ -9,6 +9,13 @@ This GitHub project is created to share some details of my design.
 
 See [Wiki](https://github.com/fpga-theremin/theremin/wiki) for project details.
 
+## HDL sources: fpga/ip_repo
+
+Modules written in SystemVerilog
+
+* [theremin_sensor](https://github.com/fpga-theremin/theremin/tree/master/fpga/ip_repo/theremin_sensor)
+* [encoders_board](https://github.com/fpga-theremin/theremin/tree/master/fpga/ip_repo/encoders_board)
+
 ## Shared design files
 
 * [Theremin cabinet plywood laser cut design](https://github.com/fpga-theremin/theremin/tree/master/hardware/cabinet)
