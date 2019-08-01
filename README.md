@@ -11,7 +11,9 @@ See [Wiki](https://github.com/fpga-theremin/theremin/wiki) for project details.
 
 ## HDL sources: fpga/ip_repo
 
-Modules written in SystemVerilog
+Modules are written in SystemVerilog.
+
+Some of modules use Xilinx Series 7 specific hardware blocks.
 
 * [theremin_sensor](https://github.com/fpga-theremin/theremin/tree/master/fpga/ip_repo/theremin_sensor)
 * [encoders_board](https://github.com/fpga-theremin/theremin/tree/master/fpga/ip_repo/encoders_board)
