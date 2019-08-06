@@ -36,70 +36,74 @@
 <h3>Waveshare 4.3&quot; 800x480 TFT Capacitive Touch Screen</h3>
 <p>TFT Touch screen with RGB interface requires a lot of FPGA pins. Only RGB data needs 24 (8 * 3) pins.
 <p>To minimize FPGA board pins usage for TFT, it was decided to reduce color resolution of display from 8 to 4 bits per component. Lower 4 pins of each component are wired to upper 4 bits.
-This approach allows to keep full range 0x00..0xff of component values equally distributed with 0x11 step - instead of 0x00..0xf0 if it decided to set lower components to 0.
+This approach allows to keep full range 0x00..0xff of component values equally distributed with 0x11 step - instead of 0x00..0xf0 if it decided to set lower components to 0.</p>
+<p>Although LCD Touch screen allows to control virtually any device features, often it's feasible to have hardware controls. There is Encoders board with 5 incremental encoders and one button. 
+Multiplexing is used to reduce number of required pins from 16 to 5.</p>
+<p>There are 6 single ended analog inputs (ADC) on Cora Arduino/Chipkit connectors. They can be used as analog inputs from pot based pedals (expression pedals).</p>
+<p>Since there were several unused pins on FPGA board after assignment of main peripherial devices, I decided to add MicroSD Card on shield.</p>
+
 <p>Display supports both FPC and IDC connectors. Both types of connectors are traced on shield PCB. Although, FPC/FCC connector is really hard to solder. Probably, it makes sense to use IDC.</p>
 
 <img width="30%" src="images/new_cora_theremin/cora_theremin_shield_assembled_top_on_cora_board.jpg">
 
-<p>LCD interface pin assignment: IDC40 connector</p>
+<p>LCD interface pin assignment: IDC40 connector (J1)</p>
 <p>Please note: odd/even pins are mirrored comparing with Waveshare LCD pins assignment</p>
 
-<table class="small">
-<col width="30%"></col><col width="30%"></col><col width="30%"></col>
-<tr><th>LCD pin header</th><th>Cora Z7 pin</th><th>Signal</th></tr>
-<tr><td colspan="3">Touch controller</td></tr>
-<tr><td>1</td><td>IO41</td><td>Touch IRQ</td></tr>
-<tr><td>2</td><td>5V5</td><td>+5V</td></tr>
-<tr><td>3</td><td>n/c</td><td>n/c</td></tr>
-<tr><td>4</td><td>SDA</td><td>Touch I2C SDA</td></tr>
-<tr><td>5</td><td>SCL</td><td>Touch I2C SCL</td></tr>
-<tr><td>6</td><td>IO40</td><td>Touch Reset</td></tr>
-<tr><td colspan="3">Backlight control</td></tr>
-<tr><td>7</td><td>IO5</td><td>LCD Backlight PWM</td></tr>
-<tr><td>8</td><td>GND</td><td>GND</td></tr>
-<tr><td>9</td><td>n/c</td><td>n/c</td></tr>
-<tr><td>10</td><td>n/c</td><td>n/c</td></tr>
+<table class="small" width="700px">
+<tr><th>LCD pin header</th><th>Cora Z7 pin</th><th>Signal</th><th>Direction</th></tr>
+<tr><td colspan="4">Touch controller</td></tr>
+<tr><td>1</td><td>IO41</td><td>Touch IRQ</td><td>Input</td></tr>
+<tr><td>2</td><td>5V5</td><td>+5V</td><td>Power Output</td></tr>
+<tr><td>3</td><td>n/c</td><td>n/c</td><td>n/c</td></tr>
+<tr><td>4</td><td>SDA</td><td>Touch I2C SDA</td><td>Bidirectional</td></tr>
+<tr><td>5</td><td>SCL</td><td>Touch I2C SCL</td><td>Output</td></tr>
+<tr><td>6</td><td>IO40</td><td>Touch Reset</td><td>Output</td></tr>
+<tr><td colspan="4">Backlight control</td></tr>
+<tr><td>7</td><td>IO5</td><td>LCD Backlight PWM</td><td>Output</td></tr>
+<tr><td>8</td><td>GND</td><td>GND</td><td>Power Output</td></tr>
+<tr><td>9</td><td>n/c</td><td>n/c</td><td>n/c</td></tr>
+<tr><td>10</td><td>n/c</td><td>n/c</td><td>n/c</td></tr>
 
-<tr><td colspan="3">Red data</td></tr>
+<tr><td colspan="4">Red data</td></tr>
 
-<tr><td>11</td><td>IO13</td><td>R0 = R4</td></tr>
-<tr><td>12</td><td>IO39</td><td>R1 = R5</td></tr>
-<tr><td>13</td><td>IO12</td><td>R2 = R6</td></tr>
-<tr><td>14</td><td>IO38</td><td>R3 = R7</td></tr>
-<tr><td>15</td><td>IO13</td><td>R4</td></tr>
-<tr><td>16</td><td>IO39</td><td>R5</td></tr>
-<tr><td>17</td><td>IO12</td><td>R6</td></tr>
-<tr><td>18</td><td>IO38</td><td>R7</td></tr>
+<tr><td>11</td><td>IO13</td><td>R0 = R4</td><td>Output</td></tr>
+<tr><td>12</td><td>IO39</td><td>R1 = R5</td><td>Output</td></tr>
+<tr><td>13</td><td>IO12</td><td>R2 = R6</td><td>Output</td></tr>
+<tr><td>14</td><td>IO38</td><td>R3 = R7</td><td>Output</td></tr>
+<tr><td>15</td><td>IO13</td><td>R4</td><td>Output</td></tr>
+<tr><td>16</td><td>IO39</td><td>R5</td><td>Output</td></tr>
+<tr><td>17</td><td>IO12</td><td>R6</td><td>Output</td></tr>
+<tr><td>18</td><td>IO38</td><td>R7</td><td>Output</td></tr>
 
-<tr><td colspan="3">Green data</td></tr>
+<tr><td colspan="4">Green data</td></tr>
 
-<tr><td>19</td><td>IO11</td><td>G0 = G4</td></tr>
-<tr><td>20</td><td>IO37</td><td>G1 = G5</td></tr>
-<tr><td>21</td><td>IO10</td><td>G2 = G6</td></tr>
-<tr><td>22</td><td>IO36</td><td>G3 = G7</td></tr>
-<tr><td>23</td><td>IO11</td><td>G4</td></tr>
-<tr><td>24</td><td>IO37</td><td>G5</td></tr>
-<tr><td>25</td><td>IO10</td><td>G6</td></tr>
-<tr><td>26</td><td>IO36</td><td>G7</td></tr>
+<tr><td>19</td><td>IO11</td><td>G0 = G4</td><td>Output</td></tr>
+<tr><td>20</td><td>IO37</td><td>G1 = G5</td><td>Output</td></tr>
+<tr><td>21</td><td>IO10</td><td>G2 = G6</td><td>Output</td></tr>
+<tr><td>22</td><td>IO36</td><td>G3 = G7</td><td>Output</td></tr>
+<tr><td>23</td><td>IO11</td><td>G4</td><td>Output</td></tr>
+<tr><td>24</td><td>IO37</td><td>G5</td><td>Output</td></tr>
+<tr><td>25</td><td>IO10</td><td>G6</td><td>Output</td></tr>
+<tr><td>26</td><td>IO36</td><td>G7</td><td>Output</td></tr>
 
-<tr><td colspan="3">Blue data</td></tr>
-<tr><td>27</td><td>IO9</td><td>B0 = B4</td></tr>
-<tr><td>28</td><td>IO35</td><td>B1 = B5</td></tr>
-<tr><td>29</td><td>IO8</td><td>B2 = B6</td></tr>
-<tr><td>30</td><td>IO34</td><td>B3 = B7</td></tr>
-<tr><td>31</td><td>IO9</td><td>B4</td></tr>
-<tr><td>32</td><td>IO35</td><td>B5</td></tr>
-<tr><td>33</td><td>IO8</td><td>B6</td></tr>
-<tr><td>34</td><td>IO34</td><td>B7</td></tr>
+<tr><td colspan="4">Blue data</td></tr>
+<tr><td>27</td><td>IO9</td><td>B0 = B4</td><td>Output</td></tr>
+<tr><td>28</td><td>IO35</td><td>B1 = B5</td><td>Output</td></tr>
+<tr><td>29</td><td>IO8</td><td>B2 = B6</td><td>Output</td></tr>
+<tr><td>30</td><td>IO34</td><td>B3 = B7</td><td>Output</td></tr>
+<tr><td>31</td><td>IO9</td><td>B4</td><td>Output</td></tr>
+<tr><td>32</td><td>IO35</td><td>B5</td><td>Output</td></tr>
+<tr><td>33</td><td>IO8</td><td>B6</td><td>Output</td></tr>
+<tr><td>34</td><td>IO34</td><td>B7</td><td>Output</td></tr>
 
-<tr><td colspan="3">LCD clock and control signals</td></tr>
+<tr><td colspan="4">LCD clock and control signals</td></tr>
 
-<tr><td>35</td><td>IO7</td><td>PXCLK - pixel clock</td></tr>
-<tr><td>36</td><td>+3.3V via 10K R</td><td>DISP - display enable</td></tr>
-<tr><td>37</td><td>IO33</td><td>HSYNC - horizontal sync</td></tr>
-<tr><td>38</td><td>IO6</td><td>VSYNC - vertical sync</td></tr>
-<tr><td>39</td><td>IO32</td><td>DE - data enable</td></tr>
-<tr><td>20</td><td>GND</td><td>GND</td></tr>
+<tr><td>35</td><td>IO7</td><td>PXCLK - pixel clock</td><td>Output</td></tr>
+<tr><td>36</td><td>+3.3V via 10K R</td><td>DISP - display enable</td><td>Output</td></tr>
+<tr><td>37</td><td>IO33</td><td>HSYNC - horizontal sync</td><td>Output</td></tr>
+<tr><td>38</td><td>IO6</td><td>VSYNC - vertical sync</td><td>Output</td></tr>
+<tr><td>39</td><td>IO32</td><td>DE - data enable</td><td>Output</td></tr>
+<tr><td>20</td><td>GND</td><td>GND</td><td>Power Output</td></tr>
 
 </table>
 
@@ -117,42 +121,113 @@ This approach allows to keep full range 0x00..0xff of component values equally d
 <p>I2S interface of both pmods reuse the same clocking signals: MCLK (master clock), WS(RLLK), SCLK(data clock)</p>
 <p>I2S2 PMod uses 2 data pins - one for line in data, one for line out data</p>
 <p>AMP3 PMod uses 1 data pin - out data to phones. Additionally it uses I2C interface for controlling.</p>
-<p>PMod I2S2 connector</p>
-<table class="small">
-<col width="30%"></col><col width="30%"></col><col width="30%"></col>
-<tr><th>I2S2 pmod pin</th><th>Cora Z7 pin</th><th>Signal</th></tr>
-<tr><td>1</td><td>IO3</td><td>Line Out MCLK = Line In MCLK</td></tr>
-<tr><td>2</td><td>IO29</td><td>Line Out LRCK = Line In LRCK (WS)</td></tr>
-<tr><td>3</td><td>IO2</td><td>Line Out SCLK = Line In SCLK</td></tr>
-<tr><td>4</td><td>IO28</td><td>Line Out data</td></tr>
-<tr><td>5</td><td>GND</td><td>GND</td></tr>
-<tr><td>6</td><td>+3.3V</td><td>+3.3V</td></tr>
+<p>PMod I2S2 connector (J8)</p>
+<table class="small"  width="700px">
+<tr><th>I2S2 pmod pin</th><th>Cora Z7 pin</th><th>Signal</th><th>Direction</th></tr>
+<tr><td>1</td><td>IO3</td><td>Line Out MCLK = Line In MCLK</td><td>Output</td></tr>
+<tr><td>2</td><td>IO29</td><td>Line Out LRCK = Line In LRCK (WS)</td><td>Output</td></tr>
+<tr><td>3</td><td>IO2</td><td>Line Out SCLK = Line In SCLK</td><td>Output</td></tr>
+<tr><td>4</td><td>IO28</td><td>Line Out data</td><td>Output</td></tr>
+<tr><td>5</td><td>GND</td><td>GND</td><td>Power Output</td></tr>
+<tr><td>6</td><td>+3.3V</td><td>+3.3V</td><td>Power Output</td></tr>
 
-<tr><td>7</td><td>IO3</td><td>Line In MCLK = Line Out MCLK</td></tr>
-<tr><td>8</td><td>IO29</td><td>Line In LRCK = Line Out LRCK (WS)</td></tr>
-<tr><td>9</td><td>IO2</td><td>Line In SCLK = Line Out SCLK</td></tr>
-<tr><td>10</td><td>IO1</td><td>Line In data</td></tr>
-<tr><td>11</td><td>GND</td><td>GND</td></tr>
-<tr><td>12</td><td>+3.3V</td><td>+3.3V</td></tr>
+<tr><td>7</td><td>IO3</td><td>Line In MCLK = Line Out MCLK</td><td>Output</td></tr>
+<tr><td>8</td><td>IO29</td><td>Line In LRCK = Line Out LRCK (WS)</td><td>Output</td></tr>
+<tr><td>9</td><td>IO2</td><td>Line In SCLK = Line Out SCLK</td><td>Output</td></tr>
+<tr><td>10</td><td>IO1</td><td>Line In data</td><td>Input</td></tr>
+<tr><td>11</td><td>GND</td><td>GND</td><td>Power Output</td></tr>
+<tr><td>12</td><td>+3.3V</td><td>+3.3V</td><td>Power Output</td></tr>
 </table>
-<p>PMod AMP3 connector</p>
-<table class="small">
-<col width="30%"></col><col width="30%"></col><col width="30%"></col>
-<tr><th>AMP3 pmod pin</th><th>Cora Z7 pin</th><th>Signal</th></tr>
-<tr><td>1</td><td>IO29</td><td>LRCK (WS)</td></tr>
-<tr><td>2</td><td>IO30</td><td>out data</td></tr>
-<tr><td>3</td><td>n/c</td><td>n/c</td></tr>
-<tr><td>4</td><td>IO2</td><td>SCLK</td></tr>
-<tr><td>5</td><td>GND</td><td>GND</td></tr>
-<tr><td>6</td><td>+3.3V</td><td>+3.3V</td></tr>
+<p>PMod AMP3 connector (J9)</p>
+<table class="small" width="700px">
+<tr><th>AMP3 pmod pin</th><th>Cora Z7 pin</th><th>Signal</th><th>Direction</th></tr>
+<tr><td>1</td><td>IO29</td><td>LRCK (WS)</td><td>Output</td></tr>
+<tr><td>2</td><td>IO30</td><td>out data</td><td>Output</td></tr>
+<tr><td>3</td><td>n/c</td><td>n/c</td><td>n/c</td></tr>
+<tr><td>4</td><td>IO2</td><td>SCLK</td><td>Output</td></tr>
+<tr><td>5</td><td>GND</td><td>GND</td><td>Power Output</td></tr>
+<tr><td>6</td><td>+3.3V</td><td>+3.3V</td><td>Power Output</td></tr>
 
-<tr><td>7</td><td>IO31</td><td>I2C SDA</td></tr>
-<tr><td>8</td><td>IO4</td><td>I2C SCL</td></tr>
-<tr><td>9</td><td>IO3</td><td>MCLK</td></tr>
-<tr><td>10</td><td>+3.3V via 10K R</td><td>nSD</td></tr>
-<tr><td>11</td><td>GND</td><td>GND</td></tr>
-<tr><td>12</td><td>+3.3V</td><td>+3.3V</td></tr>
+<tr><td>7</td><td>IO31</td><td>I2C SDA</td><td>Bidirectional</td></tr>
+<tr><td>8</td><td>IO4</td><td>I2C SCL</td><td>Output</td></tr>
+<tr><td>9</td><td>IO3</td><td>MCLK</td><td>Output</td></tr>
+<tr><td>10</td><td>+3.3V via 10K R</td><td>nSD</td><td>Output</td></tr>
+<tr><td>11</td><td>GND</td><td>GND</td><td>Power Output</td></tr>
+<tr><td>12</td><td>+3.3V</td><td>+3.3V</td><td>Power Output</td></tr>
 </table>
+
+<h3>Oscillator connectors</h3>
+<p>To connect each of two oscillators it's necessary to use one input pin</p>
+
+<h4>Pitch oscillator connector (J7)</h4>
+<table class="small" width="700px">
+<tr><th>Connector pin</th><th>Cora Z7 pin</th><th>Signal</th><th>Direction</th></tr>
+<tr><td>1</td><td>GND</td><td>GND</td><td>Power Output</td></tr>
+<tr><td>2</td><td>IO0</td><td>Pitch oscillator signal</td><td>Input</td></tr>
+<tr><td>3</td><td>+3.3V</td><td>+3.3V</td><td>Power output</td></tr>
+</table>
+
+<h4>Volume oscillator connector (J6)</h4>
+<table class="small" width="700px">
+<tr><th>Connector pin</th><th>Cora Z7 pin</th><th>Signal</th><th>Direction</th></tr>
+<tr><td>1</td><td>GND</td><td>GND</td><td>Power Output</td></tr>
+<tr><td>2</td><td>IO42</td><td>Volume oscillator signal</td><td>Input</td></tr>
+<tr><td>3</td><td>+3.3V</td><td>+3.3V</td><td>Power output</td></tr>
+</table>
+
+<h3>Encoders board connector (J4)</h3>
+
+<p>Multiplexing is used to reduce number of used pins.</p>
+<p>There are 5 incremental encoders with buttons and 1 tact button on Encoders board. They give 16 output signals.</p>
+<p>To decrease number of used FPGA pins, multiplexing is used. Address A0..A3 selects signal to get value from. MUX out provides value of signal which index is set to A0..A3 pins.</p>
+<p>Differencial ACD input pins are used as digital I/O for encoders board connection.</p>
+
+<table class="small" width="700px">
+<tr><th>Connector pin</th><th>Cora Z7 pin</th><th>Signal</th><th>Direction</th></tr>
+<tr><td>1</td><td>A7</td><td>MUX output</td><td>Input</td></tr>
+<tr><td>2</td><td>n/c</td><td>n/c</td><td>n/c</td></tr>
+<tr><td>3</td><td>A8</td><td>A0 mux address</td><td>Output</td></tr>
+<tr><td>4</td><td>A9</td><td>A1 mux address</td><td>Output</td></tr>
+<tr><td>5</td><td>A10</td><td>A2 mux address</td><td>Output</td></tr>
+<tr><td>6</td><td>A11</td><td>A3 mux address</td><td>Output</td></tr>
+<tr><td>7</td><td>+3.3V</td><td>+3.3V</td><td>Power output</td></tr>
+<tr><td>8</td><td>GND</td><td>GND</td><td>Power Output</td></tr>
+</table>
+
+<h3>Analog pedals board connector (J5)</h3>
+
+<p>Additional controlls may be connected using 6 on-board single-ended ADC analog input pins.</p>
+
+<table class="small" width="700px">
+<tr><th>Connector pin</th><th>Cora Z7 pin</th><th>Signal</th><th>Direction</th></tr>
+<tr><td>1</td><td>A0</td><td>Analog In 1</td><td>Analog Input</td></tr>
+<tr><td>2</td><td>A1</td><td>Analog In 2</td><td>Analog Input</td></tr>
+<tr><td>3</td><td>A2</td><td>Analog In 3</td><td>Analog Input</td></tr>
+<tr><td>4</td><td>A3</td><td>Analog In 4</td><td>Analog Input</td></tr>
+<tr><td>5</td><td>A4</td><td>Analog In 5</td><td>Analog Input</td></tr>
+<tr><td>6</td><td>A5</td><td>Analog In 6</td><td>Analog Input</td></tr>
+<tr><td>7</td><td>+3.3V</td><td>+3.3V</td><td>Power output</td></tr>
+<tr><td>8</td><td>GND</td><td>GND</td><td>Power Output</td></tr>
+</table>
+
+<h3>MicroSD Card socket (J3)</h3>
+
+<p>MicroSD socket is traced on theremin shield PCB.</p>
+
+<table class="small" width="700px">
+<tr><th>uSD card pin</th><th>Cora Z7 pin</th><th>Signal</th><th>Direction</th></tr>
+<tr><td>1</td><td>IO27</td><td>DAT2</td><td>Bidirectional</td></tr>
+<tr><td>2</td><td>IO26</td><td>DAT3/CD</td><td>Bidirectional</td></tr>
+<tr><td>3</td><td>SPI SS</td><td>CMD</td><td>Bidirectional</td></tr>
+<tr><td>4</td><td>+3.3V</td><td>+3.3V</td><td>Power Output</td></tr>
+<tr><td>5</td><td>SPI SCLK</td><td>CCLK</td><td>Output</td></tr>
+<tr><td>6</td><td>GND</td><td>GND</td><td>Power Output</td></tr>
+<tr><td>7</td><td>SPI MISO</td><td>DAT0</td><td>Bidirectional</td></tr>
+<tr><td>8</td><td>SPI MOSI</td><td>DAT1</td><td>Bidirectional</td></tr>
+<tr><td>9</td><td>A6</td><td>Card Detect B</td><td>Input</td></tr>
+<tr><td>10</td><td>GND</td><td>Card Detect A</td><td>Power Output</td></tr>
+</table>
+
 
 <h3>PCB design</h3>
 
