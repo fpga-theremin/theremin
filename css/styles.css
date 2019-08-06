@@ -24,6 +24,8 @@ td { text-align: left; color: #121; vertical-align: top }
 tr:nth-child(even) { background: #cdf3 }
 tr:nth-child(odd) { background: #9df3 }
 
+table.small th, td { border: 1px solid #fff6; margin: 0.1em; padding: 0.1em }
+
 .button { margin: 0.8em; padding: 0.8em; background-color: #89a6; border: 1px solid #393 }
 
 .sectionlink { font-size: 110%; font-weight: bold; margin: 0.5em }
