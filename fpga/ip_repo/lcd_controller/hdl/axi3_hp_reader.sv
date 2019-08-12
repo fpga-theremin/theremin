@@ -55,59 +55,61 @@ module axi3_hp_reader #(
 );
 
 logic arvalid;
-logic dma_ready;
+logic rready;
 
-assign m00_axi_arlen = BURST_SIZE - 1;
+logic dma_ready;
+logic [1:0] state;
 
 always_comb m00_axi_arvalid <= arvalid;
-always_comb m00_axi_rready <= ~dma_ready;
+always_comb m00_axi_rready <= rready;
 always_comb m00_axi_araddr <= {DMA_RD_ADDR, 3'b000};
-
 always_comb DMA_RD_DATA <= m00_axi_rdata;
 always_comb DMA_RD_DATA_VALID <= m00_axi_rvalid;
-
 always_comb DMA_READY <= dma_ready;
+always_comb m00_axi_arlen <= BURST_SIZE - 1;
 
-logic [2:0] dma_ready_delay;
-
-always_ff @(posedge CLK) begin
+// TODO: support burst reads
+always @(posedge CLK) begin
     if (RESET) begin
-        dma_ready <= 1'b1;
+        state <= 2'b00;
+        dma_ready <= 1'b0;
         arvalid <= 1'b0;
-        dma_ready_delay <= 3'b0;
+        rready <= 1'b0;
     end else begin
-        // * the master must not wait for the slave to assert ARREADY before asserting ARVALID
-        // * the slave can wait for ARVALID to be asserted before it asserts ARREADY
-        // * the slave can assert ARREADY before ARVALID is asserted
-        // * the slave must wait for both ARVALID and ARREADY to be asserted before it asserts RVALID to indicate that valid data is available
-        // * the slave must not wait for the master to assert RREADY before asserting RVALID
-        // * the master can wait for RVALID to be asserted before it asserts RREADY
-        // * the master can assert RREADY before RVALID is asserted
-        if (dma_ready) begin //& m00_axi_arready
-            // waiting for request
-            if (~arvalid & DMA_START) begin
-                // master read request 
-                arvalid <= 1'b1;
-                dma_ready <= 1'b0;
-            end else begin
-                arvalid <= 1'b0;
-            end
-        end else begin
-            // handle reading
-            if (m00_axi_arready) begin
-                // address is accepted
-                arvalid <= 1'b0;
-            end
-            if (m00_axi_rvalid & m00_axi_rlast) begin //m00_axi_rvalid m00_axi_rlast 
-                dma_ready_delay <= 3'b111;
-            end else if (dma_ready_delay != 3'b0000) begin
-                if (dma_ready_delay == 3'b001) begin
+        case (state)
+        2'b00:
+            begin
+                if (dma_ready & DMA_START) begin
+                    arvalid <= 1'b1;
+                    state <= 2'b01;
+                    dma_ready <= 1'b0;
+                end else begin
                     dma_ready <= 1'b1;
                 end
-                dma_ready_delay <= dma_ready_delay - 1;
             end
-        end
+        2'b01:
+            begin
+                // waiting for address is accepted
+                if (m00_axi_arready) begin
+                    arvalid <= 1'b0;
+                    rready <= 1'b1;
+                    state <= 2'b10;
+                end
+            end
+        2'b10:
+            begin
+                // waiting for data is ready
+                if (m00_axi_rvalid) begin
+                    rready <= 1'b0;
+                    state <= 2'b00;
+                    dma_ready <= 1'b1;
+                end
+            end
+        2'b11:
+            begin
+                state <= 2'b00;
+            end
+        endcase
     end
 end
-
 endmodule
