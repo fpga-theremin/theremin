@@ -62,180 +62,183 @@
   <FileSets Version="1" Minor="31">
     <FileSet Name="sources_1" Type="DesignSrcs" RelSrcDir="$PSRCDIR/sources_1">
       <Filter Type="Srcs"/>
-      <File Path="$PPRDIR/../ip_repo/audio_io/hdl/audio_clk_gen.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/audio_io/hdl/audio_clk_gen.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/lcd_controller/hdl/axi3_hp_reader.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/lcd_controller/hdl/axi3_hp_reader.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/theremin_io/hdl/axi4_lite_slave_reg.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/theremin_io/hdl/axi4_lite_slave_reg.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/encoders_board/hdl/button_state_tracker.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/encoders_board/hdl/button_state_tracker.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/encoders_board/hdl/encoder_position_tracker.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/encoders_board/hdl/encoder_position_tracker.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/encoders_board/hdl/encoders_board.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/encoders_board/hdl/encoders_board.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/encoders_board/hdl/encoders_tracker.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/encoders_board/hdl/encoders_tracker.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/audio_io/hdl/i2s_in.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/audio_io/hdl/i2s_in.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/audio_io/hdl/i2s_out.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/audio_io/hdl/i2s_out.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/theremin_sensor/hdl/iir_multistage_dblchannel.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/theremin_sensor/hdl/iir_multistage_dblchannel.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/theremin_sensor/hdl/iserdes_ddr.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/theremin_sensor/hdl/iserdes_ddr.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/lcd_controller/hdl/lcd_clk_gen.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/lcd_controller/hdl/lcd_clk_gen.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/lcd_controller/hdl/lcd_controller.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/lcd_controller/hdl/lcd_controller.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/lcd_controller/hdl/lcd_controller_axi3_dma.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/lcd_controller/hdl/lcd_controller_axi3_dma.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/lcd_controller/hdl/lcd_dma_fifo.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/lcd_controller/hdl/lcd_dma_fifo.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/encoders_board/hdl/mux_debouncer.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/encoders_board/hdl/mux_debouncer.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/theremin_sensor/hdl/oversampling_iserdes.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/theremin_sensor/hdl/oversampling_iserdes.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/theremin_sensor/hdl/oversampling_iserdes_bit_detector.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/theremin_sensor/hdl/oversampling_iserdes_bit_detector.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/theremin_sensor/hdl/oversampling_iserdes_halfperiod_measure.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/theremin_sensor/hdl/oversampling_iserdes_halfperiod_measure.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/theremin_sensor/hdl/oversampling_iserdes_period_measure.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/theremin_sensor/hdl/oversampling_iserdes_period_measure.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/theremin_sensor/hdl/oversampling_iserdes_with_detector.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/theremin_sensor/hdl/oversampling_iserdes_with_detector.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/audio_io/hdl/theremin_audio_io.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/audio_io/hdl/theremin_audio_io.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/theremin_i2c/hdl/theremin_i2c.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/theremin_i2c/hdl/theremin_i2c.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/theremin_sensor/hdl/theremin_oversampling_iserdes_period_measure.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/theremin_sensor/hdl/theremin_oversampling_iserdes_period_measure.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/theremin_io/hdl/theremin_io_ip.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/theremin_io/hdl/theremin_io_ip.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/component.xml">
+        <FileInfo SFType="IPXACT"/>
       </File>
       <Config>
         <Option Name="DesignMode" Val="RTL"/>
@@ -250,22 +253,14 @@
     </FileSet>
     <FileSet Name="sim_1" Type="SimulationSrcs" RelSrcDir="$PSRCDIR/sim_1">
       <Filter Type="Srcs"/>
-      <File Path="$PPRDIR/../ip_repo/theremin_i2c/tb/theremin_i2c_tb.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/theremin_i2c/tb/theremin_i2c_tb.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/lcd_controller/tb/lcd_controller_axi3_dma_tb.sv">
-        <FileInfo>
-          <Attr Name="AutoDisabled" Val="1"/>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../ip_repo/lcd_controller/tb/lcd_dma_fifo_tb.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/lcd_controller/tb/lcd_controller_axi3_dma_tb.sv">
         <FileInfo>
           <Attr Name="AutoDisabled" Val="1"/>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -273,7 +268,7 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/encoders_board/tb/encoders_board_tb.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/lcd_controller/tb/lcd_dma_fifo_tb.sv">
         <FileInfo>
           <Attr Name="AutoDisabled" Val="1"/>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -281,7 +276,7 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/encoders_board/tb/mux_debouncer_tb.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/encoders_board/tb/encoders_board_tb.sv">
         <FileInfo>
           <Attr Name="AutoDisabled" Val="1"/>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -289,7 +284,7 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/lcd_controller/tb/lcd_controller_tb.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/encoders_board/tb/mux_debouncer_tb.sv">
         <FileInfo>
           <Attr Name="AutoDisabled" Val="1"/>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -297,7 +292,7 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/lcd_controller/tb/lcd_clk_gen_tb.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/lcd_controller/tb/lcd_controller_tb.sv">
         <FileInfo>
           <Attr Name="AutoDisabled" Val="1"/>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -305,7 +300,7 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/audio_io/tb/theremin_audio_io_tb.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/lcd_controller/tb/lcd_clk_gen_tb.sv">
         <FileInfo>
           <Attr Name="AutoDisabled" Val="1"/>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -313,7 +308,7 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/audio_io/tb/audio_clk_gen_tb.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/audio_io/tb/theremin_audio_io_tb.sv">
         <FileInfo>
           <Attr Name="AutoDisabled" Val="1"/>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -321,7 +316,7 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/theremin_sensor/tb/oversampling_iserdes_tb.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/audio_io/tb/audio_clk_gen_tb.sv">
         <FileInfo>
           <Attr Name="AutoDisabled" Val="1"/>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -329,7 +324,7 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/theremin_sensor/tb/oversampling_iserdes_with_detector_tb.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/theremin_sensor/tb/oversampling_iserdes_tb.sv">
         <FileInfo>
           <Attr Name="AutoDisabled" Val="1"/>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -337,7 +332,7 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/theremin_sensor/tb/oversampling_iserdes_detector_tb.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/theremin_sensor/tb/oversampling_iserdes_with_detector_tb.sv">
         <FileInfo>
           <Attr Name="AutoDisabled" Val="1"/>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -345,7 +340,7 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/theremin_sensor/tb/iserdes_ddr_tb.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/theremin_sensor/tb/oversampling_iserdes_detector_tb.sv">
         <FileInfo>
           <Attr Name="AutoDisabled" Val="1"/>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -353,7 +348,7 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/theremin_sensor/tb/iir_multistage_dblchannel_tb.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/theremin_sensor/tb/iserdes_ddr_tb.sv">
         <FileInfo>
           <Attr Name="AutoDisabled" Val="1"/>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -361,7 +356,15 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/theremin_sensor/tb/oversampling_iserdes_period_measure_tb.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/theremin_sensor/tb/iir_multistage_dblchannel_tb.sv">
+        <FileInfo>
+          <Attr Name="AutoDisabled" Val="1"/>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/theremin_sensor/tb/oversampling_iserdes_period_measure_tb.sv">
         <FileInfo>
           <Attr Name="AutoDisabled" Val="1"/>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -377,7 +380,7 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/theremin_io/tb/theremin_io_ip_tb.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/theremin_io/tb/theremin_io_ip_tb.sv">
         <FileInfo>
           <Attr Name="AutoDisabled" Val="1"/>
           <Attr Name="UsedIn" Val="synthesis"/>

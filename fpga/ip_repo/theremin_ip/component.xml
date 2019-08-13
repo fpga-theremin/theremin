@@ -2585,103 +2585,103 @@
     <spirit:fileSet>
       <spirit:name>xilinx_anylanguagesynthesis_view_fileset</spirit:name>
       <spirit:file>
-        <spirit:name>audio_io/hdl/audio_clk_gen.sv</spirit:name>
+        <spirit:name>src/audio_io/hdl/audio_clk_gen.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>lcd_controller/hdl/axi3_hp_reader.sv</spirit:name>
+        <spirit:name>src/lcd_controller/hdl/axi3_hp_reader.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>theremin_io/hdl/axi4_lite_slave_reg.sv</spirit:name>
+        <spirit:name>src/theremin_io/hdl/axi4_lite_slave_reg.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>encoders_board/hdl/button_state_tracker.sv</spirit:name>
+        <spirit:name>src/encoders_board/hdl/button_state_tracker.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>encoders_board/hdl/encoder_position_tracker.sv</spirit:name>
+        <spirit:name>src/encoders_board/hdl/encoder_position_tracker.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>encoders_board/hdl/encoders_board.sv</spirit:name>
+        <spirit:name>src/encoders_board/hdl/encoders_board.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>encoders_board/hdl/encoders_tracker.sv</spirit:name>
+        <spirit:name>src/encoders_board/hdl/encoders_tracker.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>audio_io/hdl/i2s_in.sv</spirit:name>
+        <spirit:name>src/audio_io/hdl/i2s_in.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>audio_io/hdl/i2s_out.sv</spirit:name>
+        <spirit:name>src/audio_io/hdl/i2s_out.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>theremin_sensor/hdl/iir_multistage_dblchannel.sv</spirit:name>
+        <spirit:name>src/theremin_sensor/hdl/iir_multistage_dblchannel.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>theremin_sensor/hdl/iserdes_ddr.sv</spirit:name>
+        <spirit:name>src/theremin_sensor/hdl/iserdes_ddr.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>lcd_controller/hdl/lcd_clk_gen.sv</spirit:name>
+        <spirit:name>src/lcd_controller/hdl/lcd_clk_gen.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>lcd_controller/hdl/lcd_controller.sv</spirit:name>
+        <spirit:name>src/lcd_controller/hdl/lcd_controller.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>lcd_controller/hdl/lcd_controller_axi3_dma.sv</spirit:name>
+        <spirit:name>src/lcd_controller/hdl/lcd_controller_axi3_dma.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>lcd_controller/hdl/lcd_dma_fifo.sv</spirit:name>
+        <spirit:name>src/lcd_controller/hdl/lcd_dma_fifo.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>encoders_board/hdl/mux_debouncer.sv</spirit:name>
+        <spirit:name>src/encoders_board/hdl/mux_debouncer.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>theremin_sensor/hdl/oversampling_iserdes.sv</spirit:name>
+        <spirit:name>src/theremin_sensor/hdl/oversampling_iserdes.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>theremin_sensor/hdl/oversampling_iserdes_bit_detector.sv</spirit:name>
+        <spirit:name>src/theremin_sensor/hdl/oversampling_iserdes_bit_detector.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>theremin_sensor/hdl/oversampling_iserdes_halfperiod_measure.sv</spirit:name>
+        <spirit:name>src/theremin_sensor/hdl/oversampling_iserdes_halfperiod_measure.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>theremin_sensor/hdl/oversampling_iserdes_period_measure.sv</spirit:name>
+        <spirit:name>src/theremin_sensor/hdl/oversampling_iserdes_period_measure.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>theremin_sensor/hdl/oversampling_iserdes_with_detector.sv</spirit:name>
+        <spirit:name>src/theremin_sensor/hdl/oversampling_iserdes_with_detector.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>audio_io/hdl/theremin_audio_io.sv</spirit:name>
+        <spirit:name>src/audio_io/hdl/theremin_audio_io.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>theremin_i2c/hdl/theremin_i2c.sv</spirit:name>
+        <spirit:name>src/theremin_i2c/hdl/theremin_i2c.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>theremin_sensor/hdl/theremin_oversampling_iserdes_period_measure.sv</spirit:name>
+        <spirit:name>src/theremin_sensor/hdl/theremin_oversampling_iserdes_period_measure.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>theremin_io/hdl/theremin_io_ip.sv</spirit:name>
+        <spirit:name>src/theremin_io/hdl/theremin_io_ip.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
         <spirit:userFileType>CHECKSUM_9d30c298</spirit:userFileType>
       </spirit:file>
@@ -2689,110 +2689,110 @@
     <spirit:fileSet>
       <spirit:name>xilinx_anylanguagebehavioralsimulation_view_fileset</spirit:name>
       <spirit:file>
-        <spirit:name>audio_io/hdl/audio_clk_gen.sv</spirit:name>
+        <spirit:name>src/audio_io/hdl/audio_clk_gen.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>lcd_controller/hdl/axi3_hp_reader.sv</spirit:name>
+        <spirit:name>src/lcd_controller/hdl/axi3_hp_reader.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>theremin_io/hdl/axi4_lite_slave_reg.sv</spirit:name>
+        <spirit:name>src/theremin_io/hdl/axi4_lite_slave_reg.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>encoders_board/hdl/button_state_tracker.sv</spirit:name>
+        <spirit:name>src/encoders_board/hdl/button_state_tracker.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>encoders_board/hdl/encoder_position_tracker.sv</spirit:name>
+        <spirit:name>src/encoders_board/hdl/encoder_position_tracker.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>encoders_board/hdl/encoders_board.sv</spirit:name>
+        <spirit:name>src/encoders_board/hdl/encoders_board.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>encoders_board/hdl/encoders_tracker.sv</spirit:name>
+        <spirit:name>src/encoders_board/hdl/encoders_tracker.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>audio_io/hdl/i2s_in.sv</spirit:name>
+        <spirit:name>src/audio_io/hdl/i2s_in.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>audio_io/hdl/i2s_out.sv</spirit:name>
+        <spirit:name>src/audio_io/hdl/i2s_out.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>theremin_sensor/hdl/iir_multistage_dblchannel.sv</spirit:name>
+        <spirit:name>src/theremin_sensor/hdl/iir_multistage_dblchannel.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>theremin_sensor/hdl/iserdes_ddr.sv</spirit:name>
+        <spirit:name>src/theremin_sensor/hdl/iserdes_ddr.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>lcd_controller/hdl/lcd_clk_gen.sv</spirit:name>
+        <spirit:name>src/lcd_controller/hdl/lcd_clk_gen.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>lcd_controller/hdl/lcd_controller.sv</spirit:name>
+        <spirit:name>src/lcd_controller/hdl/lcd_controller.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>lcd_controller/hdl/lcd_controller_axi3_dma.sv</spirit:name>
+        <spirit:name>src/lcd_controller/hdl/lcd_controller_axi3_dma.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>lcd_controller/hdl/lcd_dma_fifo.sv</spirit:name>
+        <spirit:name>src/lcd_controller/hdl/lcd_dma_fifo.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>encoders_board/hdl/mux_debouncer.sv</spirit:name>
+        <spirit:name>src/encoders_board/hdl/mux_debouncer.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>theremin_sensor/hdl/oversampling_iserdes.sv</spirit:name>
+        <spirit:name>src/theremin_sensor/hdl/oversampling_iserdes.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>theremin_sensor/hdl/oversampling_iserdes_bit_detector.sv</spirit:name>
+        <spirit:name>src/theremin_sensor/hdl/oversampling_iserdes_bit_detector.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>theremin_sensor/hdl/oversampling_iserdes_halfperiod_measure.sv</spirit:name>
+        <spirit:name>src/theremin_sensor/hdl/oversampling_iserdes_halfperiod_measure.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>theremin_sensor/hdl/oversampling_iserdes_period_measure.sv</spirit:name>
+        <spirit:name>src/theremin_sensor/hdl/oversampling_iserdes_period_measure.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>theremin_sensor/hdl/oversampling_iserdes_with_detector.sv</spirit:name>
+        <spirit:name>src/theremin_sensor/hdl/oversampling_iserdes_with_detector.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>audio_io/hdl/theremin_audio_io.sv</spirit:name>
+        <spirit:name>src/audio_io/hdl/theremin_audio_io.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>theremin_i2c/hdl/theremin_i2c.sv</spirit:name>
+        <spirit:name>src/theremin_i2c/hdl/theremin_i2c.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>theremin_sensor/hdl/theremin_oversampling_iserdes_period_measure.sv</spirit:name>
+        <spirit:name>src/theremin_sensor/hdl/theremin_oversampling_iserdes_period_measure.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>theremin_io/hdl/theremin_io_ip.sv</spirit:name>
+        <spirit:name>src/theremin_io/hdl/theremin_io_ip.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
     </spirit:fileSet>
     <spirit:fileSet>
       <spirit:name>xilinx_testbench_view_fileset</spirit:name>
       <spirit:file>
-        <spirit:name>theremin_i2c/tb/theremin_i2c_tb.sv</spirit:name>
+        <spirit:name>src/theremin_i2c/tb/theremin_i2c_tb.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
         <spirit:userFileType>USED_IN_implementation</spirit:userFileType>
         <spirit:userFileType>USED_IN_simulation</spirit:userFileType>
