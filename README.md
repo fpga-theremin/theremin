@@ -27,10 +27,12 @@ Some of modules use Xilinx Series 7 specific hardware blocks.
 
 HLD code for modules:
 
-* [theremin_sensor](https://github.com/fpga-theremin/theremin/tree/master/fpga/ip_repo/theremin_sensor) - double channel high precision frequency meter
-* [encoders_board](https://github.com/fpga-theremin/theremin/tree/master/fpga/ip_repo/encoders_board) - interfacing to 5 incremental encoders with buttons and one tact button
-* [lcd_controller](https://github.com/fpga-theremin/theremin/tree/master/fpga/ip_repo/lcd_controller) - LCD controller with RGB interface and DMA
-* [audio_io](https://github.com/fpga-theremin/theremin/tree/master/fpga/ip_repo/audio_io) - audio out 2 * stereo * 24bit * 48KHz I2S outputs and one stereo * 24bit * 48KHz I2S input
+* [theremin_sensor](https://github.com/fpga-theremin/theremin/tree/master/fpga/ip_repo/theremin_ip/src/theremin_sensor) - double channel high precision frequency meter
+* [encoders_board](https://github.com/fpga-theremin/theremin/tree/master/fpga/ip_repo/theremin_ip/src/encoders_board) - interfacing to 5 incremental encoders with buttons and one tact button
+* [lcd_controller](https://github.com/fpga-theremin/theremin/tree/master/fpga/ip_repo/theremin_ip/src/lcd_controller) - LCD controller with RGB interface and DMA
+* [audio_io](https://github.com/fpga-theremin/theremin/tree/master/fpga/ip_repo/theremin_ip/src/audio_io) - audio out 2 * stereo * 24bit * 48KHz I2S outputs and one stereo * 24bit * 48KHz I2S input
+* [theremin_i2c](https://github.com/fpga-theremin/theremin/tree/master/fpga/ip_repo/theremin_ip/src/theremin_i2c) - I2C support
+* [theremin_io](https://github.com/fpga-theremin/theremin/tree/master/fpga/ip_repo/theremin_ip/src/theremin_io) - Top Level Module combining all theremin peripherials
 
 
 
