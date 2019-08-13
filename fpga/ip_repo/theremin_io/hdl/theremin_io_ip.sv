@@ -70,6 +70,11 @@ module theremin_io_ip #
     // backlight PWM control output
     output logic BACKLIGHT_PWM,
 
+    inout TOUCH_I2C_DATA,
+    inout TOUCH_I2C_CLK,        // 400KHz
+    input logic TOUCH_INTERRUPT,
+    output logic TOUCH_RESET,
+
     // theremin sensor interface
     // serial input of pitch signal
     input logic PITCH_FREQ_IN,
@@ -92,6 +97,9 @@ module theremin_io_ip #
     input logic I2S_DATA_IN,
     // audio interrupt request, set to 1 in the beginning of new sample cycle, reset to 0 afer ACK
     output logic AUDIO_IRQ,
+
+    inout AUDIO_I2C_DATA,
+    inout AUDIO_I2C_CLK,        // 400KHz
 
     // encoders board interface
     // MUX address for multiplexing N buttons into one MUX_OUT
@@ -189,6 +197,8 @@ wire RESET;
 wire CLK;
 assign RESET = ~s00_axi_aresetn;
 assign CLK = s00_axi_aclk;
+
+assign TOUCH_RESET = 'b0;
 
 //============================
 // AXI3 DMA signals
@@ -501,12 +511,72 @@ theremin_oversampling_iserdes_period_measure
 );
 
 
+typedef enum logic [3:0] {
+    LCD_BUFFER_START_ADDRESS_REG = 0,  // r/w framebuffer start address     
+    LCD_BACKLIGHT_BRIGHTNESS_REG,      // r/w backlight brightness
+    LCD_ROW_INDEX,                     // r/o current row index
+    ENCODER_BOARD_R0,                  // r/o encoders R0    
+    ENCODER_BOARD_R1,                  // r/o encoders R1    
+    ENCODER_BOARD_R2,                  // r/o encoders R2
+    PITCH_PERIOD_FILTERED_REG,    
+    VOLUME_PERIOD_FILTERED_REG,
+    AUDIO_I2C_REG,
+    TOUCH_I2C_REG,    
+    AUDIO_IN_0_L,    
+    AUDIO_IN_0_R,   
+    AUDIO_OUT_0_L,    
+    AUDIO_OUT_0_R,    
+    AUDIO_OUT_1_L,    
+    AUDIO_OUT_1_R    
+} reg_addr_t;
+
+
 logic REG_WREN;                              // write enable for control register
 logic [C_S00_AXI_DATA_WIDTH-1:0] REG_WR_DATA;  // new data for writing to control register -- in CLK_IN_BUS clock domain
 logic [C_S00_AXI_ADDR_WIDTH-1 - ((C_S00_AXI_DATA_WIDTH/32) + 1):0] REG_WR_ADDR;  // write address of control register
 logic REG_RDEN;                              // read enable for control register
 logic [C_S00_AXI_ADDR_WIDTH-1 - ((C_S00_AXI_DATA_WIDTH/32) + 1):0] REG_RD_ADDR;  // read address of control register
 logic [C_S00_AXI_DATA_WIDTH-1:0] REG_RD_DATA;  // read value of control register
+
+
+
+logic audio_i2c_start;
+always_comb audio_i2c_start <= REG_WREN & (REG_WR_ADDR == AUDIO_I2C_REG); 
+logic [9:0] audio_i2c_status;
+
+theremin_i2c theremin_i2c_audio_inst (
+    .CLK,
+    .RESET,
+    
+    .COMMAND(REG_WR_DATA[23:0]),  // [23:16] - device address/op, [15:8] register address, [7:0] data to write
+    .START(audio_i2c_start),           // 1 for one CLK to start operation according to COMMAND
+    .DATA_OUT(audio_i2c_status[7:0]), // data read from I2C
+    .READY(audio_i2c_status[8]),
+    .ERROR(audio_i2c_status[9]),
+    
+    .I2C_DATA(AUDIO_I2C_DATA),
+    .I2C_CLK(AUDIO_I2C_CLK)        // 400KHz
+);
+
+logic touch_i2c_start;
+always_comb touch_i2c_start <= REG_WREN & (REG_WR_ADDR == TOUCH_I2C_REG); 
+logic [10:0] touch_i2c_status;
+assign touch_i2c_status[10] = TOUCH_INTERRUPT;
+
+theremin_i2c theremin_i2c_touch_inst (
+    .CLK,
+    .RESET,
+    
+    .COMMAND(REG_WR_DATA[23:0]),  // [23:16] - device address/op, [15:8] register address, [7:0] data to write
+    .START(touch_i2c_start),           // 1 for one CLK to start operation according to COMMAND
+    .DATA_OUT(touch_i2c_status[7:0]), // data read from I2C
+    .READY(touch_i2c_status[8]),
+    .ERROR(touch_i2c_status[9]),
+    
+    .I2C_DATA(TOUCH_I2C_DATA),
+    .I2C_CLK(TOUCH_I2C_CLK)        // 400KHz
+);
+
 
 axi4_lite_slave_reg #
 (
@@ -596,23 +666,6 @@ axi4_lite_slave_reg_impl
     .S_AXI_RREADY(s00_axi_rready)
 );
 
-typedef enum logic [3:0] {
-    LCD_BUFFER_START_ADDRESS_REG = 0,     
-    LCD_BACKLIGHT_BRIGHTNESS_REG,
-    LCD_ROW_INDEX,
-    AUDIO_OUT_0_L,    
-    AUDIO_OUT_0_R,    
-    AUDIO_OUT_1_L,    
-    AUDIO_OUT_1_R,    
-    AUDIO_IN_0_L,    
-    AUDIO_IN_0_R,    
-    ENCODER_BOARD_R0,    
-    ENCODER_BOARD_R1,    
-    ENCODER_BOARD_R2,
-    PITCH_PERIOD_FILTERED_REG,    
-    VOLUME_PERIOD_FILTERED_REG    
-} reg_addr_t;
-
 assign AUDIO_IRQ_ACK = (REG_WREN && (REG_WR_ADDR == AUDIO_OUT_0_L || REG_WR_ADDR == AUDIO_OUT_0_R || REG_WR_ADDR == AUDIO_OUT_1_L || REG_WR_ADDR == AUDIO_OUT_1_R))
                      | (REG_RDEN && (REG_RD_ADDR == AUDIO_IN_0_L || REG_RD_ADDR == AUDIO_IN_0_R));
 
@@ -626,6 +679,8 @@ assign REG_RD_DATA = (REG_RD_ADDR == LCD_BUFFER_START_ADDRESS_REG) ? {lcd_buffer
                    : (REG_RD_ADDR == ENCODER_BOARD_R2) ? ENCODERS_R2
                    : (REG_RD_ADDR == PITCH_PERIOD_FILTERED_REG) ? PITCH_PERIOD_FILTERED
                    : (REG_RD_ADDR == VOLUME_PERIOD_FILTERED_REG) ? VOLUME_PERIOD_FILTERED
+                   : (REG_RD_ADDR == AUDIO_I2C_REG) ? { 22'b0, audio_i2c_status}
+                   : (REG_RD_ADDR == TOUCH_I2C_REG) ? { 22'b0, touch_i2c_status}
                    :                                                 0;
 
 always_ff @(posedge m00_axi_aclk) begin
