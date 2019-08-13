@@ -198,7 +198,7 @@ wire CLK;
 assign RESET = ~s00_axi_aresetn;
 assign CLK = s00_axi_aclk;
 
-assign TOUCH_RESET = 'b0;
+always_comb TOUCH_RESET <= 1'b0;
 
 //============================
 // AXI3 DMA signals

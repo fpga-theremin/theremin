@@ -60,7 +60,7 @@ generate
             .IDELAY_VALUE(2 + DELAY_VALUE),
             .HIGH_PERFORMANCE_MODE("TRUE"),
             .SIGNAL_PATTERN("CLOCK"),
-            .REFCLK_FREQUENCY(200),
+            .REFCLK_FREQUENCY(196.615),
             .CINVCTRL_SEL("FALSE"),
             .PIPE_SEL("FALSE")
         ) ch1_delay_instance (

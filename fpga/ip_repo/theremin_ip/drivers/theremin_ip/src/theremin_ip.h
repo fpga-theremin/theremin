@@ -1,17 +1,13 @@
 
-#ifndef LCD_CONTROLLER_H
-#define LCD_CONTROLLER_H
+#ifndef THEREMIN_IP_H
+#define THEREMIN_IP_H
 
 
 /****************** Include Files ********************/
 #include "xil_types.h"
 #include "xstatus.h"
 
-#define LCD_CONTROLLER_S00_AXI_SLV_REG0_OFFSET 0
-#define LCD_CONTROLLER_S00_AXI_SLV_REG1_OFFSET 4
-#define LCD_CONTROLLER_S00_AXI_SLV_REG2_OFFSET 8
-#define LCD_CONTROLLER_S00_AXI_SLV_REG3_OFFSET 12
-
+#define THEREMIN_IP_S00_AXI_SLV_REG0_OFFSET 0
 
 /**************************** Type Definitions *****************************/
 /**
@@ -54,26 +50,4 @@
 #define LCD_CONTROLLER_mReadReg(BaseAddress, RegOffset) \
     Xil_In32((BaseAddress) + (RegOffset))
 
-/************************** Function Prototypes ****************************/
-/**
- *
- * Run a self-test on the driver/device. Note this may be a destructive test if
- * resets of the device are performed.
- *
- * If the hardware system is not built correctly, this function may never
- * return to the caller.
- *
- * @param   baseaddr_p is the base address of the LCD_CONTROLLER instance to be worked on.
- *
- * @return
- *
- *    - XST_SUCCESS   if all self-test code passed
- *    - XST_FAILURE   if any self-test code failed
- *
- * @note    Caching must be turned off for this function to work.
- * @note    Self test may fail if data memory and device are not on the same bus.
- *
- */
-XStatus LCD_CONTROLLER_Reg_SelfTest(void * baseaddr_p);
-
-#endif // LCD_CONTROLLER_H
+#endif // THEREMIN_IP_H

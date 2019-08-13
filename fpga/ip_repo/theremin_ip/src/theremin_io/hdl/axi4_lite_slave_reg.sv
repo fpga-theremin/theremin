@@ -93,8 +93,8 @@ module axi4_lite_slave_reg #
     input wire  S_AXI_RREADY
 );
 
-assign S_AXI_BRESP = 'b0; // write response is always OK
-assign S_AXI_RRESP = 'b0; // write response is always OK
+assign S_AXI_BRESP = 2'b0; // write response is always OK
+assign S_AXI_RRESP = 2'b0; // write response is always OK
 
 // Example-specific design signals
 // local parameter for addressing 32 bit / 64 bit C_S_AXI_DATA_WIDTH

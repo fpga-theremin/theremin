@@ -776,7 +776,7 @@
       <spirit:parameters>
         <spirit:parameter>
           <spirit:name>FREQ_HZ</spirit:name>
-          <spirit:value spirit:id="BUSIFPARAM_VALUE.CLK_SHIFT.FREQ_HZ">590000000</spirit:value>
+          <spirit:value spirit:id="BUSIFPARAM_VALUE.CLK_SHIFT.FREQ_HZ">589843750</spirit:value>
         </spirit:parameter>
       </spirit:parameters>
     </spirit:busInterface>
@@ -799,7 +799,7 @@
       <spirit:parameters>
         <spirit:parameter>
           <spirit:name>FREQ_HZ</spirit:name>
-          <spirit:value spirit:id="BUSIFPARAM_VALUE.CLK_SHIFTB.FREQ_HZ">590000000</spirit:value>
+          <spirit:value spirit:id="BUSIFPARAM_VALUE.CLK_SHIFTB.FREQ_HZ">589843750</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>PHASE</spirit:name>
@@ -827,7 +827,7 @@
       <spirit:parameters>
         <spirit:parameter>
           <spirit:name>FREQ_HZ</spirit:name>
-          <spirit:value spirit:id="BUSIFPARAM_VALUE.CLK_DELAY.FREQ_HZ">200000000</spirit:value>
+          <spirit:value spirit:id="BUSIFPARAM_VALUE.CLK_DELAY.FREQ_HZ">196614583</spirit:value>
         </spirit:parameter>
       </spirit:parameters>
     </spirit:busInterface>
@@ -851,7 +851,7 @@
       <spirit:parameters>
         <spirit:parameter>
           <spirit:name>FREQ_HZ</spirit:name>
-          <spirit:value spirit:id="BUSIFPARAM_VALUE.CLK_PXCLK.FREQ_HZ">36875000</spirit:value>
+          <spirit:value spirit:id="BUSIFPARAM_VALUE.CLK_PXCLK.FREQ_HZ">36865234</spirit:value>
         </spirit:parameter>
       </spirit:parameters>
     </spirit:busInterface>
