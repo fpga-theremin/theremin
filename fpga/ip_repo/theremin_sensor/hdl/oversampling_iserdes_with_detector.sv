@@ -77,7 +77,7 @@ oversampling_iserdes oversampling_iserdes_inst
 
 //oversampling_iserdes_detector oversampling_iserdes_detector_inst (
 
-oversampling_iserdes_bit_detector oversampling_iserdes_detector_inst (
+oversampling_iserdes_bit_detector oversampling_iserdes_bit_detector_inst (
     // 200MHz
     .CLK_PARALLEL,
 

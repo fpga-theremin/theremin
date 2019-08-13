@@ -24,7 +24,7 @@ module theremin_oversampling_iserdes_period_measure
 #(
     parameter PITCH_PERIOD_BITS = 16,
     parameter VOLUME_PERIOD_BITS = 16,
-    parameter DATA_BITS = 28,
+    parameter DATA_BITS = 32,
     parameter FILTER_SHIFT_BITS = 8
 )
 (

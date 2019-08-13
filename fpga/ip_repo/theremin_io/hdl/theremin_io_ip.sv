@@ -16,6 +16,11 @@ module theremin_io_ip #
     parameter integer HSYNC_POLARITY = 0,
     parameter integer VSYNC_POLARITY = 0,
 
+    parameter integer PITCH_PERIOD_BITS = 16,
+    parameter integer VOLUME_PERIOD_BITS = 16,
+    parameter integer FILTER_OUT_BITS = 32,
+    parameter integer FILTER_SHIFT_BITS = 8,
+
     // User parameters ends
     // Do not modify the parameters beyond this line
 
@@ -28,7 +33,7 @@ module theremin_io_ip #
     parameter integer C_M00_AXI_BURST_LEN	= 16,
     parameter integer C_M00_AXI_ID_WIDTH	= 6,
     parameter integer C_M00_AXI_ADDR_WIDTH	= 32,
-    parameter integer C_M00_AXI_DATA_WIDTH	= 64,
+    parameter integer C_M00_AXI_DATA_WIDTH	= 32,
     parameter integer C_M00_AXI_AWUSER_WIDTH	= 0,
     parameter integer C_M00_AXI_ARUSER_WIDTH	= 0,
     parameter integer C_M00_AXI_WUSER_WIDTH	= 0,
@@ -37,6 +42,12 @@ module theremin_io_ip #
 )
 (
     // Users to add ports here
+    // ~600MHz - ISERDESE2 DDR mode shift clock
+    input logic CLK_SHIFT,
+    // ~600MHz - ISERDESE2 DDR mode shift clock inverted (phase 180 relative to CLK_SHIFT) 
+    input logic CLK_SHIFTB,
+    // 200MHz input for driving IDELAYE2
+    input logic CLK_DELAY,
 
     input logic CLK_PXCLK,
 
@@ -59,6 +70,13 @@ module theremin_io_ip #
     // backlight PWM control output
     output logic BACKLIGHT_PWM,
 
+    // theremin sensor interface
+    // serial input of pitch signal
+    input logic PITCH_FREQ_IN,
+    // serial input of volume signal
+    input logic VOLUME_FREQ_IN,
+
+
     // audio interface
     // MCLK = CLK / 8 = 18.4375MHz
     output logic MCLK,
@@ -74,6 +92,13 @@ module theremin_io_ip #
     input logic I2S_DATA_IN,
     // audio interrupt request, set to 1 in the beginning of new sample cycle, reset to 0 afer ACK
     output logic AUDIO_IRQ,
+
+    // encoders board interface
+    // MUX address for multiplexing N buttons into one MUX_OUT
+    output logic [3:0] MUX_ADDR,
+    // input value from MUX (MUX_OUT <= button[MUX_ADDR])
+    input logic MUX_OUT,
+
     
     // User ports ends
     // Do not modify the ports beyond this line
@@ -162,7 +187,7 @@ module theremin_io_ip #
 
 wire RESET;
 wire CLK;
-assign RESET = s00_axi_aclk;
+assign RESET = ~s00_axi_aresetn;
 assign CLK = s00_axi_aclk;
 
 //============================
@@ -190,7 +215,7 @@ assign m00_axi_wvalid = 1'b0;
 assign m00_axi_awlen = 4'b0;     // ****** AXI3: [3:0] AXI4: [7:0]
 
 assign m00_axi_arqos= 4'b0;
-assign m00_axi_awaddr = 32'b0;
+assign m00_axi_awaddr = {C_M00_AXI_ADDR_WIDTH{1'b0}};
 assign m00_axi_awqos = 4'b0;
 
 assign m00_axi_arid = 6'b0;
@@ -198,8 +223,8 @@ assign m00_axi_awid = 6'b0;
 
 assign m00_axi_wid = 6'b0; // ****************** no WID in AXI4
 
-assign m00_axi_wdata = 64'h0;
-assign m00_axi_wstrb = 8'h0;
+assign m00_axi_wdata = 32'h0;
+assign m00_axi_wstrb = 4'h0;
 assign m00_axi_bready = 1'b0;
 
 
@@ -209,7 +234,7 @@ localparam Y_BITS = ( (VPIXELS+VBP+VSW+VFP) <= 256 ? 8
                        :                                 11 );
 
 // writeable IP register
-logic [28:0] lcd_buffer_start_address_reg;
+logic [29:0] lcd_buffer_start_address_reg;
 // writeable IP register
 logic [7:0] lcd_backlight_brightness_reg;
 // readonly IP register
@@ -354,6 +379,127 @@ theremin_audio_io theremin_audio_io_inst (
     
 );
 
+// packed state of encoders 0, 1
+// [31]    encoder1 button state
+// [30:24] encoder1 button state duration
+// [23:20] encoder1 pressed state position
+// [19:16] encoder1 normal state position
+// [15]    encoder0 button state
+// [14:8]  encoder0 button state duration
+// [7:4]   encoder0 pressed state position
+// [3:0]   encoder0 normal state position
+logic[31:0] ENCODERS_R0;
+// packed state of encoders 2, 3
+// [31]    encoder3 button state
+// [30:24] encoder3 button state duration
+// [23:20] encoder3 pressed state position
+// [19:16] encoder3 normal state position
+// [15]    encoder2 button state
+// [14:8]  encoder2 button state duration
+// [7:4]   encoder2 pressed state position
+// [3:0]   encoder2 normal state position
+logic[31:0] ENCODERS_R1;
+// packed state of encoder 4, button and last change counter
+// [31]    button state
+// [30:24] button state duration
+// [23:16] duration (in 100ms intervals) since last change of any control
+// [15]    encoder4 button state
+// [14:8]  encoder4 button state duration
+// [7:4]   encoder4 pressed state position
+// [3:0]   encoder4 normal state position
+logic[31:0] ENCODERS_R2;
+
+encoders_board encoders_board_inst (
+    .CLK,
+    .RESET,
+    
+    // for reading encoders and button signals using MUX
+    
+    // MUX address for multiplexing N buttons into one MUX_OUT
+    .MUX_ADDR,
+    // input value from MUX (MUX_OUT <= button[MUX_ADDR])
+    .MUX_OUT,
+
+    // exposing processed state as controller registers
+    
+    // packed state of encoders 0, 1
+    // [31]    encoder1 button state
+    // [30:24] encoder1 button state duration
+    // [23:20] encoder1 pressed state position
+    // [19:16] encoder1 normal state position
+    // [15]    encoder0 button state
+    // [14:8]  encoder0 button state duration
+    // [7:4]   encoder0 pressed state position
+    // [3:0]   encoder0 normal state position
+    .R0(ENCODERS_R0),
+    // packed state of encoders 2, 3
+    // [31]    encoder3 button state
+    // [30:24] encoder3 button state duration
+    // [23:20] encoder3 pressed state position
+    // [19:16] encoder3 normal state position
+    // [15]    encoder2 button state
+    // [14:8]  encoder2 button state duration
+    // [7:4]   encoder2 pressed state position
+    // [3:0]   encoder2 normal state position
+    .R1(ENCODERS_R1),
+    // packed state of encoder 4, button and last change counter
+    // [31]    button state
+    // [30:24] button state duration
+    // [23:16] duration (in 100ms intervals) since last change of any control
+    // [15]    encoder4 button state
+    // [14:8]  encoder4 button state duration
+    // [7:4]   encoder4 pressed state position
+    // [3:0]   encoder4 normal state position
+    .R2(ENCODERS_R2)
+);
+
+
+// output value for channel A (in CLK clock domain)
+logic [FILTER_OUT_BITS-1:0] PITCH_PERIOD_FILTERED;
+// output value for channel B (in CLK clock domain)
+logic [FILTER_OUT_BITS-1:0] VOLUME_PERIOD_FILTERED;
+
+theremin_oversampling_iserdes_period_measure
+#(
+    .PITCH_PERIOD_BITS(PITCH_PERIOD_BITS),
+    .VOLUME_PERIOD_BITS(VOLUME_PERIOD_BITS),
+    .DATA_BITS(FILTER_OUT_BITS),
+    .FILTER_SHIFT_BITS(FILTER_SHIFT_BITS)
+) theremin_oversampling_iserdes_period_measure_inst
+(
+    // 600MHz - ISERDESE2 DDR mode shift clock
+    .CLK_SHIFT,
+    // 600MHz - ISERDESE2 DDR mode shift clock inverted (phase 180 relative to CLK_SHIFT) 
+    .CLK_SHIFTB,
+    // 150MHz - ISERDESE2 parallel output clock - clock should be 1/4 of CLK_SHIFT, phase aligned 
+    .CLK_PARALLEL(CLK),
+
+    // 200MHz input for driving IDELAYE2
+    .CLK_DELAY,
+    
+    // main clock ~100MHz for measured value outputs
+    .CLK,
+
+    // reset, active 1, must be synchronous to CLK_SHIFT !!!
+    .RESET,
+
+    // serial input of pitch signal
+    .PITCH_FREQ_IN,
+    // serial input of volume signal
+    .VOLUME_FREQ_IN,
+    
+    // measured pitch period value - number of 1.2GHz*oversampling ticks since last change  (in CLK clock domain)
+    //output logic [PITCH_PERIOD_BITS-1:0] PITCH_PERIOD_NOFILTER,
+    // measured volume period value - number of 1.2GHz*oversampling ticks since last change (in CLK clock domain)
+    //output logic [VOLUME_PERIOD_BITS-1:0] VOLUME_PERIOD_NOFILTER,
+
+    // output value for channel A (in CLK clock domain)
+    .PITCH_PERIOD_FILTERED,
+    // output value for channel B (in CLK clock domain)
+    .VOLUME_PERIOD_FILTERED
+
+);
+
 
 logic REG_WREN;                              // write enable for control register
 logic [C_S00_AXI_DATA_WIDTH-1:0] REG_WR_DATA;  // new data for writing to control register -- in CLK_IN_BUS clock domain
@@ -459,14 +605,27 @@ typedef enum logic [3:0] {
     AUDIO_OUT_1_L,    
     AUDIO_OUT_1_R,    
     AUDIO_IN_0_L,    
-    AUDIO_IN_0_R    
+    AUDIO_IN_0_R,    
+    ENCODER_BOARD_R0,    
+    ENCODER_BOARD_R1,    
+    ENCODER_BOARD_R2,
+    PITCH_PERIOD_FILTERED_REG,    
+    VOLUME_PERIOD_FILTERED_REG    
 } reg_addr_t;
+
+assign AUDIO_IRQ_ACK = (REG_WREN && (REG_WR_ADDR == AUDIO_OUT_0_L || REG_WR_ADDR == AUDIO_OUT_0_R || REG_WR_ADDR == AUDIO_OUT_1_L || REG_WR_ADDR == AUDIO_OUT_1_R))
+                     | (REG_RDEN && (REG_RD_ADDR == AUDIO_IN_0_L || REG_RD_ADDR == AUDIO_IN_0_R));
 
 assign REG_RD_DATA = (REG_RD_ADDR == LCD_BUFFER_START_ADDRESS_REG) ? {lcd_buffer_start_address_reg, 2'b00}
                    : (REG_RD_ADDR == LCD_BACKLIGHT_BRIGHTNESS_REG) ? {24'b0, lcd_backlight_brightness_reg}
                    : (REG_RD_ADDR == LCD_ROW_INDEX) ? { {(C_S00_AXI_DATA_WIDTH-1 - Y_BITS){1'b0}}, lcd_row_index}
                    : (REG_RD_ADDR == AUDIO_IN_0_L) ? {8'b0, IN_LEFT_CHANNEL}
                    : (REG_RD_ADDR == AUDIO_IN_0_R) ? {8'b0, IN_RIGHT_CHANNEL}
+                   : (REG_RD_ADDR == ENCODER_BOARD_R0) ? ENCODERS_R0
+                   : (REG_RD_ADDR == ENCODER_BOARD_R1) ? ENCODERS_R1
+                   : (REG_RD_ADDR == ENCODER_BOARD_R2) ? ENCODERS_R2
+                   : (REG_RD_ADDR == PITCH_PERIOD_FILTERED_REG) ? PITCH_PERIOD_FILTERED
+                   : (REG_RD_ADDR == VOLUME_PERIOD_FILTERED_REG) ? VOLUME_PERIOD_FILTERED
                    :                                                 0;
 
 always_ff @(posedge m00_axi_aclk) begin

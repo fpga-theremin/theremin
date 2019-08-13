@@ -67,7 +67,7 @@ module lcd_controller_axi3_dma #(
 
     // DMA interface, in CLK clock domain
     // start address of buffer to read: after new cycle started, BUFFER_SIZE words will be read 
-    input logic [28:0] BUFFER_START_ADDRESS,
+    input logic [29:0] BUFFER_START_ADDRESS,
     
     // AXI3 reader
     // address channel
@@ -83,7 +83,7 @@ module lcd_controller_axi3_dma #(
 );
 
 // read start address for DMA burst read operation 
-logic [28:0] DMA_RD_ADDR;
+logic [29:0] DMA_RD_ADDR;
 // 1 for one CLK cycle to start new DMA burst read operation (use only if DMA_READY==1)
 logic DMA_START;
 // 1 when DMA is ready to accept new operation

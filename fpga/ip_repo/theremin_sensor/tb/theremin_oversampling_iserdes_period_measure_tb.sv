@@ -26,7 +26,7 @@ module theremin_oversampling_iserdes_period_measure_tb(
 
 localparam PITCH_PERIOD_BITS = 16;
 localparam VOLUME_PERIOD_BITS = 16;
-localparam DATA_BITS = 28;
+localparam DATA_BITS = 32;
 localparam FILTER_SHIFT_BITS = 8;
 
 // 600MHz - ISERDESE2 DDR mode shift clock

@@ -52,7 +52,7 @@ logic BACKLIGHT_PWM;
 
 // DMA interface, in CLK clock domain
 // start address of buffer to read: after new cycle started, BUFFER_SIZE words will be read 
-logic [28:0] BUFFER_START_ADDRESS;
+logic [29:0] BUFFER_START_ADDRESS;
 
 // AXI3 reader
 // address channel

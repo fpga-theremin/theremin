@@ -68,10 +68,10 @@ module lcd_controller
 
     // DMA interface, in CLK clock domain
     // start address of buffer to read: after new cycle started, BUFFER_SIZE words will be read 
-    input logic [28:0] BUFFER_START_ADDRESS,
+    input logic [29:0] BUFFER_START_ADDRESS,
     
     // read start address for DMA burst read operation 
-    output logic [28:0] DMA_RD_ADDR,
+    output logic [29:0] DMA_RD_ADDR,
     // 1 for one CLK cycle to start new DMA burst read operation (use only if DMA_READY==1)
     output logic DMA_START,
     // 1 when DMA is ready to accept new operation

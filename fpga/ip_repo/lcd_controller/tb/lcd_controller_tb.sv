@@ -47,10 +47,10 @@ logic [8:0] ROW_INDEX;
 
 // DMA interface, in CLK clock domain
 // start address of buffer to read: after new cycle started, BUFFER_SIZE words will be read 
-logic [28:0] BUFFER_START_ADDRESS;
+logic [29:0] BUFFER_START_ADDRESS;
 
 // read start address for DMA burst read operation 
-logic [28:0] DMA_RD_ADDR;
+logic [29:0] DMA_RD_ADDR;
 // 1 for one CLK cycle to start new DMA burst read operation (use only if DMA_READY==1)
 logic DMA_START;
 // 1 when DMA is ready to accept new operation
@@ -110,7 +110,7 @@ module dma_simulator
     input logic RESET,
     
     // read start address for DMA burst read operation 
-    input logic [28:0] DMA_RD_ADDR,
+    input logic [29:0] DMA_RD_ADDR,
     // 1 for one CLK cycle to start new DMA burst read operation (use only if DMA_READY==1)
     input logic DMA_START,
     // 1 when DMA is ready to accept new operation

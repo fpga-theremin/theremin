@@ -30,7 +30,7 @@ module axi3_hp_reader #(
     input logic RESET,
     
     // read start address for DMA burst read operation 
-    input logic [28:0] DMA_RD_ADDR,
+    input logic [29:0] DMA_RD_ADDR,
     // 1 for one CLK cycle to start new DMA burst read operation (use only if DMA_READY==1)
     input logic DMA_START,
     // 1 when DMA is ready to accept new operation
@@ -58,58 +58,31 @@ logic arvalid;
 logic rready;
 
 logic dma_ready;
-logic [1:0] state;
 
 always_comb m00_axi_arvalid <= arvalid;
 always_comb m00_axi_rready <= rready;
-always_comb m00_axi_araddr <= {DMA_RD_ADDR, 3'b000};
+always_comb m00_axi_araddr <= {DMA_RD_ADDR, 2'b00};
 always_comb DMA_RD_DATA <= m00_axi_rdata;
 always_comb DMA_RD_DATA_VALID <= m00_axi_rvalid;
 always_comb DMA_READY <= dma_ready;
 always_comb m00_axi_arlen <= BURST_SIZE - 1;
 
-// TODO: support burst reads
-always @(posedge CLK) begin
+always_ff @(posedge CLK) begin
     if (RESET) begin
-        state <= 2'b00;
-        dma_ready <= 1'b0;
-        arvalid <= 1'b0;
-        rready <= 1'b0;
+        dma_ready <= 'b1;
+        arvalid <= 'b0;
+        rready <= 'b0;
     end else begin
-        case (state)
-        2'b00:
-            begin
-                if (dma_ready & DMA_START) begin
-                    arvalid <= 1'b1;
-                    state <= 2'b01;
-                    dma_ready <= 1'b0;
-                end else begin
-                    dma_ready <= 1'b1;
-                end
-            end
-        2'b01:
-            begin
-                // waiting for address is accepted
-                if (m00_axi_arready) begin
-                    arvalid <= 1'b0;
-                    rready <= 1'b1;
-                    state <= 2'b10;
-                end
-            end
-        2'b10:
-            begin
-                // waiting for data is ready
-                if (m00_axi_rvalid) begin
-                    rready <= 1'b0;
-                    state <= 2'b00;
-                    dma_ready <= 1'b1;
-                end
-            end
-        2'b11:
-            begin
-                state <= 2'b00;
-            end
-        endcase
+        if (dma_ready & DMA_START) begin
+            dma_ready <= 'b0;
+            arvalid <= 'b1;
+        end else if (arvalid & m00_axi_arready) begin
+            arvalid <= 'b0;
+            rready <= 'b1;
+        end else if (m00_axi_rlast) begin
+            dma_ready <= 'b1;
+            rready <= 'b0;
+        end
     end
 end
 endmodule
