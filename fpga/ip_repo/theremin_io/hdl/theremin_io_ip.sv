@@ -58,6 +58,22 @@ module theremin_io_ip #
     
     // backlight PWM control output
     output logic BACKLIGHT_PWM,
+
+    // audio interface
+    // MCLK = CLK / 8 = 18.4375MHz
+    output logic MCLK,
+    // LRCK(WS) = MCLK / 384 = BCLK / 48 = 48014.32
+    output logic LRCK,
+    // BCLK = MCLK / 8 = LRCK * 48 = 2304687.5Hz
+    output logic BCLK,
+    // serial output for channel 0 (Line Out)
+    output logic I2S_DATA_OUT0,
+    // serial output for channel 1 (Phones Out)
+    output logic I2S_DATA_OUT1,
+    // I2S data input for Line In
+    input logic I2S_DATA_IN,
+    // audio interrupt request, set to 1 in the beginning of new sample cycle, reset to 0 afer ACK
+    output logic AUDIO_IRQ,
     
     // User ports ends
     // Do not modify the ports beyond this line
@@ -155,7 +171,7 @@ assign CLK = s00_axi_aclk;
 // read interface fixed settings
 assign m00_axi_arburst = 2'b01;     // INCR
 assign m00_axi_arsize = 3'b010;     // 4 bytes transfers
-assign m00_axi_arlen = BURST_SIZE - 1; //4'b0000;     // ****** AXI3: [3:0] AXI4: [7:0] == burst size = 1
+//assign m00_axi_arlen = BURST_SIZE - 1; //4'b0000;     // ****** AXI3: [3:0] AXI4: [7:0] == burst size = 1
 
 assign m00_axi_arcache = 4'b0011; // recommended value - normal, non-cacheable, modifable, bufferable
 assign m00_axi_arprot = 3'b0; // recommended value
@@ -265,157 +281,210 @@ lcd_controller_axi3_dma_inst
     .m00_axi_rready
 );
 
-// AXI4 Lite Slave implementation
+// when 1, audio IRQ is enabled
+logic AUDIO_INTERRUPT_EN;
+always_comb AUDIO_INTERRUPT_EN <= 1'b1;
+// audio IRQ acknowlegement
+logic AUDIO_IRQ_ACK;
 
-logic  	axi_awready;
-logic  	axi_wready;
-logic [1 : 0] 	axi_bresp;
-logic  	axi_bvalid;
-//reg [C_S_AXI_ADDR_WIDTH-1 : 0] 	axi_araddr;
-logic  	axi_arready;
-//reg [C_S_AXI_DATA_WIDTH-1 : 0] 	axi_rdata;
-logic [1 : 0] 	axi_rresp;
-logic  	axi_rvalid;
+// Audio Out Channel 0 (Line Out) data
+// left
+logic [23:0] OUT_LEFT_CHANNEL0;
+// right
+logic [23:0] OUT_RIGHT_CHANNEL0;
 
-assign s00_axi_awready = axi_awready;
-assign s00_axi_wready = axi_wready;
-assign s00_axi_bresp = axi_bresp;
-assign s00_axi_bvalid = axi_bvalid;
-assign s00_axi_arready = axi_arready;
-assign s00_axi_rresp = axi_rresp;
-assign s00_axi_rvalid = axi_rvalid;
+// Audio Out Channel 1 (Phones Out) data
+// left
+logic [23:0] OUT_LEFT_CHANNEL1;
+// right
+logic [23:0] OUT_RIGHT_CHANNEL1;
 
-localparam ADDR_WIDTH = C_S00_AXI_ADDR_WIDTH - 2;
+// Audio Input channel 0 (Line In)
+// left
+logic [23:0] IN_LEFT_CHANNEL;
+// right
+logic [23:0] IN_RIGHT_CHANNEL;
 
-logic aw_en;
-
-// awready logic
-always_ff @(posedge m00_axi_aclk) begin
-    if (~m00_axi_aresetn) begin
-      axi_awready <= 1'b0;
-      aw_en <= 1'b1;
-    end else begin
-        if (~axi_awready & s00_axi_awvalid & s00_axi_wvalid & aw_en) begin
-            // slave is ready to accept write address when 
-            // there is a valid write address and write data
-            // on the write address and data bus. This design 
-            // expects no outstanding transactions. 
-            axi_awready <= 1'b1;
-            aw_en <= 1'b0;
-        end else if (s00_axi_bready && axi_bvalid) begin
-            aw_en <= 1'b1;
-            axi_awready <= 1'b0;
-        end else begin
-            axi_awready <= 1'b0;
-        end
-    end
-end
-
-// wready logic
-always_ff @(posedge m00_axi_aclk) begin
-    if (~m00_axi_aresetn) begin
-      axi_wready <= 1'b0;
-    end else begin
-        if (~axi_wready & s00_axi_awvalid & s00_axi_wvalid & aw_en) begin
-            // slave is ready to accept write address when 
-            // there is a valid write address and write data
-            // on the write address and data bus. This design 
-            // expects no outstanding transactions. 
-            axi_wready <= 1'b1;
-            aw_en <= 1'b0;
-        end else begin
-            axi_wready <= 1'b0;
-        end
-    end
-end
-
-// bvalid, bresp
-always_ff @(posedge m00_axi_aclk) begin
-    if (~m00_axi_aresetn) begin
-        axi_bvalid  <= 0;
-        axi_bresp   <= 2'b0;
-    end else begin    
-        if (axi_awready & s00_axi_awvalid & ~axi_bvalid & axi_wready & s00_axi_wvalid) begin
-            // indicates a valid write response is available
-            axi_bvalid <= 1'b1;
-            axi_bresp  <= 2'b0; // 'OKAY' response 
-        end else begin
-            if (s00_axi_bready & axi_bvalid) begin 
-                //check if bready is asserted while bvalid is high) 
-                //(there is a possibility that bready is always asserted high)   
-                axi_bvalid <= 1'b0; 
-            end  
-        end
-    end
-end   
-
-logic [ADDR_WIDTH-1:0] slv_rdaddr;
-
-always_ff @(posedge m00_axi_aclk) begin
-    if (~m00_axi_aresetn) begin
-        axi_arready <= 'b0;
-        slv_rdaddr <= 'b0;
-    end else begin    
-        if (~axi_arready & s00_axi_arvalid) begin
-            // indicates that the slave has acceped the valid read address
-            axi_arready <= 1'b1;
-            slv_rdaddr <= m00_axi_araddr[C_S00_AXI_ADDR_WIDTH - 1:2];
-        end else begin
-            axi_arready <= 1'b0;
-        end
-    end
-end   
-
-always_ff @(posedge m00_axi_aclk) begin
-    if (~m00_axi_aresetn) begin
-        axi_rvalid <= 0;
-        axi_rresp  <= 0;
-    end else begin    
-        if (axi_arready & s00_axi_arvalid & ~axi_rvalid) begin
-            // Valid read data is available at the read data bus
-            axi_rvalid <= 1'b1;
-            axi_rresp  <= 2'b0; // 'OKAY' response
-        end else if (axi_rvalid & s00_axi_rready ) begin
-            // Read data is accepted by the master
-            axi_rvalid <= 1'b0;
-        end                
-    end
-end    
+theremin_audio_io theremin_audio_io_inst (
+    // Source clock near to 147.457MHz -> =147.500MHz from PLL
+    .CLK,
+    // Reset, active 1
+    .RESET,
+    
+    // generated audio clocks
+    
+    // MCLK = CLK / 8 = 18.4375MHz
+    .MCLK,
+    // LRCK(WS) = MCLK / 384 = BCLK / 48 = 48014.32
+    .LRCK,
+    // BCLK = MCLK / 8 = LRCK * 48 = 2304687.5Hz
+    .BCLK,
+    // serial output for channel 0 (Line Out)
+    .I2S_DATA_OUT0,
+    // serial output for channel 1 (Phones Out)
+    .I2S_DATA_OUT1,
+    // I2S data input for Line In
+    .I2S_DATA_IN,
 
 
-logic slv_rden;
-logic [C_S00_AXI_DATA_WIDTH-1:0] slv_rddata;
-always_comb slv_rden = axi_arready;
-assign s00_axi_rdata = slv_rddata;
+    // when 1, audio IRQ is enabled
+    .INTERRUPT_EN(AUDIO_INTERRUPT_EN),
+    // audio interrupt request, set to 1 in the beginning of new sample cycle, reset to 0 afer ACK
+    .IRQ(AUDIO_IRQ),
+    // audio IRQ acknowlegement
+    .ACK(AUDIO_IRQ_ACK),
 
-always_ff @(posedge m00_axi_aclk) begin
-    if (~m00_axi_aresetn) begin
-        slv_rddata <= 'b0;
-    end else begin
-        case (slv_rdaddr)
-            0: slv_rddata <= {lcd_buffer_start_address_reg, 2'b00};
-            1: slv_rddata <= {24'b0, lcd_backlight_brightness_reg};
-            default: slv_rddata <= 'b0;
-        endcase
-    end
-end
+    // Audio Out Channel 0 (Line Out) data
+    // left
+    .OUT_LEFT_CHANNEL0,
+    // right
+    .OUT_RIGHT_CHANNEL0,
+    
+    // Audio Out Channel 1 (Phones Out) data
+    // left
+    .OUT_LEFT_CHANNEL1,
+    // right
+    .OUT_RIGHT_CHANNEL1,
+
+    // Audio Input channel 0 (Line In)
+    // left
+    .IN_LEFT_CHANNEL,
+    // right
+    .IN_RIGHT_CHANNEL
+    
+);
 
 
-logic slv_wren;
-logic [ADDR_WIDTH-1:0] slv_wraddr;
-logic [C_S00_AXI_DATA_WIDTH-1:0] slv_wrdata;
-always_comb slv_wren = axi_wready & s00_axi_wvalid & axi_awready & s00_axi_awvalid;
-always_comb slv_wraddr = m00_axi_awaddr[C_S00_AXI_ADDR_WIDTH - 1:2];
-always_comb slv_wrdata = s00_axi_wdata; 
+logic REG_WREN;                              // write enable for control register
+logic [C_S00_AXI_DATA_WIDTH-1:0] REG_WR_DATA;  // new data for writing to control register -- in CLK_IN_BUS clock domain
+logic [C_S00_AXI_ADDR_WIDTH-1 - ((C_S00_AXI_DATA_WIDTH/32) + 1):0] REG_WR_ADDR;  // write address of control register
+logic REG_RDEN;                              // read enable for control register
+logic [C_S00_AXI_ADDR_WIDTH-1 - ((C_S00_AXI_DATA_WIDTH/32) + 1):0] REG_RD_ADDR;  // read address of control register
+logic [C_S00_AXI_DATA_WIDTH-1:0] REG_RD_DATA;  // read value of control register
+
+axi4_lite_slave_reg #
+(
+    // Width of S_AXI data bus
+    .C_S_AXI_DATA_WIDTH(C_S00_AXI_DATA_WIDTH),
+    // Width of S_AXI address bus
+    .C_S_AXI_ADDR_WIDTH(C_S00_AXI_ADDR_WIDTH)
+)
+axi4_lite_slave_reg_impl
+(
+    // Users to add ports here
+    
+    // interface access peripherial registers
+    .REG_WREN,                              // write enable for control register
+    .REG_WR_DATA,  // new data for writing to control register -- in CLK_IN_BUS clock domain
+    .REG_WR_ADDR,  // write address of control register
+    .REG_RDEN,                              // read enable for control register
+    .REG_RD_ADDR,  // read address of control register
+    .REG_RD_DATA,  // read value of control register
+    
+    // User ports ends
+    // Do not modify the ports beyond this line
+
+    // Global Clock Signal
+    .S_AXI_ACLK(s00_axi_aclk),
+    // Global Reset Signal. This Signal is Active LOW
+    .S_AXI_ARESETN(s00_axi_aresetn),
+    
+    // WRITE
+    // Write address (issued by master, acceped by Slave)
+    .S_AXI_AWADDR(s00_axi_awaddr),
+    // Write channel Protection type. This signal indicates the
+        // privilege and security level of the transaction, and whether
+        // the transaction is a data access or an instruction access.
+    .S_AXI_AWPROT(s00_axi_awprot),
+    // Write address valid. This signal indicates that the master signaling
+        // valid write address and control information.
+    .S_AXI_AWVALID(s00_axi_awvalid),
+    // Write address ready. This signal indicates that the slave is ready
+        // to accept an address and associated control signals.
+    .S_AXI_AWREADY(s00_axi_awready),
+    // Write data (issued by master, acceped by Slave) 
+    .S_AXI_WDATA(s00_axi_wdata),
+    // Write strobes. This signal indicates which byte lanes hold
+        // valid data. There is one write strobe bit for each eight
+        // bits of the write data bus.    
+    .S_AXI_WSTRB(s00_axi_wstrb),
+    // Write valid. This signal indicates that valid write
+        // data and strobes are available.
+    .S_AXI_WVALID(s00_axi_wvalid),
+    // Write ready. This signal indicates that the slave
+        // can accept the write data.
+    .S_AXI_WREADY(s00_axi_wready),
+    // Write response. This signal indicates the status
+        // of the write transaction.
+    .S_AXI_BRESP(s00_axi_bresp),
+    // Write response valid. This signal indicates that the channel
+        // is signaling a valid write response.
+    .S_AXI_BVALID(s00_axi_bvalid),
+    // Response ready. This signal indicates that the master
+        // can accept a write response.
+    .S_AXI_BREADY(s00_axi_bready),
+
+    // READ
+    // Read address (issued by master, acceped by Slave)
+    .S_AXI_ARADDR(s00_axi_araddr),
+    // Protection type. This signal indicates the privilege
+        // and security level of the transaction, and whether the
+        // transaction is a data access or an instruction access.
+    .S_AXI_ARPROT(s00_axi_arprot),
+    // Read address valid. This signal indicates that the channel
+        // is signaling valid read address and control information.
+    .S_AXI_ARVALID(s00_axi_arvalid),
+    // Read address ready. This signal indicates that the slave is
+        // ready to accept an address and associated control signals.
+    .S_AXI_ARREADY(s00_axi_arready),
+    // Read data (issued by slave)
+    .S_AXI_RDATA(s00_axi_rdata),
+    // Read response. This signal indicates the status of the
+        // read transfer.
+    .S_AXI_RRESP(s00_axi_rresp),
+    // Read valid. This signal indicates that the channel is
+        // signaling the required read data.
+    .S_AXI_RVALID(s00_axi_rvalid),
+    // Read ready. This signal indicates that the master can
+        // accept the read data and response information.
+    .S_AXI_RREADY(s00_axi_rready)
+);
+
+typedef enum logic [3:0] {
+    LCD_BUFFER_START_ADDRESS_REG = 0,     
+    LCD_BACKLIGHT_BRIGHTNESS_REG,
+    LCD_ROW_INDEX,
+    AUDIO_OUT_0_L,    
+    AUDIO_OUT_0_R,    
+    AUDIO_OUT_1_L,    
+    AUDIO_OUT_1_R,    
+    AUDIO_IN_0_L,    
+    AUDIO_IN_0_R    
+} reg_addr_t;
+
+assign REG_RD_DATA = (REG_RD_ADDR == LCD_BUFFER_START_ADDRESS_REG) ? {lcd_buffer_start_address_reg, 2'b00}
+                   : (REG_RD_ADDR == LCD_BACKLIGHT_BRIGHTNESS_REG) ? {24'b0, lcd_backlight_brightness_reg}
+                   : (REG_RD_ADDR == LCD_ROW_INDEX) ? { {(C_S00_AXI_DATA_WIDTH-1 - Y_BITS){1'b0}}, lcd_row_index}
+                   : (REG_RD_ADDR == AUDIO_IN_0_L) ? {8'b0, IN_LEFT_CHANNEL}
+                   : (REG_RD_ADDR == AUDIO_IN_0_R) ? {8'b0, IN_RIGHT_CHANNEL}
+                   :                                                 0;
 
 always_ff @(posedge m00_axi_aclk) begin
     if (~m00_axi_aresetn) begin
         lcd_buffer_start_address_reg <= 'b0;
         lcd_backlight_brightness_reg <= 'b0;
-    end else begin
-        case (slv_wraddr)
-            0: lcd_buffer_start_address_reg <= slv_wrdata[C_S00_AXI_DATA_WIDTH-1:2];
-            1: lcd_backlight_brightness_reg <= slv_wrdata[7:0];
+        OUT_LEFT_CHANNEL0 <= 'b0;
+        OUT_RIGHT_CHANNEL0 <= 'b0;
+        OUT_LEFT_CHANNEL1 <= 'b0;
+        OUT_RIGHT_CHANNEL1 <= 'b0;
+    end else if (REG_WREN) begin
+        case (REG_WR_ADDR)
+            LCD_BUFFER_START_ADDRESS_REG: lcd_buffer_start_address_reg <= REG_WR_DATA[C_S00_AXI_DATA_WIDTH-1:2];
+            LCD_BACKLIGHT_BRIGHTNESS_REG: lcd_backlight_brightness_reg <= REG_WR_DATA[7:0];
+            AUDIO_OUT_0_L: OUT_LEFT_CHANNEL0 <= REG_WR_DATA[23:0];
+            AUDIO_OUT_0_R: OUT_RIGHT_CHANNEL0 <= REG_WR_DATA[23:0];
+            AUDIO_OUT_1_L: OUT_LEFT_CHANNEL1 <= REG_WR_DATA[23:0];
+            AUDIO_OUT_1_R: OUT_RIGHT_CHANNEL1 <= REG_WR_DATA[23:0];
         endcase
     end
 end
