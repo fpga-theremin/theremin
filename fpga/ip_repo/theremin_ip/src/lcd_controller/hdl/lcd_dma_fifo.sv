@@ -218,7 +218,7 @@ FIFO18E1_inst (
   // Read Control Signals: 1-bit (each) input: Read clock, enable and reset input signals
   .RDCLK(CLK_PXCLK),               // 1-bit input: Read clock
   .RDEN(fifo_rden),                // 1-bit input: Read enable
-  .REGCE(1'b0),                    // 1-bit input: Clock enable
+  .REGCE(1'b1),                    // 1-bit input: Clock enable
   .RST(RESET),                     // 1-bit input: Asynchronous Reset
   .RSTREG(RESET),                  // 1-bit input: Output register set/reset
   // Write Control Signals: 1-bit (each) input: Write clock and enable input signals
