@@ -218,9 +218,9 @@ FIFO18E1_inst (
   // Read Control Signals: 1-bit (each) input: Read clock, enable and reset input signals
   .RDCLK(CLK_PXCLK),               // 1-bit input: Read clock
   .RDEN(fifo_rden),                // 1-bit input: Read enable
-  .REGCE(1'b1),                    // 1-bit input: Clock enable
+  .REGCE(),                        // 1-bit input: Clock enable  1'b1 Output register clock enable. Only used when EN_SYNC = TRUE and DO_REG = 1. RSTREG has priority over REGCE.
   .RST(RESET),                     // 1-bit input: Asynchronous Reset
-  .RSTREG(RESET),                  // 1-bit input: Output register set/reset
+  .RSTREG(),                       // 1-bit input: Output register set/reset (RESET) Output register synchronous set/reset. Only used when EN_SYNC = TRUE and DO_REG = 1. RSTREG_PRIORITY is always set to RSTREG.
   // Write Control Signals: 1-bit (each) input: Write clock and enable input signals
   .WRCLK(CLK),                     // 1-bit input: Write clock
   .WREN(fifo_wren),                // 1-bit input: Write enable

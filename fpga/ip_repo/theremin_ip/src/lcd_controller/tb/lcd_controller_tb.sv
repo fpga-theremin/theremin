@@ -102,7 +102,7 @@ always begin
 end
 
 
-module dma_simulator
+module dma_simulator_lcd
 (
     // DMA and FIFO input clock
     input logic CLK,
@@ -147,7 +147,7 @@ end
 
 endmodule
 
-dma_simulator dma_simulator_inst (.*);
+dma_simulator_lcd dma_simulator_inst (.*);
 
 
 endmodule
