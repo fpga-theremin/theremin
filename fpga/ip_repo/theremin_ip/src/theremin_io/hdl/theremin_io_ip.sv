@@ -1,3 +1,11 @@
+
+/*
+    PWM_REG[31:20] led1 r,g,b
+    PWM_REG[19:8] led0 r,g,b
+    PWM_REG[7:0] LCD backlight brightness
+*/
+
+
 module theremin_io_ip #
 (
     // Users to add parameters here
@@ -69,6 +77,7 @@ module theremin_io_ip #
     
     // backlight PWM control output
     output logic BACKLIGHT_PWM,
+
 
     inout TOUCH_I2C_DATA,
     inout TOUCH_I2C_CLK,        // 400KHz
@@ -253,6 +262,11 @@ localparam Y_BITS = ( (VPIXELS+VBP+VSW+VFP) <= 256 ? 8
 logic [29:0] lcd_buffer_start_address_reg;
 // writeable IP register
 logic [7:0] lcd_backlight_brightness_reg;
+// color of LED0 (4 bits per R, G, B)    
+logic [11:0] rbg_led_color0_reg;
+// color of LED0 (4 bits per R, G, B)    
+logic [11:0] rbg_led_color1_reg;
+
 // readonly IP register
 logic [Y_BITS-1:0] lcd_row_index;
 
@@ -298,6 +312,16 @@ lcd_controller_axi3_dma_inst
     
     // current Y position (row index); rows 0..VPIXELS-1 are visible, in CLK_PXCLK domain
     .ROW_INDEX(lcd_row_index),
+    
+    // color of LED0 (4 bits per R, G, B)    
+    .RGB_LED_COLOR0(rbg_led_color0_reg),
+    // color of LED0 (4 bits per R, G, B)    
+    .RGB_LED_COLOR1(rbg_led_color0_reg),
+    
+    // color led0 control output {r,g,b}
+    .LED0_PWM,
+    // color led1 control output {r,g,b}
+    .LED1_PWM,
     
     // backlight brightness setting, 0=dark, 255=light
     .BACKLIGHT_BRIGHTNESS(lcd_backlight_brightness_reg),
@@ -516,25 +540,51 @@ theremin_oversampling_iserdes_period_measure
 
 );
 
+/*
+   offset  name                          read                         write
+   0:     REG_STATUS                     [31] audio irq enabled       [31] audio irq enabled
+                                         [30] audio irq 1=pending     [30] audio irq ack write 0 to ack
+                                         [29:10] reserved             [29:10] reserved
+                                         [9:0] current screen y       [9:0] reserved
+   1:     REG_LCD_FRAMEBUFFER_ADDR       [31:0] PITCH_PERIOD          [31:0] lcd framebuffer start address (0=disabled)
+   2:     REG_PWM                        [31:0] VOLUME_PERIOD         [31:20] led1 color
+                                                                      [19:8] led0 color
+                                                                      [7:0] LCD backlight brightness
+   3:     REG_ENCODER_0                  [31:0] encoder 0             [31:0] reserved                                                                   
+   4:     REG_LINE_OUT_L/LINE_IN_L       [23:0] line in L             [23:0] line out L                                                                      
+   5:     REG_LINE_OUT_R/LINE_IN_R       [23:0] line in R             [23:0] line out R                                                                      
+   6:     REG_PHONES_OUT_L               [31:0] encoder 1             [23:0] phones out L                                                                      
+   7:     REG_PHONES_OUT_R               [31:0] encoder 2             [23:0] phones out R
+                                                                         
+   8:     REG_TOUCH_I2C                  [31:0] I2C touch             [31:0] I2C touch                                                                      
+   9:     REG_AUDIO_I2C                  [31:0] I2C audio             [31:0] I2C audio                                                                      
+
+*/
 
 typedef enum logic [3:0] {
-    LCD_BUFFER_START_ADDRESS_REG = 0,  // r/w framebuffer start address     
-    LCD_BACKLIGHT_BRIGHTNESS_REG,      // r/w backlight brightness
-    LCD_ROW_INDEX,                     // r/o current row index
-    ENCODER_BOARD_R0,                  // r/o encoders R0    
-    ENCODER_BOARD_R1,                  // r/o encoders R1    
-    ENCODER_BOARD_R2,                  // r/o encoders R2
-    PITCH_PERIOD_FILTERED_REG,    
-    VOLUME_PERIOD_FILTERED_REG,
-    AUDIO_I2C_REG,
-    TOUCH_I2C_REG,    
-    AUDIO_IN_0_L,    
-    AUDIO_IN_0_R,   
-    AUDIO_OUT_0_L,    
-    AUDIO_OUT_0_R,    
-    AUDIO_OUT_1_L,    
-    AUDIO_OUT_1_R    
-} reg_addr_t;
+    RD_REG_STATUS = 0,
+    RD_REG_PITCH_PERIOD = 1,
+    RD_REG_VOLUME_PERIOD = 2,
+    RD_REG_ENCODER_0 = 3,
+    RD_REG_LINE_IN_L = 4,
+    RD_REG_LINE_IN_R = 5,
+    RD_REG_ENCODER_1 = 6,
+    RD_REG_ENCODER_2 = 7,
+    RD_REG_AUDIO_I2C = 8,
+    RD_REG_TOUCH_I2C = 9    
+} reg_rd_addr_t;
+
+typedef enum logic [3:0] {
+    WR_REG_STATUS = 0,
+    WR_REG_LCD_FRAMEBUFFER_ADDR = 1,
+    WR_REG_PWM = 2,
+    WR_REG_LINE_OUT_L = 4,
+    WR_REG_LINE_OUT_R = 5,
+    WR_REG_PHONES_OUT_L = 6,
+    WR_REG_PHONES_OUT_R = 7,
+    WR_REG_AUDIO_I2C = 8,
+    WR_REG_TOUCH_I2C = 9    
+} reg_wr_addr_t;
 
 
 logic REG_WREN;                              // write enable for control register
@@ -547,7 +597,7 @@ logic [C_S00_AXI_DATA_WIDTH-1:0] REG_RD_DATA;  // read value of control register
 
 
 logic audio_i2c_start;
-always_comb audio_i2c_start <= REG_WREN & (REG_WR_ADDR == AUDIO_I2C_REG); 
+always_comb audio_i2c_start <= REG_WREN & (REG_WR_ADDR == WR_REG_AUDIO_I2C); 
 logic [9:0] audio_i2c_status;
 
 theremin_i2c theremin_i2c_audio_inst (
@@ -565,7 +615,7 @@ theremin_i2c theremin_i2c_audio_inst (
 );
 
 logic touch_i2c_start;
-always_comb touch_i2c_start <= REG_WREN & (REG_WR_ADDR == TOUCH_I2C_REG); 
+always_comb touch_i2c_start <= REG_WREN & (REG_WR_ADDR == WR_REG_TOUCH_I2C); 
 logic [10:0] touch_i2c_status;
 assign touch_i2c_status[10] = TOUCH_INTERRUPT;
 
@@ -583,12 +633,18 @@ theremin_i2c theremin_i2c_touch_inst (
     .I2C_CLK(TOUCH_I2C_CLK)        // 400KHz
 );
 
-always_comb led0_r <= s00_axi_arvalid;
-always_comb led0_g <= s00_axi_bready;
-always_comb led0_b <= s00_axi_bvalid;
-always_comb led1_r <= s00_axi_rvalid;
-always_comb led1_g <= s00_axi_rready;
-always_comb led1_b <= s00_axi_arready;
+
+// color led0 control output {r,g,b}
+logic [2:0] LED0_PWM;
+// color led1 control output {r,g,b}
+logic [2:0] LED1_PWM;
+
+always_comb led0_r <= LED0_PWM[2];
+always_comb led0_g <= LED0_PWM[1];
+always_comb led0_b <= LED0_PWM[0];
+always_comb led1_r <= LED1_PWM[2];
+always_comb led1_g <= LED1_PWM[1];
+always_comb led1_b <= LED0_PWM[0];
 
 axi4_lite_slave_reg #
 (
@@ -678,39 +734,50 @@ axi4_lite_slave_reg_impl
     .S_AXI_RREADY(s00_axi_rready)
 );
 
-assign AUDIO_IRQ_ACK = (REG_WREN && (REG_WR_ADDR == AUDIO_OUT_0_L || REG_WR_ADDR == AUDIO_OUT_0_R || REG_WR_ADDR == AUDIO_OUT_1_L || REG_WR_ADDR == AUDIO_OUT_1_R))
-                     | (REG_RDEN && (REG_RD_ADDR == AUDIO_IN_0_L || REG_RD_ADDR == AUDIO_IN_0_R));
+logic audio_irq_enabled;
+logic [31:0] status_reg;
+always_comb status_reg[31] <= audio_irq_enabled; // audio irq enabled
+always_comb status_reg[30] <= AUDIO_IRQ;         // audio irq pending
+always_comb status_reg[29:10] <= 'b0;
+always_comb status_reg[9:0] <= {{(10 - Y_BITS){1'b0}}, lcd_row_index};
+assign AUDIO_IRQ_ACK = (REG_WREN & (REG_WR_ADDR == RD_REG_STATUS) & ~REG_WR_DATA[30]);
 
-assign REG_RD_DATA = (REG_RD_ADDR == LCD_BUFFER_START_ADDRESS_REG) ? {lcd_buffer_start_address_reg, 2'b00}
-                   : (REG_RD_ADDR == LCD_BACKLIGHT_BRIGHTNESS_REG) ? {24'b0, lcd_backlight_brightness_reg}
-                   : (REG_RD_ADDR == LCD_ROW_INDEX) ? { lcd_pixel_data, {(16 - Y_BITS){1'b0}}, lcd_row_index}
-                   : (REG_RD_ADDR == AUDIO_IN_0_L) ? {8'b0, IN_LEFT_CHANNEL}
-                   : (REG_RD_ADDR == AUDIO_IN_0_R) ? {8'b0, IN_RIGHT_CHANNEL}
-                   : (REG_RD_ADDR == ENCODER_BOARD_R0) ? ENCODERS_R0
-                   : (REG_RD_ADDR == ENCODER_BOARD_R1) ? ENCODERS_R1
-                   : (REG_RD_ADDR == ENCODER_BOARD_R2) ? ENCODERS_R2
-                   : (REG_RD_ADDR == PITCH_PERIOD_FILTERED_REG) ? PITCH_PERIOD_FILTERED
-                   : (REG_RD_ADDR == VOLUME_PERIOD_FILTERED_REG) ? VOLUME_PERIOD_FILTERED
-                   : (REG_RD_ADDR == AUDIO_I2C_REG) ? { 22'b0, audio_i2c_status}
-                   : (REG_RD_ADDR == TOUCH_I2C_REG) ? { 22'b0, touch_i2c_status}
+assign REG_RD_DATA = (REG_RD_ADDR == RD_REG_STATUS) ? status_reg
+                   : (REG_RD_ADDR == RD_REG_PITCH_PERIOD) ? PITCH_PERIOD_FILTERED
+                   : (REG_RD_ADDR == RD_REG_VOLUME_PERIOD) ? VOLUME_PERIOD_FILTERED
+                   : (REG_RD_ADDR == RD_REG_ENCODER_0) ? ENCODERS_R0
+                   : (REG_RD_ADDR == RD_REG_LINE_IN_L) ? {IN_LEFT_CHANNEL[23], IN_LEFT_CHANNEL}
+                   : (REG_RD_ADDR == RD_REG_LINE_IN_R) ? {IN_RIGHT_CHANNEL[23], IN_RIGHT_CHANNEL}
+                   : (REG_RD_ADDR == RD_REG_ENCODER_1) ? ENCODERS_R1
+                   : (REG_RD_ADDR == RD_REG_ENCODER_2) ? ENCODERS_R2
+                   : (REG_RD_ADDR == RD_REG_AUDIO_I2C) ? { 22'b0, audio_i2c_status}
+                   : (REG_RD_ADDR == RD_REG_TOUCH_I2C) ? { 22'b0, touch_i2c_status}
                    :                                                 0;
 
 always_ff @(posedge m00_axi_aclk) begin
     if (~m00_axi_aresetn) begin
+        audio_irq_enabled <= 'b0;
         lcd_buffer_start_address_reg <= 'b0;
-        lcd_backlight_brightness_reg <= 'b0;
+        lcd_backlight_brightness_reg <= 8'b11111111;
+        rbg_led_color0_reg <= 'b0;
+        rbg_led_color1_reg <= 'b0;
         OUT_LEFT_CHANNEL0 <= 'b0;
         OUT_RIGHT_CHANNEL0 <= 'b0;
         OUT_LEFT_CHANNEL1 <= 'b0;
         OUT_RIGHT_CHANNEL1 <= 'b0;
     end else if (REG_WREN) begin
         case (REG_WR_ADDR)
-            LCD_BUFFER_START_ADDRESS_REG: lcd_buffer_start_address_reg <= REG_WR_DATA[C_S00_AXI_DATA_WIDTH-1:2];
-            LCD_BACKLIGHT_BRIGHTNESS_REG: lcd_backlight_brightness_reg <= REG_WR_DATA[7:0];
-            AUDIO_OUT_0_L: OUT_LEFT_CHANNEL0 <= REG_WR_DATA[23:0];
-            AUDIO_OUT_0_R: OUT_RIGHT_CHANNEL0 <= REG_WR_DATA[23:0];
-            AUDIO_OUT_1_L: OUT_LEFT_CHANNEL1 <= REG_WR_DATA[23:0];
-            AUDIO_OUT_1_R: OUT_RIGHT_CHANNEL1 <= REG_WR_DATA[23:0];
+            WR_REG_STATUS: audio_irq_enabled <= REG_WR_DATA[31];
+            WR_REG_LCD_FRAMEBUFFER_ADDR: lcd_buffer_start_address_reg <= REG_WR_DATA[C_S00_AXI_DATA_WIDTH-1:2];
+            WR_REG_PWM: begin
+                    lcd_backlight_brightness_reg <= REG_WR_DATA[7:0];
+                    rbg_led_color0_reg <= REG_WR_DATA[19:8];
+                    rbg_led_color1_reg <= REG_WR_DATA[31:20];
+                end
+            WR_REG_LINE_OUT_L: OUT_LEFT_CHANNEL0 <= REG_WR_DATA[23:0];
+            WR_REG_LINE_OUT_R: OUT_RIGHT_CHANNEL0 <= REG_WR_DATA[23:0];
+            WR_REG_PHONES_OUT_L: OUT_LEFT_CHANNEL1 <= REG_WR_DATA[23:0];
+            WR_REG_PHONES_OUT_R: AUDIO_OUT_1_R: OUT_RIGHT_CHANNEL1 <= REG_WR_DATA[23:0];
         endcase
     end
 end
