@@ -123,7 +123,7 @@ begin
         reg_wren <= 'b0;
         axi_bvalid <= 'b0;
     end else begin
-        if (write_transaction_starting) begin
+        if (write_transaction_starting & ~write_transaction_started) begin
             write_transaction_started <= 1'b1;
             reg_wren <= 'b1;
         end else begin
@@ -151,7 +151,7 @@ assign S_AXI_RDATA = rd_data;
 assign S_AXI_ARREADY = reg_rden;
 assign S_AXI_RVALID = axi_rvalid;
 
-always_comb read_transaction_starting <= S_AXI_ARVALID & ~read_transaction_started & ~write_transaction_starting & ~write_transaction_started;
+always_comb read_transaction_starting <= S_AXI_ARVALID & ~read_transaction_started; // & ~write_transaction_starting & ~write_transaction_started;
 always_ff @(posedge  S_AXI_ACLK )
 begin
     if ( ~S_AXI_ARESETN ) begin
@@ -161,7 +161,7 @@ begin
         axi_rvalid <= 'b0;
         rd_data <= 'b0;
     end else begin
-        if (read_transaction_starting) begin
+        if (read_transaction_starting & ~read_transaction_started) begin
             read_transaction_started <= 1'b1;
             reg_rden <= 'b1;
             read_address_reg <= S_AXI_ARADDR[C_S_AXI_ADDR_WIDTH-1 : ADDR_LSB];
@@ -170,7 +170,7 @@ begin
             if (read_transaction_started & S_AXI_RREADY) begin
                 axi_rvalid <= 1'b1;
                 rd_data <= REG_RD_DATA;
-            end else if (write_transaction_started & axi_rvalid) begin
+            end else if (read_transaction_started & axi_rvalid) begin
                 read_transaction_started <= 'b0;
                 axi_rvalid <= 1'b0;
             end

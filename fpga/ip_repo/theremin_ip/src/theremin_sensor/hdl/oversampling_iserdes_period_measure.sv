@@ -53,7 +53,7 @@ module oversampling_iserdes_period_measure
 );
 
 logic freq_in_buffered;
-BUFG ibuf_inst (
+IBUF ibuf_inst (
     .I(FREQ_IN),
     .O(freq_in_buffered)
 );

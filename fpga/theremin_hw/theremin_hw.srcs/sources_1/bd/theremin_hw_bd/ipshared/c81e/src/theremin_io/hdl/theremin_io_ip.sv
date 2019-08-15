@@ -683,7 +683,7 @@ assign AUDIO_IRQ_ACK = (REG_WREN && (REG_WR_ADDR == AUDIO_OUT_0_L || REG_WR_ADDR
 
 assign REG_RD_DATA = (REG_RD_ADDR == LCD_BUFFER_START_ADDRESS_REG) ? {lcd_buffer_start_address_reg, 2'b00}
                    : (REG_RD_ADDR == LCD_BACKLIGHT_BRIGHTNESS_REG) ? {24'b0, lcd_backlight_brightness_reg}
-                   : (REG_RD_ADDR == LCD_ROW_INDEX) ? { {(C_S00_AXI_DATA_WIDTH-1 - Y_BITS){1'b0}}, lcd_row_index}
+                   : (REG_RD_ADDR == LCD_ROW_INDEX) ? { lcd_pixel_data, {(16 - Y_BITS){1'b0}}, lcd_row_index}
                    : (REG_RD_ADDR == AUDIO_IN_0_L) ? {8'b0, IN_LEFT_CHANNEL}
                    : (REG_RD_ADDR == AUDIO_IN_0_R) ? {8'b0, IN_RIGHT_CHANNEL}
                    : (REG_RD_ADDR == ENCODER_BOARD_R0) ? ENCODERS_R0
