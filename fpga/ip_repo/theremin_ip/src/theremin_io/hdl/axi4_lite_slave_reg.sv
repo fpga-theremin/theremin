@@ -3,19 +3,12 @@
 
 module axi4_lite_slave_reg #
 (
-    // Users to add parameters here
-
-    // User parameters ends
-    // Do not modify the parameters beyond this line
-
     // Width of S_AXI data bus
     parameter integer C_S_AXI_DATA_WIDTH	= 32,
     // Width of S_AXI address bus
     parameter integer C_S_AXI_ADDR_WIDTH	= 6
 )
 (
-    // Users to add ports here
-    
     // interface access peripherial registers
     output logic REG_WREN,                              // write enable for control register
     output logic [C_S_AXI_DATA_WIDTH-1:0] REG_WR_DATA,  // new data for writing to control register -- in CLK_IN_BUS clock domain
@@ -24,73 +17,72 @@ module axi4_lite_slave_reg #
     output logic [C_S_AXI_ADDR_WIDTH-1 - ((C_S_AXI_DATA_WIDTH/32) + 1):0] REG_RD_ADDR,  // read address of control register
     input  logic [C_S_AXI_DATA_WIDTH-1:0] REG_RD_DATA,  // read value of control register
     
-    // User ports ends
-    // Do not modify the ports beyond this line
-
     // Global Clock Signal
-    input wire  S_AXI_ACLK,
+    input logic  S_AXI_ACLK,
     // Global Reset Signal. This Signal is Active LOW
-    input wire  S_AXI_ARESETN,
+    input logic  S_AXI_ARESETN,
     
     // WRITE
     // Write address (issued by master, acceped by Slave)
-    input wire [C_S_AXI_ADDR_WIDTH-1 : 0] S_AXI_AWADDR,
+    input logic [C_S_AXI_ADDR_WIDTH-1 : 0] S_AXI_AWADDR,
     // Write channel Protection type. This signal indicates the
         // privilege and security level of the transaction, and whether
         // the transaction is a data access or an instruction access.
-    input wire [2 : 0] S_AXI_AWPROT,
+    input logic [2 : 0] S_AXI_AWPROT,
     // Write address valid. This signal indicates that the master signaling
         // valid write address and control information.
-    input wire  S_AXI_AWVALID,
+    input logic  S_AXI_AWVALID,
     // Write address ready. This signal indicates that the slave is ready
         // to accept an address and associated control signals.
-    output wire  S_AXI_AWREADY,
+    output logic  S_AXI_AWREADY,
     // Write data (issued by master, acceped by Slave) 
-    input wire [C_S_AXI_DATA_WIDTH-1 : 0] S_AXI_WDATA,
+    input logic [C_S_AXI_DATA_WIDTH-1 : 0] S_AXI_WDATA,
     // Write strobes. This signal indicates which byte lanes hold
         // valid data. There is one write strobe bit for each eight
         // bits of the write data bus.    
-    input wire [(C_S_AXI_DATA_WIDTH/8)-1 : 0] S_AXI_WSTRB,
+    input logic [(C_S_AXI_DATA_WIDTH/8)-1 : 0] S_AXI_WSTRB,
     // Write valid. This signal indicates that valid write
         // data and strobes are available.
-    input wire  S_AXI_WVALID,
+    input logic  S_AXI_WVALID,
     // Write ready. This signal indicates that the slave
         // can accept the write data.
-    output wire  S_AXI_WREADY,
+    output logic  S_AXI_WREADY,
     // Write response. This signal indicates the status
         // of the write transaction.
-    output wire [1 : 0] S_AXI_BRESP,
+    output logic [1 : 0] S_AXI_BRESP,
     // Write response valid. This signal indicates that the channel
         // is signaling a valid write response.
-    output wire  S_AXI_BVALID,
+    output logic  S_AXI_BVALID,
     // Response ready. This signal indicates that the master
         // can accept a write response.
-    input wire  S_AXI_BREADY,
+    input logic  S_AXI_BREADY,
 
     // READ
     // Read address (issued by master, acceped by Slave)
-    input wire [C_S_AXI_ADDR_WIDTH-1 : 0] S_AXI_ARADDR,
+    input logic [C_S_AXI_ADDR_WIDTH-1 : 0] S_AXI_ARADDR,
     // Protection type. This signal indicates the privilege
         // and security level of the transaction, and whether the
         // transaction is a data access or an instruction access.
-    input wire [2 : 0] S_AXI_ARPROT,
+    input logic [2 : 0] S_AXI_ARPROT,
     // Read address valid. This signal indicates that the channel
         // is signaling valid read address and control information.
-    input wire  S_AXI_ARVALID,
+    input logic  S_AXI_ARVALID,
     // Read address ready. This signal indicates that the slave is
         // ready to accept an address and associated control signals.
-    output wire  S_AXI_ARREADY,
+    output logic  S_AXI_ARREADY,
     // Read data (issued by slave)
-    output wire [C_S_AXI_DATA_WIDTH-1 : 0] S_AXI_RDATA,
+    output logic [C_S_AXI_DATA_WIDTH-1 : 0] S_AXI_RDATA,
     // Read response. This signal indicates the status of the
         // read transfer.
-    output wire [1 : 0] S_AXI_RRESP,
+    output logic [1 : 0] S_AXI_RRESP,
     // Read valid. This signal indicates that the channel is
         // signaling the required read data.
-    output wire  S_AXI_RVALID,
+    output logic  S_AXI_RVALID,
     // Read ready. This signal indicates that the master can
         // accept the read data and response information.
-    input wire  S_AXI_RREADY
+    input logic  S_AXI_RREADY
+    
+//    , output logic debug_read_transaction_started
 );
 
 assign S_AXI_BRESP = 2'b0; // write response is always OK
@@ -126,14 +118,14 @@ begin
         if (write_transaction_starting & ~write_transaction_started) begin
             write_transaction_started <= 1'b1;
             reg_wren <= 'b1;
-        end else begin
+        end else if (write_transaction_started) begin
             reg_wren <= 'b0;
-            if (write_transaction_started & S_AXI_BREADY) begin
-                axi_bvalid <= 1'b1;
-            end else if (write_transaction_started & axi_bvalid) begin
+            if (axi_bvalid) begin
                 write_transaction_started <= 'b0;
                 axi_bvalid <= 1'b0;
-            end
+            end else if (S_AXI_BREADY) begin
+                axi_bvalid <= 1'b1;
+            end 
         end
     end
 end
@@ -148,7 +140,7 @@ logic axi_rvalid;
 assign REG_RDEN = reg_rden;
 assign REG_RD_ADDR = read_address_reg;
 assign S_AXI_RDATA = rd_data;
-assign S_AXI_ARREADY = reg_rden;
+assign S_AXI_ARREADY = ~read_transaction_started;
 assign S_AXI_RVALID = axi_rvalid;
 
 always_comb read_transaction_starting <= S_AXI_ARVALID & ~read_transaction_started; // & ~write_transaction_starting & ~write_transaction_started;
@@ -165,21 +157,19 @@ begin
             read_transaction_started <= 1'b1;
             reg_rden <= 'b1;
             read_address_reg <= S_AXI_ARADDR[C_S_AXI_ADDR_WIDTH-1 : ADDR_LSB];
-        end else begin
+        end else if (read_transaction_started) begin
             reg_rden <= 'b0;
-            if (read_transaction_started & S_AXI_RREADY) begin
-                axi_rvalid <= 1'b1;
-                rd_data <= REG_RD_DATA;
-            end else if (read_transaction_started & axi_rvalid) begin
+            if (axi_rvalid) begin
                 read_transaction_started <= 'b0;
                 axi_rvalid <= 1'b0;
+            end else if (S_AXI_RREADY) begin
+                axi_rvalid <= 1'b1;
+                rd_data <= REG_RD_DATA;
             end
         end
     end
 end
 
-// Add user logic here
-
-// User logic ends
+//always_comb debug_read_transaction_started <= read_transaction_started;
 
 endmodule
