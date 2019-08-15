@@ -1,7 +1,7 @@
 //Copyright 1986-2019 Xilinx, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
 //Tool Version: Vivado v.2019.1.1 (win64) Build 2580384 Sat Jun 29 08:12:21 MDT 2019
-//Date        : Tue Aug 13 19:00:50 2019
+//Date        : Thu Aug 15 08:58:58 2019
 //Host        : DTNN-VLOPATIN running 64-bit major release  (build 9200)
 //Command     : generate_target theremin_hw_bd.bd
 //Design      : theremin_hw_bd
@@ -356,6 +356,12 @@ module theremin_hw_bd
     LCD_0_r,
     LCD_0_vsync,
     PITCH_FREQ_IN_0,
+    RGBLED0_0_b,
+    RGBLED0_0_g,
+    RGBLED0_0_r,
+    RGBLED1_0_b,
+    RGBLED1_0_g,
+    RGBLED1_0_r,
     TOUCH_I2C_0_scl,
     TOUCH_I2C_0_sda,
     TOUCH_INTERRUPT_0,
@@ -402,6 +408,12 @@ module theremin_hw_bd
   (* X_INTERFACE_INFO = "coolreader.org:user:lcd_rgb_12bit:1.0 LCD_0 R" *) output [3:0]LCD_0_r;
   (* X_INTERFACE_INFO = "coolreader.org:user:lcd_rgb_12bit:1.0 LCD_0 VSYNC" *) output LCD_0_vsync;
   input PITCH_FREQ_IN_0;
+  (* X_INTERFACE_INFO = "coolreader.org:user:rgb_led:1.0 RGBLED0_0 B" *) output RGBLED0_0_b;
+  (* X_INTERFACE_INFO = "coolreader.org:user:rgb_led:1.0 RGBLED0_0 G" *) output RGBLED0_0_g;
+  (* X_INTERFACE_INFO = "coolreader.org:user:rgb_led:1.0 RGBLED0_0 R" *) output RGBLED0_0_r;
+  (* X_INTERFACE_INFO = "coolreader.org:user:rgb_led:1.0 RGBLED1_0 B" *) output RGBLED1_0_b;
+  (* X_INTERFACE_INFO = "coolreader.org:user:rgb_led:1.0 RGBLED1_0 G" *) output RGBLED1_0_g;
+  (* X_INTERFACE_INFO = "coolreader.org:user:rgb_led:1.0 RGBLED1_0 R" *) output RGBLED1_0_r;
   (* X_INTERFACE_INFO = "coolreader.org:user:i2c:1.0 TOUCH_I2C_0 SCL" *) inout TOUCH_I2C_0_scl;
   (* X_INTERFACE_INFO = "coolreader.org:user:i2c:1.0 TOUCH_I2C_0 SDA" *) inout TOUCH_I2C_0_sda;
   (* X_INTERFACE_INFO = "xilinx.com:signal:interrupt:1.0 INTR.TOUCH_INTERRUPT_0 INTERRUPT" *) (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME INTR.TOUCH_INTERRUPT_0, PortWidth 1, SENSITIVITY LEVEL_HIGH" *) input TOUCH_INTERRUPT_0;
@@ -518,6 +530,12 @@ module theremin_hw_bd
   wire theremin_io_ip_0_LCD_PXCLK;
   wire [3:0]theremin_io_ip_0_LCD_R;
   wire theremin_io_ip_0_LCD_VSYNC;
+  wire theremin_io_ip_0_RGBLED0_B;
+  wire theremin_io_ip_0_RGBLED0_G;
+  wire theremin_io_ip_0_RGBLED0_R;
+  wire theremin_io_ip_0_RGBLED1_B;
+  wire theremin_io_ip_0_RGBLED1_G;
+  wire theremin_io_ip_0_RGBLED1_R;
   wire theremin_io_ip_0_TOUCH_I2C_SCL;
   wire theremin_io_ip_0_TOUCH_I2C_SDA;
   wire theremin_io_ip_0_TOUCH_RESET;
@@ -575,6 +593,12 @@ module theremin_hw_bd
   assign LCD_0_r[3:0] = theremin_io_ip_0_LCD_R;
   assign LCD_0_vsync = theremin_io_ip_0_LCD_VSYNC;
   assign PITCH_FREQ_IN_0_1 = PITCH_FREQ_IN_0;
+  assign RGBLED0_0_b = theremin_io_ip_0_RGBLED0_B;
+  assign RGBLED0_0_g = theremin_io_ip_0_RGBLED0_G;
+  assign RGBLED0_0_r = theremin_io_ip_0_RGBLED0_R;
+  assign RGBLED1_0_b = theremin_io_ip_0_RGBLED1_B;
+  assign RGBLED1_0_g = theremin_io_ip_0_RGBLED1_G;
+  assign RGBLED1_0_r = theremin_io_ip_0_RGBLED1_R;
   assign TOUCH_INTERRUPT_0_1 = TOUCH_INTERRUPT_0;
   assign TOUCH_RESET_0 = theremin_io_ip_0_TOUCH_RESET;
   assign VOLUME_FREQ_IN_0_1 = VOLUME_FREQ_IN_0;
@@ -796,6 +820,12 @@ module theremin_hw_bd
         .TOUCH_RESET(theremin_io_ip_0_TOUCH_RESET),
         .VOLUME_FREQ_IN(VOLUME_FREQ_IN_0_1),
         .VSYNC(theremin_io_ip_0_LCD_VSYNC),
+        .led0_b(theremin_io_ip_0_RGBLED0_B),
+        .led0_g(theremin_io_ip_0_RGBLED0_G),
+        .led0_r(theremin_io_ip_0_RGBLED0_R),
+        .led1_b(theremin_io_ip_0_RGBLED1_B),
+        .led1_g(theremin_io_ip_0_RGBLED1_G),
+        .led1_r(theremin_io_ip_0_RGBLED1_R),
         .m00_axi_aclk(clk_wiz_0_CLK),
         .m00_axi_araddr(theremin_io_ip_0_m00_axi_ARADDR),
         .m00_axi_arburst(theremin_io_ip_0_m00_axi_ARBURST),

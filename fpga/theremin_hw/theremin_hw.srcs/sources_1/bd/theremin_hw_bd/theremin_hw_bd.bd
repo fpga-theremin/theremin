@@ -1,7 +1,7 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0x645BBD550A61F0FE",
+      "boundary_crc": "0x9CE736DCEF18FF52",
       "device": "xc7z010clg400-1",
       "name": "theremin_hw_bd",
       "synth_flow_mode": "None",
@@ -103,6 +103,14 @@
       "AUDIO_I2S_0": {
         "mode": "Master",
         "vlnv": "coolreader.org:user:i2s_io_rtl:1.0"
+      },
+      "RGBLED0_0": {
+        "mode": "Master",
+        "vlnv": "coolreader.org:user:rgb_led_rtl:1.0"
+      },
+      "RGBLED1_0": {
+        "mode": "Master",
+        "vlnv": "coolreader.org:user:rgb_led_rtl:1.0"
       }
     },
     "ports": {
@@ -182,7 +190,7 @@
             "value": "10.000000"
           },
           "PCW_ACT_FPGA0_PERIPHERAL_FREQMHZ": {
-            "value": "50.000000"
+            "value": "100.000000"
           },
           "PCW_ACT_FPGA1_PERIPHERAL_FREQMHZ": {
             "value": "10.000000"
@@ -242,7 +250,7 @@
             "value": "650"
           },
           "PCW_CLK0_FREQ": {
-            "value": "50000000"
+            "value": "100000000"
           },
           "PCW_CLK1_FREQ": {
             "value": "10000000"
@@ -339,6 +347,9 @@
           },
           "PCW_EN_USB0": {
             "value": "1"
+          },
+          "PCW_FPGA0_PERIPHERAL_FREQMHZ": {
+            "value": "100"
           },
           "PCW_FPGA_FCLK0_ENABLE": {
             "value": "1"
@@ -917,7 +928,7 @@
             "value": "External"
           },
           "PCW_UART0_BAUD_RATE": {
-            "value": "115200"
+            "value": "921600"
           },
           "PCW_UART0_GRP_FULL_ENABLE": {
             "value": "0"
@@ -1499,16 +1510,28 @@
       }
     },
     "interface_nets": {
-      "theremin_io_ip_0_AUDIO_I2S": {
+      "theremin_io_ip_0_RGBLED0": {
         "interface_ports": [
-          "AUDIO_I2S_0",
-          "theremin_io_ip_0/AUDIO_I2S"
+          "RGBLED0_0",
+          "theremin_io_ip_0/RGBLED0"
         ]
       },
-      "theremin_io_ip_0_ENC_MUX": {
+      "theremin_io_ip_0_LCD": {
         "interface_ports": [
-          "ENC_MUX_0",
-          "theremin_io_ip_0/ENC_MUX"
+          "LCD_0",
+          "theremin_io_ip_0/LCD"
+        ]
+      },
+      "processing_system7_0_FIXED_IO": {
+        "interface_ports": [
+          "FIXED_IO",
+          "processing_system7_0/FIXED_IO"
+        ]
+      },
+      "theremin_io_ip_0_m00_axi": {
+        "interface_ports": [
+          "theremin_io_ip_0/m00_axi",
+          "processing_system7_0/S_AXI_HP0"
         ]
       },
       "processing_system7_0_DDR": {
@@ -1523,22 +1546,16 @@
           "theremin_io_ip_0/AUDIO_I2C"
         ]
       },
-      "theremin_io_ip_0_m00_axi": {
+      "ps7_0_axi_periph_M00_AXI": {
         "interface_ports": [
-          "theremin_io_ip_0/m00_axi",
-          "processing_system7_0/S_AXI_HP0"
+          "ps7_0_axi_periph/M00_AXI",
+          "theremin_io_ip_0/s00_axi"
         ]
       },
-      "processing_system7_0_FIXED_IO": {
+      "theremin_io_ip_0_ENC_MUX": {
         "interface_ports": [
-          "FIXED_IO",
-          "processing_system7_0/FIXED_IO"
-        ]
-      },
-      "theremin_io_ip_0_LCD": {
-        "interface_ports": [
-          "LCD_0",
-          "theremin_io_ip_0/LCD"
+          "ENC_MUX_0",
+          "theremin_io_ip_0/ENC_MUX"
         ]
       },
       "theremin_io_ip_0_TOUCH_I2C": {
@@ -1547,16 +1564,22 @@
           "theremin_io_ip_0/TOUCH_I2C"
         ]
       },
+      "theremin_io_ip_0_AUDIO_I2S": {
+        "interface_ports": [
+          "AUDIO_I2S_0",
+          "theremin_io_ip_0/AUDIO_I2S"
+        ]
+      },
       "processing_system7_0_M_AXI_GP0": {
         "interface_ports": [
           "processing_system7_0/M_AXI_GP0",
           "ps7_0_axi_periph/S00_AXI"
         ]
       },
-      "ps7_0_axi_periph_M00_AXI": {
+      "theremin_io_ip_0_RGBLED1": {
         "interface_ports": [
-          "ps7_0_axi_periph/M00_AXI",
-          "theremin_io_ip_0/s00_axi"
+          "RGBLED1_0",
+          "theremin_io_ip_0/RGBLED1"
         ]
       }
     },

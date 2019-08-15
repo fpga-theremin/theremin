@@ -168,6 +168,10 @@ proc create_root_design { parentCell } {
 
   set LCD_0 [ create_bd_intf_port -mode Master -vlnv coolreader.org:user:lcd_rgb_12bit_rtl:1.0 LCD_0 ]
 
+  set RGBLED0_0 [ create_bd_intf_port -mode Master -vlnv coolreader.org:user:rgb_led_rtl:1.0 RGBLED0_0 ]
+
+  set RGBLED1_0 [ create_bd_intf_port -mode Master -vlnv coolreader.org:user:rgb_led_rtl:1.0 RGBLED1_0 ]
+
   set TOUCH_I2C_0 [ create_bd_intf_port -mode Master -vlnv coolreader.org:user:i2c_rtl:1.0 TOUCH_I2C_0 ]
 
 
@@ -239,7 +243,7 @@ proc create_root_design { parentCell } {
    CONFIG.PCW_ACT_DCI_PERIPHERAL_FREQMHZ {10.096154} \
    CONFIG.PCW_ACT_ENET0_PERIPHERAL_FREQMHZ {125.000000} \
    CONFIG.PCW_ACT_ENET1_PERIPHERAL_FREQMHZ {10.000000} \
-   CONFIG.PCW_ACT_FPGA0_PERIPHERAL_FREQMHZ {50.000000} \
+   CONFIG.PCW_ACT_FPGA0_PERIPHERAL_FREQMHZ {100.000000} \
    CONFIG.PCW_ACT_FPGA1_PERIPHERAL_FREQMHZ {10.000000} \
    CONFIG.PCW_ACT_FPGA2_PERIPHERAL_FREQMHZ {10.000000} \
    CONFIG.PCW_ACT_FPGA3_PERIPHERAL_FREQMHZ {10.000000} \
@@ -262,7 +266,7 @@ proc create_root_design { parentCell } {
    CONFIG.PCW_ARMPLL_CTRL_FBDIV {26} \
    CONFIG.PCW_CAN_PERIPHERAL_DIVISOR0 {1} \
    CONFIG.PCW_CAN_PERIPHERAL_DIVISOR1 {1} \
-   CONFIG.PCW_CLK0_FREQ {50000000} \
+   CONFIG.PCW_CLK0_FREQ {100000000} \
    CONFIG.PCW_CLK1_FREQ {10000000} \
    CONFIG.PCW_CLK2_FREQ {10000000} \
    CONFIG.PCW_CLK3_FREQ {10000000} \
@@ -318,13 +322,14 @@ proc create_root_design { parentCell } {
    CONFIG.PCW_EN_UART0 {1} \
    CONFIG.PCW_EN_USB0 {1} \
    CONFIG.PCW_FCLK0_PERIPHERAL_DIVISOR0 {5} \
-   CONFIG.PCW_FCLK0_PERIPHERAL_DIVISOR1 {4} \
+   CONFIG.PCW_FCLK0_PERIPHERAL_DIVISOR1 {2} \
    CONFIG.PCW_FCLK1_PERIPHERAL_DIVISOR0 {1} \
    CONFIG.PCW_FCLK1_PERIPHERAL_DIVISOR1 {1} \
    CONFIG.PCW_FCLK2_PERIPHERAL_DIVISOR0 {1} \
    CONFIG.PCW_FCLK2_PERIPHERAL_DIVISOR1 {1} \
    CONFIG.PCW_FCLK3_PERIPHERAL_DIVISOR0 {1} \
    CONFIG.PCW_FCLK3_PERIPHERAL_DIVISOR1 {1} \
+   CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ {100} \
    CONFIG.PCW_FPGA_FCLK0_ENABLE {1} \
    CONFIG.PCW_FPGA_FCLK1_ENABLE {0} \
    CONFIG.PCW_FPGA_FCLK2_ENABLE {0} \
@@ -599,7 +604,7 @@ proc create_root_design { parentCell } {
    CONFIG.PCW_TPIU_PERIPHERAL_CLKSRC {External} \
    CONFIG.PCW_TPIU_PERIPHERAL_DIVISOR0 {1} \
    CONFIG.PCW_TPIU_PERIPHERAL_FREQMHZ {200} \
-   CONFIG.PCW_UART0_BAUD_RATE {115200} \
+   CONFIG.PCW_UART0_BAUD_RATE {921600} \
    CONFIG.PCW_UART0_GRP_FULL_ENABLE {0} \
    CONFIG.PCW_UART0_PERIPHERAL_ENABLE {1} \
    CONFIG.PCW_UART0_UART0_IO {MIO 14 .. 15} \
@@ -717,6 +722,8 @@ proc create_root_design { parentCell } {
   connect_bd_intf_net -intf_net theremin_io_ip_0_AUDIO_I2S [get_bd_intf_ports AUDIO_I2S_0] [get_bd_intf_pins theremin_io_ip_0/AUDIO_I2S]
   connect_bd_intf_net -intf_net theremin_io_ip_0_ENC_MUX [get_bd_intf_ports ENC_MUX_0] [get_bd_intf_pins theremin_io_ip_0/ENC_MUX]
   connect_bd_intf_net -intf_net theremin_io_ip_0_LCD [get_bd_intf_ports LCD_0] [get_bd_intf_pins theremin_io_ip_0/LCD]
+  connect_bd_intf_net -intf_net theremin_io_ip_0_RGBLED0 [get_bd_intf_ports RGBLED0_0] [get_bd_intf_pins theremin_io_ip_0/RGBLED0]
+  connect_bd_intf_net -intf_net theremin_io_ip_0_RGBLED1 [get_bd_intf_ports RGBLED1_0] [get_bd_intf_pins theremin_io_ip_0/RGBLED1]
   connect_bd_intf_net -intf_net theremin_io_ip_0_TOUCH_I2C [get_bd_intf_ports TOUCH_I2C_0] [get_bd_intf_pins theremin_io_ip_0/TOUCH_I2C]
   connect_bd_intf_net -intf_net theremin_io_ip_0_m00_axi [get_bd_intf_pins processing_system7_0/S_AXI_HP0] [get_bd_intf_pins theremin_io_ip_0/m00_axi]
 

@@ -3,29 +3,23 @@ proc init_gui { IPINST } {
   ipgui::add_param $IPINST -name "Component_Name"
   #Adding Page
   set Page_0 [ipgui::add_page $IPINST -name "Page 0"]
-  ipgui::add_param $IPINST -name "BURST_SIZE" -parent ${Page_0}
+  ipgui::add_param $IPINST -name "BURST_SIZE" -parent ${Page_0} -widget comboBox
   ipgui::add_param $IPINST -name "C_M00_AXI_ADDR_WIDTH" -parent ${Page_0}
-  ipgui::add_param $IPINST -name "C_M00_AXI_ARUSER_WIDTH" -parent ${Page_0}
-  ipgui::add_param $IPINST -name "C_M00_AXI_AWUSER_WIDTH" -parent ${Page_0}
-  ipgui::add_param $IPINST -name "C_M00_AXI_BURST_LEN" -parent ${Page_0}
-  ipgui::add_param $IPINST -name "C_M00_AXI_BUSER_WIDTH" -parent ${Page_0}
   ipgui::add_param $IPINST -name "C_M00_AXI_DATA_WIDTH" -parent ${Page_0}
-  ipgui::add_param $IPINST -name "C_M00_AXI_ID_WIDTH" -parent ${Page_0}
-  ipgui::add_param $IPINST -name "C_M00_AXI_RUSER_WIDTH" -parent ${Page_0}
-  ipgui::add_param $IPINST -name "C_M00_AXI_TARGET_SLAVE_BASE_ADDR" -parent ${Page_0}
-  ipgui::add_param $IPINST -name "C_M00_AXI_WUSER_WIDTH" -parent ${Page_0}
   ipgui::add_param $IPINST -name "C_S00_AXI_ADDR_WIDTH" -parent ${Page_0}
   ipgui::add_param $IPINST -name "C_S00_AXI_DATA_WIDTH" -parent ${Page_0}
   ipgui::add_param $IPINST -name "FILTER_OUT_BITS" -parent ${Page_0}
-  ipgui::add_param $IPINST -name "FILTER_SHIFT_BITS" -parent ${Page_0}
+  ipgui::add_param $IPINST -name "FILTER_SHIFT_BITS" -parent ${Page_0} -widget comboBox
   ipgui::add_param $IPINST -name "HBP" -parent ${Page_0}
   ipgui::add_param $IPINST -name "HFP" -parent ${Page_0}
   ipgui::add_param $IPINST -name "HPIXELS" -parent ${Page_0}
   ipgui::add_param $IPINST -name "HSW" -parent ${Page_0}
   ipgui::add_param $IPINST -name "HSYNC_POLARITY" -parent ${Page_0}
   ipgui::add_param $IPINST -name "PITCH_PERIOD_BITS" -parent ${Page_0}
-  ipgui::add_param $IPINST -name "VBP" -parent ${Page_0}
-  ipgui::add_param $IPINST -name "VFP" -parent ${Page_0}
+  set VBP [ipgui::add_param $IPINST -name "VBP" -parent ${Page_0}]
+  set_property tooltip {LCD Vertical Back Porch} ${VBP}
+  set VFP [ipgui::add_param $IPINST -name "VFP" -parent ${Page_0}]
+  set_property tooltip {LCD Vertical Front Porch} ${VFP}
   ipgui::add_param $IPINST -name "VOLUME_PERIOD_BITS" -parent ${Page_0}
   ipgui::add_param $IPINST -name "VPIXELS" -parent ${Page_0}
   ipgui::add_param $IPINST -name "VSW" -parent ${Page_0}
