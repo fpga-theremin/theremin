@@ -107,6 +107,12 @@ module theremin_io_ip #
     // input value from MUX (MUX_OUT <= button[MUX_ADDR])
     input logic MUX_OUT,
 
+    output logic led0_r,
+    output logic led0_g,
+    output logic led0_b,
+    output logic led1_r,
+    output logic led1_g,
+    output logic led1_b,
     
     // User ports ends
     // Do not modify the ports beyond this line
@@ -577,6 +583,12 @@ theremin_i2c theremin_i2c_touch_inst (
     .I2C_CLK(TOUCH_I2C_CLK)        // 400KHz
 );
 
+always_comb led0_r <= s00_axi_arvalid;
+always_comb led0_g <= s00_axi_bready;
+always_comb led0_b <= s00_axi_bvalid;
+always_comb led1_r <= s00_axi_rvalid;
+always_comb led1_g <= s00_axi_rready;
+always_comb led1_b <= s00_axi_arready;
 
 axi4_lite_slave_reg #
 (

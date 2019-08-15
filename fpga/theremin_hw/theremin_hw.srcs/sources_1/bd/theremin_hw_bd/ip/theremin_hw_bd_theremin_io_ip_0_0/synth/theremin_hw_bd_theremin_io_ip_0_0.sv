@@ -48,7 +48,7 @@
 
 
 // IP VLNV: coolreader_org:user:theremin_io_ip:1.0
-// IP Revision: 5
+// IP Revision: 6
 
 (* X_CORE_INFO = "theremin_io_ip,Vivado 2019.1.1" *)
 (* CHECK_LICENSE_TYPE = "theremin_hw_bd_theremin_io_ip_0_0,theremin_io_ip,{}" *)
@@ -84,6 +84,12 @@ module theremin_hw_bd_theremin_io_ip_0_0 (
   AUDIO_I2C_CLK,
   MUX_ADDR,
   MUX_OUT,
+  led0_r,
+  led0_g,
+  led0_b,
+  led1_r,
+  led1_g,
+  led1_b,
   s00_axi_aclk,
   s00_axi_aresetn,
   s00_axi_awaddr,
@@ -210,6 +216,18 @@ inout wire AUDIO_I2C_CLK;
 output wire [3 : 0] MUX_ADDR;
 (* X_INTERFACE_INFO = "coolreader.org:user:input_pin_mux:1.0 ENC_MUX MUX_DATA" *)
 input wire MUX_OUT;
+(* X_INTERFACE_INFO = "coolreader.org:user:rgb_led:1.0 RGBLED0 R" *)
+output wire led0_r;
+(* X_INTERFACE_INFO = "coolreader.org:user:rgb_led:1.0 RGBLED0 G" *)
+output wire led0_g;
+(* X_INTERFACE_INFO = "coolreader.org:user:rgb_led:1.0 RGBLED0 B" *)
+output wire led0_b;
+(* X_INTERFACE_INFO = "coolreader.org:user:rgb_led:1.0 RGBLED1 R" *)
+output wire led1_r;
+(* X_INTERFACE_INFO = "coolreader.org:user:rgb_led:1.0 RGBLED1 G" *)
+output wire led1_g;
+(* X_INTERFACE_INFO = "coolreader.org:user:rgb_led:1.0 RGBLED1 B" *)
+output wire led1_b;
 (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME s00_axi_aclk, ASSOCIATED_BUSIF s00_axi, ASSOCIATED_RESET s00_axi_aresetn, FREQ_HZ 147460937, PHASE 0.0, CLK_DOMAIN /clk_wiz_0_clk_out1, INSERT_VIP 0" *)
 (* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 s00_axi_aclk CLK" *)
 input wire s00_axi_aclk;
@@ -399,6 +417,12 @@ input wire m00_axi_aresetn;
     .AUDIO_I2C_CLK(AUDIO_I2C_CLK),
     .MUX_ADDR(MUX_ADDR),
     .MUX_OUT(MUX_OUT),
+    .led0_r(led0_r),
+    .led0_g(led0_g),
+    .led0_b(led0_b),
+    .led1_r(led1_r),
+    .led1_g(led1_g),
+    .led1_b(led1_b),
     .s00_axi_aclk(s00_axi_aclk),
     .s00_axi_aresetn(s00_axi_aresetn),
     .s00_axi_awaddr(s00_axi_awaddr),
