@@ -10,6 +10,8 @@
 
 #define THEREMIN_REG_STATUS_INTERRUPT_ENABLED_FLAG 0x80000000
 #define THEREMIN_REG_STATUS_INTERRUPT_PENDING_FLAG 0x40000000
+#define THEREMIN_REG_STATUS_IIR_STAGES_MASK        0x38000000
+#define THEREMIN_REG_STATUS_IIR_STAGES_SHIFT       27
 
 enum reg_rd_addr_t {
     THEREMIN_RD_REG_STATUS = 0*4,
@@ -65,6 +67,37 @@ void thereminAudio_enableIrq();
 /** disable audio IRQ */
 void thereminAudio_disableIrq();
 
+/** Write to LineOut left channel */
+void thereminAudio_writeLineOutL(uint32_t sample);
+/** Write to LineOut right channel */
+void thereminAudio_writeLineOutR(uint32_t sample);
+/** Write to LineOut both channels (mono) */
+void thereminAudio_writeLineOutLR(uint32_t sample);
+/** Write to PhonesOut left channel */
+void thereminAudio_writePhonesOutL(uint32_t sample);
+/** Write to PhonesOut right channel */
+void thereminAudio_writePhonesOutR(uint32_t sample);
+/** Write to PhonesOut both channels (mono) */
+void thereminAudio_writePhonesOutLR(uint32_t sample);
+/** Read left channel from LineIn */
+uint32_t thereminAudio_readLineInL();
+/** Read right channel from LineIn */
+uint32_t thereminAudio_readLineInR();
+
+/*
+    Theremin Sensor.
+*/
+
+// Set number of stages for theremin sensor IIR filter (2..8)
+void thereminSensor_setIIRFilterStages(uint32_t numberOfStages);
+// Returns pitch sensor output filtered value
+uint32_t thereminSensor_readPitchPeriodFiltered();
+// Returns volume sensor output filtered value
+uint32_t thereminSensor_readVolumePeriodFiltered();
+
+/*
+    LCD Controller.
+*/
 
 typedef uint16_t pixel_t;
 
@@ -82,14 +115,19 @@ void thereminIO_setBacklightBrightness(uint32_t brightness);
 // returns current brightness of LCD backlight (0..255)
 uint32_t thereminIO_getBacklightBrightness();
 
+// returns Y coordinate of row which is currently being displayed
+uint32_t thereminLCD_getCurrentRowIndex();
+
+/*
+    Cora Z7 on-board RGB LEDs.
+*/
+
 // set color of Cora Z7 on-board LED0
 void thereminIO_setLed0Color(uint32_t color);
 // set color of Cora Z7 on-board LED1
 void thereminIO_setLed1Color(uint32_t color);
 
 
-// returns Y coordinate of row which is currently being displayed
-uint32_t thereminLCD_getCurrentRowIndex();
 
 #ifdef __cplusplus
 }

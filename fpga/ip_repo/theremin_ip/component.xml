@@ -1025,7 +1025,7 @@
     <spirit:memoryMap>
       <spirit:name>s00_axi</spirit:name>
       <spirit:addressBlock>
-        <spirit:name>reg0</spirit:name>
+        <spirit:name>THEREMIN_IP_REGS</spirit:name>
         <spirit:baseAddress spirit:format="bitString" spirit:resolve="user" spirit:bitStringLength="32">0</spirit:baseAddress>
         <spirit:range spirit:format="long" spirit:resolve="dependent" spirit:dependency="pow(2,(spirit:decode(id(&apos;MODELPARAM_VALUE.C_S00_AXI_ADDR_WIDTH&apos;)) - 1) + 1)" spirit:minimum="4096" spirit:rangeType="long">4096</spirit:range>
         <spirit:width spirit:format="long" spirit:resolve="dependent" spirit:dependency="(spirit:decode(id(&apos;MODELPARAM_VALUE.C_S00_AXI_DATA_WIDTH&apos;)) - 1) + 1">32</spirit:width>
@@ -1047,7 +1047,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>e24a90b5</spirit:value>
+            <spirit:value>77b08ffe</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -1063,7 +1063,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>e24a90b5</spirit:value>
+            <spirit:value>77b08ffe</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -1071,14 +1071,14 @@
         <spirit:name>xilinx_testbench</spirit:name>
         <spirit:displayName>Test Bench</spirit:displayName>
         <spirit:envIdentifier>:vivado.xilinx.com:simulation.testbench</spirit:envIdentifier>
-        <spirit:modelName>theremin_i2c_tb</spirit:modelName>
+        <spirit:modelName>lcd_controller_axi3_dma_tb</spirit:modelName>
         <spirit:fileSetRef>
           <spirit:localName>xilinx_testbench_view_fileset</spirit:localName>
         </spirit:fileSetRef>
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>240d5046</spirit:value>
+            <spirit:value>e1b3a5a1</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -1106,7 +1106,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>2984609d</spirit:value>
+            <spirit:value>a1937ccd</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -2729,7 +2729,7 @@
   </spirit:model>
   <spirit:choices>
     <spirit:choice>
-      <spirit:name>choice_list_2fc66e08</spirit:name>
+      <spirit:name>choice_list_070fff2f</spirit:name>
       <spirit:enumeration>1</spirit:enumeration>
       <spirit:enumeration>2</spirit:enumeration>
       <spirit:enumeration>3</spirit:enumeration>
@@ -2738,6 +2738,18 @@
       <spirit:enumeration>6</spirit:enumeration>
       <spirit:enumeration>7</spirit:enumeration>
       <spirit:enumeration>8</spirit:enumeration>
+    </spirit:choice>
+    <spirit:choice>
+      <spirit:name>choice_list_11714ac2</spirit:name>
+      <spirit:enumeration>2</spirit:enumeration>
+      <spirit:enumeration>3</spirit:enumeration>
+      <spirit:enumeration>4</spirit:enumeration>
+      <spirit:enumeration>5</spirit:enumeration>
+      <spirit:enumeration>6</spirit:enumeration>
+      <spirit:enumeration>7</spirit:enumeration>
+      <spirit:enumeration>8</spirit:enumeration>
+      <spirit:enumeration>9</spirit:enumeration>
+      <spirit:enumeration>10</spirit:enumeration>
     </spirit:choice>
     <spirit:choice>
       <spirit:name>choice_list_99a1d2b9</spirit:name>
@@ -2750,18 +2762,6 @@
       <spirit:name>choice_list_9d8b0d81</spirit:name>
       <spirit:enumeration>ACTIVE_HIGH</spirit:enumeration>
       <spirit:enumeration>ACTIVE_LOW</spirit:enumeration>
-    </spirit:choice>
-    <spirit:choice>
-      <spirit:name>choice_list_e53db06d</spirit:name>
-      <spirit:enumeration>2</spirit:enumeration>
-      <spirit:enumeration>3</spirit:enumeration>
-      <spirit:enumeration>4</spirit:enumeration>
-      <spirit:enumeration>5</spirit:enumeration>
-      <spirit:enumeration>6</spirit:enumeration>
-      <spirit:enumeration>7</spirit:enumeration>
-      <spirit:enumeration>8</spirit:enumeration>
-      <spirit:enumeration>9</spirit:enumeration>
-      <spirit:enumeration>10</spirit:enumeration>
     </spirit:choice>
   </spirit:choices>
   <spirit:fileSets>
@@ -2866,7 +2866,7 @@
       <spirit:file>
         <spirit:name>src/theremin_io/hdl/theremin_io_ip.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
-        <spirit:userFileType>CHECKSUM_9d113767</spirit:userFileType>
+        <spirit:userFileType>CHECKSUM_4bae2af9</spirit:userFileType>
       </spirit:file>
     </spirit:fileSet>
     <spirit:fileSet>
@@ -2975,7 +2975,7 @@
     <spirit:fileSet>
       <spirit:name>xilinx_testbench_view_fileset</spirit:name>
       <spirit:file>
-        <spirit:name>src/theremin_i2c/tb/theremin_i2c_tb.sv</spirit:name>
+        <spirit:name>src/lcd_controller/tb/lcd_controller_axi3_dma_tb.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
         <spirit:userFileType>USED_IN_implementation</spirit:userFileType>
         <spirit:userFileType>USED_IN_simulation</spirit:userFileType>
@@ -2996,14 +2996,21 @@
       <spirit:file>
         <spirit:name>drivers/theremin_ip/src/theremin_ip.h</spirit:name>
         <spirit:fileType>cSource</spirit:fileType>
+        <spirit:userFileType>driver_src</spirit:userFileType>
       </spirit:file>
       <spirit:file>
         <spirit:name>drivers/theremin_ip/src/theremin_ip.c</spirit:name>
         <spirit:fileType>cSource</spirit:fileType>
+        <spirit:userFileType>driver_src</spirit:userFileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>drivers/theremin_ip/src/Makefile</spirit:name>
+        <spirit:userFileType>driver_src</spirit:userFileType>
       </spirit:file>
       <spirit:file>
         <spirit:name>drivers/theremin_ip/data/theremin_ip.tcl</spirit:name>
         <spirit:fileType>tclSource</spirit:fileType>
+        <spirit:userFileType>driver_tcl</spirit:userFileType>
       </spirit:file>
       <spirit:file>
         <spirit:name>drivers/theremin_ip/data/theremin_ip.mdd</spirit:name>
@@ -3017,56 +3024,56 @@
     <spirit:parameter>
       <spirit:name>BURST_SIZE</spirit:name>
       <spirit:displayName>Burst Size</spirit:displayName>
-      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.BURST_SIZE" spirit:choiceRef="choice_list_2fc66e08">8</spirit:value>
+      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.BURST_SIZE" spirit:choiceRef="choice_list_070fff2f">8</spirit:value>
     </spirit:parameter>
     <spirit:parameter>
       <spirit:name>HPIXELS</spirit:name>
-      <spirit:displayName>Hpixels</spirit:displayName>
+      <spirit:displayName>LCD HPIXELS</spirit:displayName>
       <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.HPIXELS">800</spirit:value>
     </spirit:parameter>
     <spirit:parameter>
       <spirit:name>VPIXELS</spirit:name>
-      <spirit:displayName>Vpixels</spirit:displayName>
+      <spirit:displayName>LCD VPIXELS</spirit:displayName>
       <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.VPIXELS">480</spirit:value>
     </spirit:parameter>
     <spirit:parameter>
       <spirit:name>HBP</spirit:name>
-      <spirit:displayName>Hbp</spirit:displayName>
+      <spirit:displayName>LCD HBP</spirit:displayName>
       <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.HBP">2</spirit:value>
     </spirit:parameter>
     <spirit:parameter>
       <spirit:name>VBP</spirit:name>
-      <spirit:displayName>Vbp</spirit:displayName>
+      <spirit:displayName>LCD VBP</spirit:displayName>
       <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.VBP">2</spirit:value>
     </spirit:parameter>
     <spirit:parameter>
       <spirit:name>HSW</spirit:name>
-      <spirit:displayName>Hsw</spirit:displayName>
+      <spirit:displayName>LCD HSW</spirit:displayName>
       <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.HSW">10</spirit:value>
     </spirit:parameter>
     <spirit:parameter>
       <spirit:name>VSW</spirit:name>
-      <spirit:displayName>Vsw</spirit:displayName>
+      <spirit:displayName>LCD VSW</spirit:displayName>
       <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.VSW">2</spirit:value>
     </spirit:parameter>
     <spirit:parameter>
       <spirit:name>HFP</spirit:name>
-      <spirit:displayName>Hfp</spirit:displayName>
+      <spirit:displayName>LCD HFP</spirit:displayName>
       <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.HFP">2</spirit:value>
     </spirit:parameter>
     <spirit:parameter>
       <spirit:name>VFP</spirit:name>
-      <spirit:displayName>Vfp</spirit:displayName>
+      <spirit:displayName>LCD VFP</spirit:displayName>
       <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.VFP">2</spirit:value>
     </spirit:parameter>
     <spirit:parameter>
       <spirit:name>HSYNC_POLARITY</spirit:name>
-      <spirit:displayName>Hsync Polarity</spirit:displayName>
+      <spirit:displayName>HSYNC Polarity</spirit:displayName>
       <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.HSYNC_POLARITY">0</spirit:value>
     </spirit:parameter>
     <spirit:parameter>
       <spirit:name>VSYNC_POLARITY</spirit:name>
-      <spirit:displayName>Vsync Polarity</spirit:displayName>
+      <spirit:displayName>VSYNC Polarity</spirit:displayName>
       <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.VSYNC_POLARITY">0</spirit:value>
     </spirit:parameter>
     <spirit:parameter>
@@ -3086,8 +3093,8 @@
     </spirit:parameter>
     <spirit:parameter>
       <spirit:name>FILTER_SHIFT_BITS</spirit:name>
-      <spirit:displayName>Filter Shift Bits</spirit:displayName>
-      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.FILTER_SHIFT_BITS" spirit:choiceRef="choice_list_e53db06d">8</spirit:value>
+      <spirit:displayName>Sensor IIR Filter Shift Bits</spirit:displayName>
+      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.FILTER_SHIFT_BITS" spirit:choiceRef="choice_list_11714ac2">8</spirit:value>
     </spirit:parameter>
     <spirit:parameter>
       <spirit:name>C_S00_AXI_DATA_WIDTH</spirit:name>
@@ -3173,8 +3180,8 @@
       <xilinx:displayName>theremin_io_ip_v1_0</xilinx:displayName>
       <xilinx:definitionSource>package_project</xilinx:definitionSource>
       <xilinx:vendorDisplayName>Vadim Lopatin</xilinx:vendorDisplayName>
-      <xilinx:coreRevision>6</xilinx:coreRevision>
-      <xilinx:coreCreationDateTime>2019-08-15T05:54:38Z</xilinx:coreCreationDateTime>
+      <xilinx:coreRevision>8</xilinx:coreRevision>
+      <xilinx:coreCreationDateTime>2019-08-16T10:19:19Z</xilinx:coreCreationDateTime>
       <xilinx:tags>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@4111dbb1_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo</xilinx:tag>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@112089c3_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo</xilinx:tag>
@@ -3276,17 +3283,51 @@
         <xilinx:tag xilinx:name="ui.data.coregen.dd@13ad3209_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@1fa43e96_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@2b7b5573_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@60f4a84b_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@99e7789_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@52b148bd_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@219ca246_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@47ad571e_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@64b24591_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2f9cc792_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@21e82a90_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@41373215_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@78db5c8_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@70790634_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@59fa48a2_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@444d9191_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@36cb2683_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@6e6e862c_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@1276235b_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@50596a47_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@6cda0e23_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@5133df0c_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@35781450_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@7cb6d21a_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@56cd6899_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@363ca3a2_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@4d3df6d4_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@1336b2e9_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@4c1010a_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@7345474f_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@39c95da1_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2f6957ea_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@4be1273_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@e187b5_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2ab2978b_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@6890b2bd_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@1a977c64_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
       </xilinx:tags>
     </xilinx:coreExtensions>
     <xilinx:packagingInfo>
       <xilinx:xilinxVersion>2019.1.1</xilinx:xilinxVersion>
       <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="1bc09926"/>
       <xilinx:checksum xilinx:scope="addressSpaces" xilinx:value="f8498d1e"/>
-      <xilinx:checksum xilinx:scope="memoryMaps" xilinx:value="871c369d"/>
-      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="e528b1d9"/>
-      <xilinx:checksum xilinx:scope="ports" xilinx:value="bd175e5d"/>
+      <xilinx:checksum xilinx:scope="memoryMaps" xilinx:value="84ebdb9b"/>
+      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="7178d24c"/>
+      <xilinx:checksum xilinx:scope="ports" xilinx:value="fc171a18"/>
       <xilinx:checksum xilinx:scope="hdlParameters" xilinx:value="aedaf5c4"/>
-      <xilinx:checksum xilinx:scope="parameters" xilinx:value="a1cf7e3b"/>
+      <xilinx:checksum xilinx:scope="parameters" xilinx:value="ce6b87d9"/>
     </xilinx:packagingInfo>
   </spirit:vendorExtensions>
 </spirit:component>

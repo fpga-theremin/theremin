@@ -499,6 +499,8 @@ logic [FILTER_OUT_BITS-1:0] PITCH_PERIOD_FILTERED;
 // output value for channel B (in CLK clock domain)
 logic [FILTER_OUT_BITS-1:0] VOLUME_PERIOD_FILTERED;
 
+logic [2:0] IIR_MAX_STAGE;
+
 theremin_oversampling_iserdes_period_measure
 #(
     .PITCH_PERIOD_BITS(PITCH_PERIOD_BITS),
@@ -527,6 +529,8 @@ theremin_oversampling_iserdes_period_measure
     .PITCH_FREQ_IN,
     // serial input of volume signal
     .VOLUME_FREQ_IN,
+
+    .IIR_MAX_STAGE,
     
     // measured pitch period value - number of 1.2GHz*oversampling ticks since last change  (in CLK clock domain)
     //output logic [PITCH_PERIOD_BITS-1:0] PITCH_PERIOD_NOFILTER,
@@ -734,11 +738,13 @@ axi4_lite_slave_reg_impl
     .S_AXI_RREADY(s00_axi_rready)
 );
 
+
 logic audio_irq_enabled;
 logic [31:0] status_reg;
 always_comb status_reg[31] <= audio_irq_enabled; // audio irq enabled
 always_comb status_reg[30] <= AUDIO_IRQ;         // audio irq pending
-always_comb status_reg[29:10] <= 'b0;
+always_comb status_reg[29:27] <= IIR_MAX_STAGE;  // read max IIR filter stage 1..7
+always_comb status_reg[26:10] <= 'b0;
 always_comb status_reg[9:0] <= {{(10 - Y_BITS){1'b0}}, lcd_row_index};
 assign AUDIO_IRQ_ACK = (REG_WREN & (REG_WR_ADDR == RD_REG_STATUS) & ~REG_WR_DATA[30]);
 
@@ -765,9 +771,13 @@ always_ff @(posedge m00_axi_aclk) begin
         OUT_RIGHT_CHANNEL0 <= 'b0;
         OUT_LEFT_CHANNEL1 <= 'b0;
         OUT_RIGHT_CHANNEL1 <= 'b0;
+        IIR_MAX_STAGE <= 3'b011; // 4 stages
     end else if (REG_WREN) begin
         case (REG_WR_ADDR)
-            WR_REG_STATUS: audio_irq_enabled <= REG_WR_DATA[31];
+            WR_REG_STATUS: begin
+                audio_irq_enabled <= REG_WR_DATA[31];
+                IIR_MAX_STAGE <= REG_WR_DATA[29:27]; // 4 stages
+            end
             WR_REG_LCD_FRAMEBUFFER_ADDR: lcd_buffer_start_address_reg <= REG_WR_DATA[C_S00_AXI_DATA_WIDTH-1:2];
             WR_REG_PWM: begin
                     lcd_backlight_brightness_reg <= REG_WR_DATA[7:0];

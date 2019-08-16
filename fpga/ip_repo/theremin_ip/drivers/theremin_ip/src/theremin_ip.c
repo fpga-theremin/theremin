@@ -1,13 +1,13 @@
 #include "theremin_ip.h"
 
 
-#include "xil_types.h"
-#include "xstatus.h"
+#include <xil_types.h>
+#include <xstatus.h>
 #include <xscugic.h>
 #include <sleep.h>
 #include <xil_io.h>
 #include <xil_misc_psreset_api.h>
-#include "xil_cache.h"
+#include <xil_cache.h>
 
 pixel_t * SCREEN = nullptr;
 void thereminLCD_setFramebufferAddress(pixel_t * buf) {
@@ -65,25 +65,92 @@ uint32_t thereminLCD_getCurrentRowIndex() {
 }
 
 
-
 /*
  * Use this function to setup the interrupt environment
  * Returns XST_SUCCESS if succeeded.
  */
 int thereminAudio_setUpInterruptSystem(XScuGic *InterruptController, uint16_t DeviceId);
 
+static uint32_t status_reg_value = 0x18000000;
+void thereminIO_setStatusReg(uint32_t value, uint32_t mask) {
+	status_reg_value = (status_reg_value & (~mask)) | (value & mask);
+	Xil_Out32(XPAR_THEREMIN_IO_IP_0_BASEADDR + THEREMIN_WR_REG_STATUS,
+			status_reg_value);
+}
+
+
+// Set number of stages for theremin sensor IIR filter (2..8)
+void thereminSensor_setIIRFilterStages(uint32_t numberOfStages) {
+	if (numberOfStages < 2)
+		numberOfStages = 2;
+	else if (numberOfStages > 8)
+		numberOfStages = 8;
+	thereminIO_setStatusReg((numberOfStages-1) << THEREMIN_REG_STATUS_IIR_STAGES_SHIFT, THEREMIN_REG_STATUS_IIR_STAGES_MASK);
+}
+
+// Returns pitch sensor output filtered value
+uint32_t thereminSensor_readPitchPeriodFiltered() {
+	return Xil_In32(XPAR_THEREMIN_IO_IP_0_BASEADDR + THEREMIN_RD_REG_PITCH_PERIOD);
+}
+
+// Returns volume sensor output filtered value
+uint32_t thereminSensor_readVolumePeriodFiltered() {
+	return Xil_In32(XPAR_THEREMIN_IO_IP_0_BASEADDR + THEREMIN_RD_REG_VOLUME_PERIOD);
+}
+
+
+/** Write to LineOut left channel */
+void thereminAudio_writeLineOutL(uint32_t sample) {
+	Xil_Out32(XPAR_THEREMIN_IO_IP_0_BASEADDR + THEREMIN_WR_REG_LINE_OUT_L,
+			sample);
+}
+/** Write to LineOut right channel */
+void thereminAudio_writeLineOutR(uint32_t sample) {
+	Xil_Out32(XPAR_THEREMIN_IO_IP_0_BASEADDR + THEREMIN_WR_REG_LINE_OUT_R,
+			sample);
+}
+/** Write to LineOut both channels (mono) */
+void thereminAudio_writeLineOutLR(uint32_t sample) {
+	Xil_Out32(XPAR_THEREMIN_IO_IP_0_BASEADDR + THEREMIN_WR_REG_LINE_OUT_L,
+			sample);
+	Xil_Out32(XPAR_THEREMIN_IO_IP_0_BASEADDR + THEREMIN_WR_REG_LINE_OUT_R,
+			sample);
+}
+/** Write to PhonesOut left channel */
+void thereminAudio_writePhonesOutL(uint32_t sample) {
+	Xil_Out32(XPAR_THEREMIN_IO_IP_0_BASEADDR + THEREMIN_WR_REG_PHONES_OUT_L,
+			sample);
+}
+/** Write to PhonesOut right channel */
+void thereminAudio_writePhonesOutR(uint32_t sample) {
+	Xil_Out32(XPAR_THEREMIN_IO_IP_0_BASEADDR + THEREMIN_WR_REG_PHONES_OUT_R,
+			sample);
+}
+/** Write to PhonesOut both channels (mono) */
+void thereminAudio_writePhonesOutLR(uint32_t sample) {
+	Xil_Out32(XPAR_THEREMIN_IO_IP_0_BASEADDR + THEREMIN_WR_REG_PHONES_OUT_L,
+			sample);
+	Xil_Out32(XPAR_THEREMIN_IO_IP_0_BASEADDR + THEREMIN_WR_REG_PHONES_OUT_R,
+			sample);
+}
+/** Read left channel from LineIn */
+uint32_t thereminAudio_readLineInL() {
+	return Xil_In32(XPAR_THEREMIN_IO_IP_0_BASEADDR + THEREMIN_RD_REG_LINE_IN_L);
+}
+/** Read right channel from LineIn */
+uint32_t thereminAudio_readLineInR() {
+	return Xil_In32(XPAR_THEREMIN_IO_IP_0_BASEADDR + THEREMIN_RD_REG_LINE_IN_R);
+}
 
 
 void thereminAudio_enableIrq()
 {
-	Xil_Out32(XPAR_THEREMIN_IO_IP_0_BASEADDR + THEREMIN_WR_REG_STATUS,
-			THEREMIN_REG_STATUS_INTERRUPT_ENABLED_FLAG);
+	thereminIO_setStatusReg(THEREMIN_REG_STATUS_INTERRUPT_ENABLED_FLAG, THEREMIN_REG_STATUS_INTERRUPT_ENABLED_FLAG);
 }
 
 void thereminAudio_disableIrq()
 {
-	Xil_Out32(XPAR_THEREMIN_IO_IP_0_BASEADDR + THEREMIN_WR_REG_STATUS,
-			0);
+	thereminIO_setStatusReg(0, THEREMIN_REG_STATUS_INTERRUPT_ENABLED_FLAG);
 }
 
 static void(*theremin_audio_irq_handler)() = NULL;
@@ -119,8 +186,7 @@ void thereminAudio_interruptHandler(void *CallbackRef) {
 		if (theremin_audio_irq_handler)
 			theremin_audio_irq_handler();
 		// send ACK to audio board
-		Xil_Out32(XPAR_THEREMIN_IO_IP_0_BASEADDR + THEREMIN_WR_REG_STATUS,
-				value & (~THEREMIN_REG_STATUS_INTERRUPT_PENDING_FLAG));
+		thereminIO_setStatusReg(0, THEREMIN_REG_STATUS_INTERRUPT_PENDING_FLAG);
 	}
 
 

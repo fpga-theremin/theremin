@@ -744,7 +744,7 @@ proc create_root_design { parentCell } {
   connect_bd_net -net theremin_io_ip_0_TOUCH_RESET [get_bd_ports TOUCH_RESET_0] [get_bd_pins theremin_io_ip_0/TOUCH_RESET]
 
   # Create address segments
-  create_bd_addr_seg -range 0x00010000 -offset 0x43C00000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs theremin_io_ip_0/s00_axi/reg0] SEG_theremin_io_ip_0_reg0
+  create_bd_addr_seg -range 0x00010000 -offset 0x43C00000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs theremin_io_ip_0/s00_axi/THEREMIN_IP_REGS] SEG_theremin_io_ip_0_THEREMIN_IP_REGS
   create_bd_addr_seg -range 0x20000000 -offset 0x00000000 [get_bd_addr_spaces theremin_io_ip_0/m00_axi] [get_bd_addr_segs processing_system7_0/S_AXI_HP0/HP0_DDR_LOWOCM] SEG_processing_system7_0_HP0_DDR_LOWOCM
 
 

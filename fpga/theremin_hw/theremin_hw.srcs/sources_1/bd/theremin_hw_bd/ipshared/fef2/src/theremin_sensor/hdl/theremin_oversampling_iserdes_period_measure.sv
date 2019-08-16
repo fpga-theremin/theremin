@@ -48,6 +48,9 @@ module theremin_oversampling_iserdes_period_measure
     input logic PITCH_FREQ_IN,
     // serial input of volume signal
     input logic VOLUME_FREQ_IN,
+
+    // number of filter stages less one (1..7)
+    input logic [2:0] IIR_MAX_STAGE,
     
     // measured pitch period value - number of 1.2GHz*oversampling ticks since last change  (in CLK clock domain)
     //output logic [PITCH_PERIOD_BITS-1:0] PITCH_PERIOD_NOFILTER,
@@ -231,7 +234,7 @@ iir_multistage_dblchannel
     .RESET,
     
     // number of filter stages less one
-    .MAX_STAGE(3),
+    .MAX_STAGE(IIR_MAX_STAGE),
 
     // input value for channel A    
     .IN_VALUE_A(filter_in_a),

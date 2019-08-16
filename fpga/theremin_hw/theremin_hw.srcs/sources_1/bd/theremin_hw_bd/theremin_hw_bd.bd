@@ -1434,16 +1434,16 @@
               }
             },
             "interface_nets": {
-              "auto_pc_to_s00_couplers": {
-                "interface_ports": [
-                  "M_AXI",
-                  "auto_pc/M_AXI"
-                ]
-              },
               "s00_couplers_to_auto_pc": {
                 "interface_ports": [
                   "S_AXI",
                   "auto_pc/S_AXI"
+                ]
+              },
+              "auto_pc_to_s00_couplers": {
+                "interface_ports": [
+                  "M_AXI",
+                  "auto_pc/M_AXI"
                 ]
               }
             },
@@ -1516,16 +1516,16 @@
           "processing_system7_0/S_AXI_HP0"
         ]
       },
-      "processing_system7_0_FIXED_IO": {
-        "interface_ports": [
-          "FIXED_IO",
-          "processing_system7_0/FIXED_IO"
-        ]
-      },
       "processing_system7_0_DDR": {
         "interface_ports": [
           "DDR",
           "processing_system7_0/DDR"
+        ]
+      },
+      "ps7_0_axi_periph_M00_AXI": {
+        "interface_ports": [
+          "ps7_0_axi_periph/M00_AXI",
+          "theremin_io_ip_0/s00_axi"
         ]
       },
       "theremin_io_ip_0_RGBLED0": {
@@ -1534,10 +1534,10 @@
           "theremin_io_ip_0/RGBLED0"
         ]
       },
-      "theremin_io_ip_0_LCD": {
+      "theremin_io_ip_0_AUDIO_I2C": {
         "interface_ports": [
-          "LCD_0",
-          "theremin_io_ip_0/LCD"
+          "AUDIO_I2C_0",
+          "theremin_io_ip_0/AUDIO_I2C"
         ]
       },
       "theremin_io_ip_0_AUDIO_I2S": {
@@ -1552,22 +1552,16 @@
           "theremin_io_ip_0/RGBLED1"
         ]
       },
-      "theremin_io_ip_0_TOUCH_I2C": {
+      "processing_system7_0_M_AXI_GP0": {
         "interface_ports": [
-          "TOUCH_I2C_0",
-          "theremin_io_ip_0/TOUCH_I2C"
+          "processing_system7_0/M_AXI_GP0",
+          "ps7_0_axi_periph/S00_AXI"
         ]
       },
-      "theremin_io_ip_0_AUDIO_I2C": {
+      "theremin_io_ip_0_LCD": {
         "interface_ports": [
-          "AUDIO_I2C_0",
-          "theremin_io_ip_0/AUDIO_I2C"
-        ]
-      },
-      "ps7_0_axi_periph_M00_AXI": {
-        "interface_ports": [
-          "ps7_0_axi_periph/M00_AXI",
-          "theremin_io_ip_0/s00_axi"
+          "LCD_0",
+          "theremin_io_ip_0/LCD"
         ]
       },
       "theremin_io_ip_0_ENC_MUX": {
@@ -1576,10 +1570,16 @@
           "theremin_io_ip_0/ENC_MUX"
         ]
       },
-      "processing_system7_0_M_AXI_GP0": {
+      "theremin_io_ip_0_TOUCH_I2C": {
         "interface_ports": [
-          "processing_system7_0/M_AXI_GP0",
-          "ps7_0_axi_periph/S00_AXI"
+          "TOUCH_I2C_0",
+          "theremin_io_ip_0/TOUCH_I2C"
+        ]
+      },
+      "processing_system7_0_FIXED_IO": {
+        "interface_ports": [
+          "FIXED_IO",
+          "processing_system7_0/FIXED_IO"
         ]
       }
     },
@@ -1688,8 +1688,8 @@
             "range": "4G",
             "width": "32",
             "segments": {
-              "SEG_theremin_io_ip_0_reg0": {
-                "address_block": "/theremin_io_ip_0/s00_axi/reg0",
+              "SEG_theremin_io_ip_0_THEREMIN_IP_REGS": {
+                "address_block": "/theremin_io_ip_0/s00_axi/THEREMIN_IP_REGS",
                 "offset": "0x43C00000",
                 "range": "64K"
               }
