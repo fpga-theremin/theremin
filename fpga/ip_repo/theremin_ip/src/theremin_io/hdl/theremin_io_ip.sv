@@ -316,7 +316,7 @@ lcd_controller_axi3_dma_inst
     // color of LED0 (4 bits per R, G, B)    
     .RGB_LED_COLOR0(rbg_led_color0_reg),
     // color of LED0 (4 bits per R, G, B)    
-    .RGB_LED_COLOR1(rbg_led_color0_reg),
+    .RGB_LED_COLOR1(rbg_led_color1_reg),
     
     // color led0 control output {r,g,b}
     .LED0_PWM,
@@ -644,7 +644,7 @@ always_comb led0_g <= LED0_PWM[1];
 always_comb led0_b <= LED0_PWM[0];
 always_comb led1_r <= LED1_PWM[2];
 always_comb led1_g <= LED1_PWM[1];
-always_comb led1_b <= LED0_PWM[0];
+always_comb led1_b <= LED1_PWM[0];
 
 axi4_lite_slave_reg #
 (
