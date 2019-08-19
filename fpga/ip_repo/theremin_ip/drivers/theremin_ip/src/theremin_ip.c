@@ -143,14 +143,34 @@ uint32_t thereminAudio_readLineInR() {
 }
 
 
+static uint32_t audio_status_reg_value = 0x00000000;
+void thereminAudio_setStatusReg(uint32_t value, uint32_t mask) {
+	audio_status_reg_value = (audio_status_reg_value & (~mask)) | (value & mask);
+	Xil_Out32(XPAR_THEREMIN_IO_IP_0_BASEADDR + THEREMIN_WR_REG_AUDIO_STATUS,
+			audio_status_reg_value);
+}
+
+
+
+/** read audio status reg 
+              [31] is audio IRQ enable 
+              [30] is pending IRQ
+           [29:12] is sample count
+            [11:0] is subsample count
+*/
+uint32_t thereminAudio_getStatus() {
+    audio_status_reg_value = Xil_In32(XPAR_THEREMIN_IO_IP_0_BASEADDR + THEREMIN_WR_REG_AUDIO_STATUS);
+    return audio_status_reg_value;
+}
+
 void thereminAudio_enableIrq()
 {
-	thereminIO_setStatusReg(THEREMIN_REG_STATUS_INTERRUPT_ENABLED_FLAG, THEREMIN_REG_STATUS_INTERRUPT_ENABLED_FLAG);
+    thereminAudio_setStatusReg(THEREMIN_REG_AUDIO_STATUS_INTERRUPT_ENABLED_FLAG, THEREMIN_REG_AUDIO_STATUS_INTERRUPT_ENABLED_FLAG);
 }
 
 void thereminAudio_disableIrq()
 {
-	thereminIO_setStatusReg(0, THEREMIN_REG_STATUS_INTERRUPT_ENABLED_FLAG);
+    thereminAudio_setStatusReg(0, THEREMIN_REG_AUDIO_STATUS_INTERRUPT_ENABLED_FLAG);
 }
 
 static void(*theremin_audio_irq_handler)() = NULL;
@@ -180,13 +200,13 @@ void thereminAudio_interruptHandler(void *CallbackRef) {
 
 	//THEREMIN_AUDIO_INTERRUPT_LATENCY = (Xil_In32(XPAR_THEREMIN_AUDIO_0_S00_AXI_BASEADDR + THEREMIN_AUDIO_STATUS_REG_OFFSET) & THEREMIN_AUDIO_STATUS_SUBSAMPLE_COUNTER_MASK)
 	//		>> THEREMIN_AUDIO_STATUS_SUBSAMPLE_COUNTER_SHIFT;
-	uint32_t value = Xil_In32(XPAR_THEREMIN_IO_IP_0_BASEADDR + THEREMIN_RD_REG_STATUS);
-	if (value & THEREMIN_REG_STATUS_INTERRUPT_PENDING_FLAG) {
+	uint32_t value = thereminAudio_getStatus();
+	if (value & THEREMIN_REG_AUDIO_STATUS_INTERRUPT_PENDING_FLAG) {
 		// call audio interrupt handler, if any
 		if (theremin_audio_irq_handler)
 			theremin_audio_irq_handler();
 		// send ACK to audio board
-		thereminIO_setStatusReg(0, THEREMIN_REG_STATUS_INTERRUPT_PENDING_FLAG);
+		thereminAudio_setStatusReg(0, THEREMIN_REG_AUDIO_STATUS_INTERRUPT_PENDING_FLAG);
 	}
 
 
