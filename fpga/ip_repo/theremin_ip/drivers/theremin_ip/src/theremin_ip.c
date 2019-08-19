@@ -8,6 +8,9 @@
 #include <xil_io.h>
 #include <xil_misc_psreset_api.h>
 #include <xil_cache.h>
+#include <xil_cache_l.h>
+#include <xpseudo_asm.h>
+#include <xil_mmu.h>
 
 pixel_t * SCREEN = nullptr;
 void thereminLCD_setFramebufferAddress(pixel_t * buf) {
@@ -27,7 +30,9 @@ void thereminIO_writeReg(uint32_t offset, uint32_t value) {
 	Xil_Out32(XPAR_THEREMIN_IO_IP_0_BASEADDR + offset, value);
 }
 
-uint32_t pwm_reg_value = 0x000000ff;
+//uint32_t pwm_reg_value = 0x000000ff;
+#define pwm_reg_value (*(volatile uint32_t *)(0xFFFF0010))
+
 
 void thereminIO_setBacklightBrightness(uint32_t brightness) {
 	pwm_reg_value = (pwm_reg_value & 0xffffff00) | (brightness & 0xff);
@@ -65,11 +70,6 @@ uint32_t thereminLCD_getCurrentRowIndex() {
 }
 
 
-/*
- * Use this function to setup the interrupt environment
- * Returns XST_SUCCESS if succeeded.
- */
-int thereminAudio_setUpInterruptSystem(XScuGic *InterruptController, uint16_t DeviceId);
 
 static uint32_t status_reg_value = 0x18000000;
 void thereminIO_setStatusReg(uint32_t value, uint32_t mask) {
@@ -220,6 +220,163 @@ void thereminAudio_interruptHandler(void *CallbackRef) {
 
 }
 
+
+
+#ifndef XSLCR_FPGA_RST_CTRL_ADDR
+#define XSLCR_FPGA_RST_CTRL_ADDR (XSLCR_BASEADDR + 0x00000240U)
+#endif
+#ifndef XSLCR_LOCK_ADDR
+#define XSLCR_LOCK_ADDR (XSLCR_BASEADDR + 0x4)
+#endif
+#ifndef XSLCR_LOCK_CODE
+#define XSLCR_LOCK_CODE 0x0000767B
+#endif
+// send reset signal to PL
+void thereminIO_resetPL()
+{
+	Xil_Out32(XSLCR_UNLOCK_ADDR, XSLCR_UNLOCK_CODE);
+	uint32_t oldValue = Xil_In32(XSLCR_FPGA_RST_CTRL_ADDR) & ~0x0F;
+	Xil_Out32(XSLCR_FPGA_RST_CTRL_ADDR, oldValue | 0x0F);
+	// ---
+	usleep(15);
+	// and release the FPGA Reset Signal
+	Xil_Out32(XSLCR_FPGA_RST_CTRL_ADDR, oldValue | 0x00);
+	Xil_Out32(XSLCR_LOCK_ADDR, XSLCR_LOCK_CODE);
+	usleep(5);
+}
+
+// Flush CPU cache
+void thereminIO_flushCache(void * addr, uint32_t size) {
+	Xil_DCacheFlushRange((unsigned int)addr, size);
+}
+
+
+#define COMM_VAL (*(volatile uint32_t *)(0xFFFF0000))
+#define CPU1_START_ADDR 0xfffffff0
+
+
+#if (XPAR_CPU_ID == 0)
+
+
+#define INTC		    XScuGic
+#define INTC_DEVICE_ID	XPAR_PS7_SCUGIC_0_DEVICE_ID
+#define INTC_HANDLER	XScuGic_InterruptHandler
+
+static int  SetupIntrSystem(INTC *IntcInstancePtr);
+INTC   IntcInstancePtr;
+
+/*****************************************************************************/
+/**
+*
+* This function setups initializes the interrupt system.
+*
+* @param	IntcInstancePtr is a pointer to the instance of the Intc driver.
+* @param	PeriphInstancePtr is a pointer to the instance of peripheral driver.
+* @param	IntrId is the Interrupt Id of the peripheral interrupt
+*
+* @return	XST_SUCCESS if successful, otherwise XST_FAILURE.
+*
+* @note		None.
+*
+******************************************************************************/
+static int SetupIntrSystem(INTC *IntcInstancePtr)
+{
+	int Status;
+
+
+	XScuGic_Config *IntcConfig;
+
+	/*
+	 * Initialize the interrupt controller driver so that it is ready to
+	 * use.
+	 */
+	IntcConfig = XScuGic_LookupConfig(INTC_DEVICE_ID);
+	if (NULL == IntcConfig) {
+		return XST_FAILURE;
+	}
+
+	Status = XScuGic_CfgInitialize(IntcInstancePtr, IntcConfig,
+					IntcConfig->CpuBaseAddress);
+	if (Status != XST_SUCCESS) {
+		return XST_FAILURE;
+	}
+
+	/*
+	 * Initialize the  exception table
+	 */
+	Xil_ExceptionInit();
+
+	/*
+	 * Register the interrupt controller handler with the exception table
+	 */
+	Xil_ExceptionRegisterHandler(XIL_EXCEPTION_ID_INT,
+			 (Xil_ExceptionHandler)INTC_HANDLER,
+			 IntcInstancePtr);
+
+	/*
+	 * Enable non-critical exceptions
+	 */
+	Xil_ExceptionEnable();
+
+
+	return XST_SUCCESS;
+}
+
+
+#define sev() __asm__ __volatile__ ("dmb" : : : "memory")
+#define wfe() __asm__ __volatile__ ("wfe" : : : "memory")
+int thereminIO_startCPU1() {
+	uint32_t startup_address = 0x00200000;
+	print("CPU0 starting CPU1\r\n");
+	COMM_VAL = 1;
+	thereminIO_setLed0Color(0x000080);
+	Xil_Out32(CPU1_START_ADDR, startup_address);
+	Xil_DCacheFlushLine(CPU1_START_ADDR); // OCM is still cacheable!
+	dsb();
+	dmb();
+	sev();
+	thereminIO_setLed0Color(0x606000);
+	for(int i = 0; i < 1000000; i++) {
+		//dmb();
+		//wfe();
+		if (COMM_VAL == 2)
+			return 1;
+	}
+	return 0;
+}
+
+int thereminIO_initCPU0() {
+	COMM_VAL = 0;
+	print("Going to reset PL\r\n");
+	thereminIO_resetPL();
+	print("PL reset done\r\n");
+	thereminIO_setLed0Color(0xf00000);
+	// Initialize the SCU Interrupt Distributer (ICD)
+	int Status = 0;
+	Status = SetupIntrSystem(&IntcInstancePtr);
+	if (Status != XST_SUCCESS) {
+			return XST_FAILURE;
+	}
+	thereminIO_setLed0Color(0x00f000);
+	print("Interrupt controller initialized\r\n");
+
+	Status = thereminIO_startCPU1();
+	thereminIO_setLed0Color(0x0000f0);
+	print("CPU1 started\r\n");
+
+	thereminIO_setLed0Color(0xf0f0f0);
+
+	return Status;
+}
+#else
+
+/*
+ * Use this function to setup the interrupt environment
+ * Returns XST_SUCCESS if succeeded.
+ */
+int thereminAudio_setUpInterruptSystem(XScuGic *InterruptController, uint16_t DeviceId);
+
+
 /*
  * Use this function to setup the interrupt environment
  * Returns XST_SUCCESS if succeeded.
@@ -277,42 +434,47 @@ int thereminAudio_setUpInterruptSystem(XScuGic *InterruptController, uint16_t De
 }
 
 
-
-#ifndef XSLCR_FPGA_RST_CTRL_ADDR
-#define XSLCR_FPGA_RST_CTRL_ADDR (XSLCR_BASEADDR + 0x00000240U)
-#endif
-#ifndef XSLCR_LOCK_ADDR
-#define XSLCR_LOCK_ADDR (XSLCR_BASEADDR + 0x4)
-#endif
-#ifndef XSLCR_LOCK_CODE
-#define XSLCR_LOCK_CODE 0x0000767B
-#endif
-// send reset signal to PL
-void thereminIO_resetPL()
-{
-	Xil_Out32(XSLCR_UNLOCK_ADDR, XSLCR_UNLOCK_CODE);
-	uint32_t oldValue = Xil_In32(XSLCR_FPGA_RST_CTRL_ADDR) & ~0x0F;
-	Xil_Out32(XSLCR_FPGA_RST_CTRL_ADDR, oldValue | 0x0F);
-	// ---
-	usleep(15);
-	// and release the FPGA Reset Signal
-	Xil_Out32(XSLCR_FPGA_RST_CTRL_ADDR, oldValue | 0x00);
-	Xil_Out32(XSLCR_LOCK_ADDR, XSLCR_LOCK_CODE);
-	usleep(5);
-}
-
-// Flush CPU cache
-void thereminIO_flushCache(void * addr, uint32_t size) {
-	Xil_DCacheFlushRange((unsigned int)addr, size);
-}
-
-
 XScuGic myInterruptController;
-// Init all peripherials
-void thereminIO_init() {
-	thereminIO_resetPL();
+int thereminIO_initCPU1() {
+	//thereminIO_setLed1Color(0x004040);
+	//print("CPU1 waiting for CPU0\r\n");
+
+	while (COMM_VAL != 1)
+		;
+	//print("CPU1 got start signal\r\n");
+	COMM_VAL = 2;
+	Xil_DCacheFlushLine(CPU1_START_ADDR); // OCM is still cacheable!
 	if (thereminAudio_setUpInterruptSystem(&myInterruptController, XPAR_PS7_SCUGIC_0_DEVICE_ID) != XST_SUCCESS) {
 		// error
-		print("Interrupt system initialization failed\r\n");
+		thereminIO_setLed1Color(0xf00000);
+		//print("Interrupt system initialization failed\r\n");
+		return 0;
 	}
+	return 1;
+}
+
+#endif
+
+
+
+// Init all peripherials
+void thereminIO_init() {
+
+	//Disable cache on OCM
+	Xil_SetTlbAttributes(0xFFFF0000,0x14de2);           // S=b1 TEX=b100 AP=b11, Domain=b1111, C=b0, B=b0
+	Xil_SetTlbAttributes(0x00000000,0x14de2);           // S=b1 TEX=b100 AP=b11, Domain=b1111, C=b0, B=b0
+	Xil_SetTlbAttributes(0x00010000,0x14de2);           // S=b1 TEX=b100 AP=b11, Domain=b1111, C=b0, B=b0
+	Xil_SetTlbAttributes(0x00020000,0x14de2);           // S=b1 TEX=b100 AP=b11, Domain=b1111, C=b0, B=b0
+
+
+#if (XPAR_CPU_ID == 0)
+
+	thereminIO_initCPU0();
+
+
+#else
+
+	thereminIO_initCPU1();
+
+#endif
 }

@@ -145,7 +145,7 @@ module theremin_hw_bd_processing_system7_0_0 (
   S_AXI_HP0_WID,
   S_AXI_HP0_WDATA,
   S_AXI_HP0_WSTRB,
-  Core0_nFIQ,
+  Core1_nFIQ,
   FCLK_CLK0,
   FCLK_RESET0_N,
   MIO,
@@ -351,9 +351,9 @@ input wire [31 : 0] S_AXI_HP0_WDATA;
 1, RUSER_BITS_PER_BYTE 0, WUSER_BITS_PER_BYTE 0, INSERT_VIP 0" *)
 (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 S_AXI_HP0 WSTRB" *)
 input wire [3 : 0] S_AXI_HP0_WSTRB;
-(* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME Core0_nFIQ, SENSITIVITY LEVEL_HIGH, PortWidth 1" *)
-(* X_INTERFACE_INFO = "xilinx.com:signal:interrupt:1.0 Core0_nFIQ INTERRUPT" *)
-input wire Core0_nFIQ;
+(* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME Core1_nFIQ, SENSITIVITY LEVEL_HIGH, PortWidth 1" *)
+(* X_INTERFACE_INFO = "xilinx.com:signal:interrupt:1.0 Core1_nFIQ INTERRUPT" *)
+input wire Core1_nFIQ;
 (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME FCLK_CLK0, FREQ_HZ 1e+08, PHASE 0.000, CLK_DOMAIN theremin_hw_bd_processing_system7_0_0_FCLK_CLK0, INSERT_VIP 0" *)
 (* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 FCLK_CLK0 CLK" *)
 output wire FCLK_CLK0;
@@ -1038,9 +1038,9 @@ inout wire PS_PORB;
     .IRQ_P2F_UART1(),
     .IRQ_P2F_CAN1(),
     .IRQ_F2P(1'B0),
-    .Core0_nFIQ(Core0_nFIQ),
+    .Core0_nFIQ(1'B0),
     .Core0_nIRQ(1'B0),
-    .Core1_nFIQ(1'B0),
+    .Core1_nFIQ(Core1_nFIQ),
     .Core1_nIRQ(1'B0),
     .DMA0_DATYPE(),
     .DMA0_DAVALID(),

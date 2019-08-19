@@ -1,7 +1,7 @@
 //Copyright 1986-2019 Xilinx, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
 //Tool Version: Vivado v.2019.1.1 (win64) Build 2580384 Sat Jun 29 08:12:21 MDT 2019
-//Date        : Mon Aug 19 10:48:23 2019
+//Date        : Mon Aug 19 17:37:49 2019
 //Host        : DTNN-VLOPATIN running 64-bit major release  (build 9200)
 //Command     : generate_target theremin_hw_bd.bd
 //Design      : theremin_hw_bd
@@ -615,7 +615,7 @@ module theremin_hw_bd
         .locked(clk_wiz_0_locked),
         .resetn(processing_system7_0_FCLK_RESET0_N));
   theremin_hw_bd_processing_system7_0_0 processing_system7_0
-       (.Core0_nFIQ(theremin_io_ip_0_AUDIO_IRQ),
+       (.Core1_nFIQ(theremin_io_ip_0_AUDIO_IRQ),
         .DDR_Addr(DDR_addr[14:0]),
         .DDR_BankAddr(DDR_ba[2:0]),
         .DDR_CAS_n(DDR_cas_n),

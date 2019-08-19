@@ -270,7 +270,8 @@ proc create_root_design { parentCell } {
    CONFIG.PCW_CLK1_FREQ {10000000} \
    CONFIG.PCW_CLK2_FREQ {10000000} \
    CONFIG.PCW_CLK3_FREQ {10000000} \
-   CONFIG.PCW_CORE0_FIQ_INTR {1} \
+   CONFIG.PCW_CORE0_FIQ_INTR {0} \
+   CONFIG.PCW_CORE1_FIQ_INTR {1} \
    CONFIG.PCW_CPU_CPU_6X4X_MAX_RANGE {667} \
    CONFIG.PCW_CPU_CPU_PLL_FREQMHZ {1300.000} \
    CONFIG.PCW_CPU_PERIPHERAL_CLKSRC {ARM PLL} \
@@ -740,7 +741,7 @@ proc create_root_design { parentCell } {
   connect_bd_net -net processing_system7_0_FCLK_RESET0_N [get_bd_pins clk_wiz_0/resetn] [get_bd_pins processing_system7_0/FCLK_RESET0_N] [get_bd_pins rst_clk_wiz_0_147M/ext_reset_in]
   connect_bd_net -net rst_clk_wiz_0_147M_peripheral_aresetn [get_bd_pins ps7_0_axi_periph/ARESETN] [get_bd_pins ps7_0_axi_periph/M00_ARESETN] [get_bd_pins ps7_0_axi_periph/S00_ARESETN] [get_bd_pins rst_clk_wiz_0_147M/peripheral_aresetn] [get_bd_pins theremin_io_ip_0/m00_axi_aresetn] [get_bd_pins theremin_io_ip_0/s00_axi_aresetn]
   connect_bd_net -net sys_clock_1 [get_bd_ports sys_clock] [get_bd_pins clk_wiz_0/clk_in1]
-  connect_bd_net -net theremin_io_ip_0_AUDIO_IRQ [get_bd_pins processing_system7_0/Core0_nFIQ] [get_bd_pins theremin_io_ip_0/AUDIO_IRQ]
+  connect_bd_net -net theremin_io_ip_0_AUDIO_IRQ [get_bd_pins processing_system7_0/Core1_nFIQ] [get_bd_pins theremin_io_ip_0/AUDIO_IRQ]
   connect_bd_net -net theremin_io_ip_0_TOUCH_RESET [get_bd_ports TOUCH_RESET_0] [get_bd_pins theremin_io_ip_0/TOUCH_RESET]
 
   # Create address segments

@@ -764,7 +764,7 @@
   S_AXI_HP0_WID,
   S_AXI_HP0_WDATA,
   S_AXI_HP0_WSTRB,
-  Core0_nFIQ,
+  Core1_nFIQ,
   FCLK_CLK0,
   FCLK_RESET0_N,
   MIO,
@@ -938,7 +938,7 @@
       input  [5 : 0] S_AXI_HP0_WID;
       input  [31 : 0] S_AXI_HP0_WDATA;
       input  [3 : 0] S_AXI_HP0_WSTRB;
-      input  Core0_nFIQ;
+      input  Core1_nFIQ;
       output  FCLK_CLK0;
       output  FCLK_RESET0_N;
       inout  [53 : 0] MIO;

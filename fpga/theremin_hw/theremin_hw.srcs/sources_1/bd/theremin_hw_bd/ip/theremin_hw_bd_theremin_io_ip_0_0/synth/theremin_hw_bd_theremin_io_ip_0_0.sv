@@ -48,7 +48,7 @@
 
 
 // IP VLNV: coolreader_org:user:theremin_io_ip:1.0
-// IP Revision: 9
+// IP Revision: 11
 
 (* X_CORE_INFO = "theremin_io_ip,Vivado 2019.1.1" *)
 (* CHECK_LICENSE_TYPE = "theremin_hw_bd_theremin_io_ip_0_0,theremin_io_ip,{}" *)
