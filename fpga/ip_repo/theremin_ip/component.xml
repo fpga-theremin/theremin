@@ -1047,7 +1047,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>77b08ffe</spirit:value>
+            <spirit:value>d06030ef</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -1063,7 +1063,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>77b08ffe</spirit:value>
+            <spirit:value>d06030ef</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -1106,7 +1106,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>a1937ccd</spirit:value>
+            <spirit:value>e0de9252</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -2866,7 +2866,7 @@
       <spirit:file>
         <spirit:name>src/theremin_io/hdl/theremin_io_ip.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
-        <spirit:userFileType>CHECKSUM_4bae2af9</spirit:userFileType>
+        <spirit:userFileType>CHECKSUM_209577f0</spirit:userFileType>
       </spirit:file>
     </spirit:fileSet>
     <spirit:fileSet>
@@ -3180,8 +3180,8 @@
       <xilinx:displayName>theremin_io_ip_v1_0</xilinx:displayName>
       <xilinx:definitionSource>package_project</xilinx:definitionSource>
       <xilinx:vendorDisplayName>Vadim Lopatin</xilinx:vendorDisplayName>
-      <xilinx:coreRevision>8</xilinx:coreRevision>
-      <xilinx:coreCreationDateTime>2019-08-16T10:19:19Z</xilinx:coreCreationDateTime>
+      <xilinx:coreRevision>9</xilinx:coreRevision>
+      <xilinx:coreCreationDateTime>2019-08-19T07:48:00Z</xilinx:coreCreationDateTime>
       <xilinx:tags>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@4111dbb1_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo</xilinx:tag>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@112089c3_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo</xilinx:tag>
@@ -3317,6 +3317,17 @@
         <xilinx:tag xilinx:name="ui.data.coregen.dd@2ab2978b_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@6890b2bd_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@1a977c64_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@1898e096_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@3f028964_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2d60f1cd_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@6ff74dd5_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@78801814_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@79d60ad0_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2386630c_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2c982bca_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@16c5376_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@7872cffa_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@3ca22569_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
       </xilinx:tags>
     </xilinx:coreExtensions>
     <xilinx:packagingInfo>
@@ -3324,7 +3335,7 @@
       <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="1bc09926"/>
       <xilinx:checksum xilinx:scope="addressSpaces" xilinx:value="f8498d1e"/>
       <xilinx:checksum xilinx:scope="memoryMaps" xilinx:value="84ebdb9b"/>
-      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="7178d24c"/>
+      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="30199574"/>
       <xilinx:checksum xilinx:scope="ports" xilinx:value="fc171a18"/>
       <xilinx:checksum xilinx:scope="hdlParameters" xilinx:value="aedaf5c4"/>
       <xilinx:checksum xilinx:scope="parameters" xilinx:value="ce6b87d9"/>

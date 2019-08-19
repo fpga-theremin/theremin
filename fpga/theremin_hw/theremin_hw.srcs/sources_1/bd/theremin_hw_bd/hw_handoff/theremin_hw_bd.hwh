@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Mon Aug 19 10:45:35 2019" VIVADOVERSION="2019.1.1">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Mon Aug 19 10:48:24 2019" VIVADOVERSION="2019.1.1">
 
   <SYSTEMINFO ARCH="zynq" BOARD="digilentinc.com:cora-z7-10:part0:1.0" DEVICE="7z010" NAME="theremin_hw_bd" PACKAGE="clg400" SPEEDGRADE="-1"/>
 
@@ -3429,7 +3429,7 @@
       </PORTS>
       <BUSINTERFACES/>
     </MODULE>
-    <MODULE COREREVISION="8" FULLNAME="/theremin_io_ip_0" HWVERSION="1.0" INSTANCE="theremin_io_ip_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="theremin_io_ip" VLNV="coolreader_org:user:theremin_io_ip:1.0">
+    <MODULE COREREVISION="9" FULLNAME="/theremin_io_ip_0" HWVERSION="1.0" INSTANCE="theremin_io_ip_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="theremin_io_ip" VLNV="coolreader_org:user:theremin_io_ip:1.0">
       <DOCUMENTS/>
       <ADDRESSBLOCKS>
         <ADDRESSBLOCK ACCESS="" INTERFACE="s00_axi" NAME="THEREMIN_IP_REGS" RANGE="4096" USAGE="register"/>
