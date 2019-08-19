@@ -2,10 +2,10 @@
 <Root MajorVersion="0" MinorVersion="37">
   <CompositeFile CompositeFileTopName="theremin_hw_bd" CanBeSetAsTop="true" CanDisplayChildGraph="true">
     <Description>Composite Fileset</Description>
-    <Generation Name="SYNTHESIS" State="GENERATED" Timestamp="1565950821"/>
-    <Generation Name="IMPLEMENTATION" State="GENERATED" Timestamp="1565950821"/>
-    <Generation Name="SIMULATION" State="GENERATED" Timestamp="1565950821"/>
-    <Generation Name="HW_HANDOFF" State="GENERATED" Timestamp="1565950821"/>
+    <Generation Name="SYNTHESIS" State="GENERATED" Timestamp="1566200735"/>
+    <Generation Name="IMPLEMENTATION" State="GENERATED" Timestamp="1566200735"/>
+    <Generation Name="SIMULATION" State="GENERATED" Timestamp="1566200735"/>
+    <Generation Name="HW_HANDOFF" State="GENERATED" Timestamp="1566200735"/>
     <FileCollection Name="SOURCES" Type="SOURCES">
       <File Name="ip\theremin_hw_bd_processing_system7_0_0\theremin_hw_bd_processing_system7_0_0.xci" Type="IP">
         <Instance HierarchyPath="processing_system7_0"/>

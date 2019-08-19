@@ -48,6 +48,13 @@ module theremin_audio_io(
     output logic IRQ,
     // audio IRQ acknowlegement
     input logic ACK,
+    
+    // 1 for one CLK cycle when new sample is being started (I2S shift registers load) - once per ~48KHz
+    output logic SAMPLE_START,
+    // increments each CLK cycle, resets to 0 each sample start
+    output logic [11:0] SUBSAMPLE_COUNT,
+    // increments each sample
+    output logic [17:0] SAMPLE_COUNT,
 
     // Audio Out Channel 0 (Line Out) data
     // left
@@ -76,6 +83,9 @@ logic out_shift;
 logic load;
 
 logic in_shift;
+
+always_comb SAMPLE_START = load; // 1 for one CLK cycle when new sample is being started (I2S shift registers load) - once per ~48KHz
+ 
 
 audio_clk_gen audio_clk_gen_inst (
     // Source clock near to 147.457MHz -> =147.500MHz from PLL
@@ -172,5 +182,26 @@ always_ff @(posedge CLK) begin
     end
 end
 
+// increments each CLK cycle, resets to 0 each sample start
+logic [11:0] subsample_counter;
+// increments each sample
+logic [17:0] sample_counter;
+
+always_ff @(posedge CLK) begin
+    if (RESET) begin
+        subsample_counter <= 0;
+        sample_counter <= 0;
+    end else begin
+        if (load) begin
+            subsample_counter <= 0;
+            sample_counter <= sample_counter + 1;
+        end else begin
+            subsample_counter <= subsample_counter + 1;
+        end
+    end
+end
+
+always_comb SAMPLE_COUNT <= sample_counter;
+always_comb SUBSAMPLE_COUNT <= subsample_counter;
 
 endmodule

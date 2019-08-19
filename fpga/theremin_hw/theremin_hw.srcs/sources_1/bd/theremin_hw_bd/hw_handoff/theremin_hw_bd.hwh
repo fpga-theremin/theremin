@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Fri Aug 16 13:20:20 2019" VIVADOVERSION="2019.1.1">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Mon Aug 19 10:45:35 2019" VIVADOVERSION="2019.1.1">
 
   <SYSTEMINFO ARCH="zynq" BOARD="digilentinc.com:cora-z7-10:part0:1.0" DEVICE="7z010" NAME="theremin_hw_bd" PACKAGE="clg400" SPEEDGRADE="-1"/>
 
@@ -104,36 +104,6 @@
         <CONNECTION INSTANCE="processing_system7_0" PORT="DDR_DQS"/>
       </CONNECTIONS>
     </PORT>
-    <PORT DIR="IO" NAME="AUDIO_I2C_0_sda" SIGIS="undef" SIGNAME="theremin_io_ip_0_AUDIO_I2C_DATA">
-      <CONNECTIONS>
-        <CONNECTION INSTANCE="theremin_io_ip_0" PORT="AUDIO_I2C_DATA"/>
-      </CONNECTIONS>
-    </PORT>
-    <PORT CLKFREQUENCY="100000000" DIR="IO" NAME="AUDIO_I2C_0_scl" SIGIS="clk" SIGNAME="theremin_io_ip_0_AUDIO_I2C_CLK">
-      <CONNECTIONS>
-        <CONNECTION INSTANCE="theremin_io_ip_0" PORT="AUDIO_I2C_CLK"/>
-      </CONNECTIONS>
-    </PORT>
-    <PORT DIR="I" NAME="ENC_MUX_0_mux_data" SIGIS="undef" SIGNAME="theremin_io_ip_0_MUX_OUT">
-      <CONNECTIONS>
-        <CONNECTION INSTANCE="theremin_io_ip_0" PORT="MUX_OUT"/>
-      </CONNECTIONS>
-    </PORT>
-    <PORT DIR="O" LEFT="3" NAME="ENC_MUX_0_mux_addr" RIGHT="0" SIGIS="undef" SIGNAME="theremin_io_ip_0_MUX_ADDR">
-      <CONNECTIONS>
-        <CONNECTION INSTANCE="theremin_io_ip_0" PORT="MUX_ADDR"/>
-      </CONNECTIONS>
-    </PORT>
-    <PORT DIR="IO" NAME="TOUCH_I2C_0_sda" SIGIS="undef" SIGNAME="theremin_io_ip_0_TOUCH_I2C_DATA">
-      <CONNECTIONS>
-        <CONNECTION INSTANCE="theremin_io_ip_0" PORT="TOUCH_I2C_DATA"/>
-      </CONNECTIONS>
-    </PORT>
-    <PORT CLKFREQUENCY="100000000" DIR="IO" NAME="TOUCH_I2C_0_scl" SIGIS="clk" SIGNAME="theremin_io_ip_0_TOUCH_I2C_CLK">
-      <CONNECTIONS>
-        <CONNECTION INSTANCE="theremin_io_ip_0" PORT="TOUCH_I2C_CLK"/>
-      </CONNECTIONS>
-    </PORT>
     <PORT DIR="O" NAME="RGBLED0_0_r" SIGIS="undef" SIGNAME="theremin_io_ip_0_led0_r">
       <CONNECTIONS>
         <CONNECTION INSTANCE="theremin_io_ip_0" PORT="led0_r"/>
@@ -149,19 +119,14 @@
         <CONNECTION INSTANCE="theremin_io_ip_0" PORT="led0_g"/>
       </CONNECTIONS>
     </PORT>
-    <PORT DIR="O" NAME="RGBLED1_0_r" SIGIS="undef" SIGNAME="theremin_io_ip_0_led1_r">
+    <PORT DIR="IO" NAME="AUDIO_I2C_0_sda" SIGIS="undef" SIGNAME="theremin_io_ip_0_AUDIO_I2C_DATA">
       <CONNECTIONS>
-        <CONNECTION INSTANCE="theremin_io_ip_0" PORT="led1_r"/>
+        <CONNECTION INSTANCE="theremin_io_ip_0" PORT="AUDIO_I2C_DATA"/>
       </CONNECTIONS>
     </PORT>
-    <PORT DIR="O" NAME="RGBLED1_0_b" SIGIS="undef" SIGNAME="theremin_io_ip_0_led1_b">
+    <PORT CLKFREQUENCY="100000000" DIR="IO" NAME="AUDIO_I2C_0_scl" SIGIS="clk" SIGNAME="theremin_io_ip_0_AUDIO_I2C_CLK">
       <CONNECTIONS>
-        <CONNECTION INSTANCE="theremin_io_ip_0" PORT="led1_b"/>
-      </CONNECTIONS>
-    </PORT>
-    <PORT DIR="O" NAME="RGBLED1_0_g" SIGIS="undef" SIGNAME="theremin_io_ip_0_led1_g">
-      <CONNECTIONS>
-        <CONNECTION INSTANCE="theremin_io_ip_0" PORT="led1_g"/>
+        <CONNECTION INSTANCE="theremin_io_ip_0" PORT="AUDIO_I2C_CLK"/>
       </CONNECTIONS>
     </PORT>
     <PORT CLKFREQUENCY="100000000" DIR="O" NAME="AUDIO_I2S_0_mclk" SIGIS="clk" SIGNAME="theremin_io_ip_0_MCLK">
@@ -194,34 +159,19 @@
         <CONNECTION INSTANCE="theremin_io_ip_0" PORT="I2S_DATA_IN"/>
       </CONNECTIONS>
     </PORT>
-    <PORT DIR="IO" LEFT="53" NAME="FIXED_IO_mio" RIGHT="0" SIGIS="undef" SIGNAME="processing_system7_0_MIO">
+    <PORT DIR="O" NAME="RGBLED1_0_r" SIGIS="undef" SIGNAME="theremin_io_ip_0_led1_r">
       <CONNECTIONS>
-        <CONNECTION INSTANCE="processing_system7_0" PORT="MIO"/>
+        <CONNECTION INSTANCE="theremin_io_ip_0" PORT="led1_r"/>
       </CONNECTIONS>
     </PORT>
-    <PORT DIR="IO" NAME="FIXED_IO_ddr_vrn" SIGIS="undef" SIGNAME="processing_system7_0_DDR_VRN">
+    <PORT DIR="O" NAME="RGBLED1_0_b" SIGIS="undef" SIGNAME="theremin_io_ip_0_led1_b">
       <CONNECTIONS>
-        <CONNECTION INSTANCE="processing_system7_0" PORT="DDR_VRN"/>
+        <CONNECTION INSTANCE="theremin_io_ip_0" PORT="led1_b"/>
       </CONNECTIONS>
     </PORT>
-    <PORT DIR="IO" NAME="FIXED_IO_ddr_vrp" SIGIS="undef" SIGNAME="processing_system7_0_DDR_VRP">
+    <PORT DIR="O" NAME="RGBLED1_0_g" SIGIS="undef" SIGNAME="theremin_io_ip_0_led1_g">
       <CONNECTIONS>
-        <CONNECTION INSTANCE="processing_system7_0" PORT="DDR_VRP"/>
-      </CONNECTIONS>
-    </PORT>
-    <PORT DIR="IO" NAME="FIXED_IO_ps_srstb" SIGIS="undef" SIGNAME="processing_system7_0_PS_SRSTB">
-      <CONNECTIONS>
-        <CONNECTION INSTANCE="processing_system7_0" PORT="PS_SRSTB"/>
-      </CONNECTIONS>
-    </PORT>
-    <PORT DIR="IO" NAME="FIXED_IO_ps_clk" SIGIS="undef" SIGNAME="processing_system7_0_PS_CLK">
-      <CONNECTIONS>
-        <CONNECTION INSTANCE="processing_system7_0" PORT="PS_CLK"/>
-      </CONNECTIONS>
-    </PORT>
-    <PORT DIR="IO" NAME="FIXED_IO_ps_porb" SIGIS="undef" SIGNAME="processing_system7_0_PS_PORB">
-      <CONNECTIONS>
-        <CONNECTION INSTANCE="processing_system7_0" PORT="PS_PORB"/>
+        <CONNECTION INSTANCE="theremin_io_ip_0" PORT="led1_g"/>
       </CONNECTIONS>
     </PORT>
     <PORT DIR="O" NAME="LCD_0_de" SIGIS="undef" SIGNAME="theremin_io_ip_0_DE">
@@ -262,6 +212,56 @@
     <PORT DIR="O" NAME="LCD_0_backlight" SIGIS="undef" SIGNAME="theremin_io_ip_0_BACKLIGHT_PWM">
       <CONNECTIONS>
         <CONNECTION INSTANCE="theremin_io_ip_0" PORT="BACKLIGHT_PWM"/>
+      </CONNECTIONS>
+    </PORT>
+    <PORT DIR="I" NAME="ENC_MUX_0_mux_data" SIGIS="undef" SIGNAME="theremin_io_ip_0_MUX_OUT">
+      <CONNECTIONS>
+        <CONNECTION INSTANCE="theremin_io_ip_0" PORT="MUX_OUT"/>
+      </CONNECTIONS>
+    </PORT>
+    <PORT DIR="O" LEFT="3" NAME="ENC_MUX_0_mux_addr" RIGHT="0" SIGIS="undef" SIGNAME="theremin_io_ip_0_MUX_ADDR">
+      <CONNECTIONS>
+        <CONNECTION INSTANCE="theremin_io_ip_0" PORT="MUX_ADDR"/>
+      </CONNECTIONS>
+    </PORT>
+    <PORT DIR="IO" NAME="TOUCH_I2C_0_sda" SIGIS="undef" SIGNAME="theremin_io_ip_0_TOUCH_I2C_DATA">
+      <CONNECTIONS>
+        <CONNECTION INSTANCE="theremin_io_ip_0" PORT="TOUCH_I2C_DATA"/>
+      </CONNECTIONS>
+    </PORT>
+    <PORT CLKFREQUENCY="100000000" DIR="IO" NAME="TOUCH_I2C_0_scl" SIGIS="clk" SIGNAME="theremin_io_ip_0_TOUCH_I2C_CLK">
+      <CONNECTIONS>
+        <CONNECTION INSTANCE="theremin_io_ip_0" PORT="TOUCH_I2C_CLK"/>
+      </CONNECTIONS>
+    </PORT>
+    <PORT DIR="IO" LEFT="53" NAME="FIXED_IO_mio" RIGHT="0" SIGIS="undef" SIGNAME="processing_system7_0_MIO">
+      <CONNECTIONS>
+        <CONNECTION INSTANCE="processing_system7_0" PORT="MIO"/>
+      </CONNECTIONS>
+    </PORT>
+    <PORT DIR="IO" NAME="FIXED_IO_ddr_vrn" SIGIS="undef" SIGNAME="processing_system7_0_DDR_VRN">
+      <CONNECTIONS>
+        <CONNECTION INSTANCE="processing_system7_0" PORT="DDR_VRN"/>
+      </CONNECTIONS>
+    </PORT>
+    <PORT DIR="IO" NAME="FIXED_IO_ddr_vrp" SIGIS="undef" SIGNAME="processing_system7_0_DDR_VRP">
+      <CONNECTIONS>
+        <CONNECTION INSTANCE="processing_system7_0" PORT="DDR_VRP"/>
+      </CONNECTIONS>
+    </PORT>
+    <PORT DIR="IO" NAME="FIXED_IO_ps_srstb" SIGIS="undef" SIGNAME="processing_system7_0_PS_SRSTB">
+      <CONNECTIONS>
+        <CONNECTION INSTANCE="processing_system7_0" PORT="PS_SRSTB"/>
+      </CONNECTIONS>
+    </PORT>
+    <PORT DIR="IO" NAME="FIXED_IO_ps_clk" SIGIS="undef" SIGNAME="processing_system7_0_PS_CLK">
+      <CONNECTIONS>
+        <CONNECTION INSTANCE="processing_system7_0" PORT="PS_CLK"/>
+      </CONNECTIONS>
+    </PORT>
+    <PORT DIR="IO" NAME="FIXED_IO_ps_porb" SIGIS="undef" SIGNAME="processing_system7_0_PS_PORB">
+      <CONNECTIONS>
+        <CONNECTION INSTANCE="processing_system7_0" PORT="PS_PORB"/>
       </CONNECTIONS>
     </PORT>
   </EXTERNALPORTS>

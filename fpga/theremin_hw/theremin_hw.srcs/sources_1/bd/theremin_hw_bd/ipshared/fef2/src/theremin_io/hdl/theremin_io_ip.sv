@@ -50,17 +50,29 @@ module theremin_io_ip #
 )
 (
     // Users to add ports here
-    // ~600MHz - ISERDESE2 DDR mode shift clock
+    
+    // Clocks:
+    
+    // ~600MHz = 589.844MHz - ISERDESE2 DDR mode shift clock
     input logic CLK_SHIFT,
-    // ~600MHz - ISERDESE2 DDR mode shift clock inverted (phase 180 relative to CLK_SHIFT) 
+    
+    // ~600MHz = 589.844MHz - ISERDESE2 DDR mode shift clock inverted (phase 180 relative to CLK_SHIFT) 
     input logic CLK_SHIFTB,
-    // 200MHz input for driving IDELAYE2
+    
+    // ~200MHz  = 196.615MHz input for driving IDELAYE2
     input logic CLK_DELAY,
 
+    // CLK = s00_axi_aclk = m00_axi_aclk = CLK_SHIFT/4 = ~150MHz = 147.461MHz : main clock for buses
+    
+    // CLK_SHIFT/16 = CLK/4 = 36.865MHz - pixel clock for LCD
     input logic CLK_PXCLK,
 
+    // MCLK = CLK / 8 = CLK_PXCLK / 2 = 18.432625
+    // LRCK = MCLK / 384 = ~48000 = 48001.627 : audio sample clock
+    // CLK / LRCK = 3072 = 1024*3
+
     // RGB interface
-    // pixel clock
+    // pixel clock = CLK_PXCLK
     output logic PXCLK,
     // horizontal sync
     output logic HSYNC,
@@ -207,6 +219,61 @@ module theremin_io_ip #
     */
 
 );
+
+
+/*
+   offset  name                          read                         write
+   0:     REG_STATUS                     [31] audio irq enabled       [31] audio irq enabled
+                                         [30] audio irq 1=pending     [30] audio irq ack write 0 to ack
+                                         [29:10] reserved             [29:10] reserved
+                                         [9:0] current screen y       [9:0] reserved
+   1:     REG_LCD_FRAMEBUFFER_ADDR       [31:0] PITCH_PERIOD          [31:0] lcd framebuffer start address (0=disabled)
+   2:     REG_PWM                        [31:0] VOLUME_PERIOD         [31:20] led1 color
+                                                                      [19:8] led0 color
+                                                                      [7:0] LCD backlight brightness
+   3:     REG_ENCODER_0                  [31:0] encoder 0             [31:0] reserved                                                                   
+   4:     REG_LINE_OUT_L/LINE_IN_L       [23:0] line in L             [23:0] line out L                                                                      
+   5:     REG_LINE_OUT_R/LINE_IN_R       [23:0] line in R             [23:0] line out R                                                                      
+   6:     REG_PHONES_OUT_L               [31:0] encoder 1             [23:0] phones out L                                                                      
+   7:     REG_PHONES_OUT_R               [31:0] encoder 2             [23:0] phones out R
+                                                                         
+   8:     REG_TOUCH_I2C                  [31:0] I2C touch             [31:0] I2C touch                                                                      
+   9:     REG_AUDIO_I2C                  [31:0] I2C audio             [31:0] I2C audio                                                                      
+
+   12:    REG_AUDIO_STATUS               [31] audio irq enabled       [31] audio irq enabled
+                                         [30] audio irq 1=pending     [30] audio irq ack write 0 to ack
+                                         [29:12] sample counter       [29:0] reserved
+                                         [11:0] subsample counter     [29:0] reserved
+*/
+
+typedef enum logic [3:0] {
+    RD_REG_STATUS = 0,
+    RD_REG_PITCH_PERIOD = 1,
+    RD_REG_VOLUME_PERIOD = 2,
+    RD_REG_ENCODER_0 = 3,
+    RD_REG_LINE_IN_L = 4,
+    RD_REG_LINE_IN_R = 5,
+    RD_REG_ENCODER_1 = 6,
+    RD_REG_ENCODER_2 = 7,
+    RD_REG_AUDIO_I2C = 8,
+    RD_REG_TOUCH_I2C = 9,
+    RD_REG_AUDIO_STATUS = 12    // [31] Audio IRQ enable [30] Audio IRQ pending
+} reg_rd_addr_t;
+
+typedef enum logic [3:0] {
+    WR_REG_STATUS = 0,
+    WR_REG_LCD_FRAMEBUFFER_ADDR = 1,
+    WR_REG_PWM = 2,
+    WR_REG_LINE_OUT_L = 4,
+    WR_REG_LINE_OUT_R = 5,
+    WR_REG_PHONES_OUT_L = 6,
+    WR_REG_PHONES_OUT_R = 7,
+    WR_REG_AUDIO_I2C = 8,
+    WR_REG_TOUCH_I2C = 9,    
+    WR_REG_AUDIO_STATUS = 12    // [31] Audio IRQ enable [30] Audio IRQ ack (write 0)
+} reg_wr_addr_t;
+
+
 
 wire RESET;
 wire CLK;
@@ -370,6 +437,13 @@ logic [23:0] IN_LEFT_CHANNEL;
 // right
 logic [23:0] IN_RIGHT_CHANNEL;
 
+// 1 for one CLK cycle when new sample is being started (I2S shift registers load) - once per ~48KHz
+logic SAMPLE_START;
+// increments each CLK cycle, resets to 0 each sample start
+logic [11:0] SUBSAMPLE_COUNT;
+// increments each sample
+logic [17:0] SAMPLE_COUNT;
+
 theremin_audio_io theremin_audio_io_inst (
     // Source clock near to 147.457MHz -> =147.500MHz from PLL
     .CLK,
@@ -398,6 +472,13 @@ theremin_audio_io theremin_audio_io_inst (
     .IRQ(AUDIO_IRQ),
     // audio IRQ acknowlegement
     .ACK(AUDIO_IRQ_ACK),
+
+    // 1 for one CLK cycle when new sample is being started (I2S shift registers load) - once per ~48KHz
+    .SAMPLE_START,
+    // increments each CLK cycle, resets to 0 each sample start
+    .SUBSAMPLE_COUNT,
+    // increments each sample
+    .SAMPLE_COUNT,
 
     // Audio Out Channel 0 (Line Out) data
     // left
@@ -543,52 +624,6 @@ theremin_oversampling_iserdes_period_measure
     .VOLUME_PERIOD_FILTERED
 
 );
-
-/*
-   offset  name                          read                         write
-   0:     REG_STATUS                     [31] audio irq enabled       [31] audio irq enabled
-                                         [30] audio irq 1=pending     [30] audio irq ack write 0 to ack
-                                         [29:10] reserved             [29:10] reserved
-                                         [9:0] current screen y       [9:0] reserved
-   1:     REG_LCD_FRAMEBUFFER_ADDR       [31:0] PITCH_PERIOD          [31:0] lcd framebuffer start address (0=disabled)
-   2:     REG_PWM                        [31:0] VOLUME_PERIOD         [31:20] led1 color
-                                                                      [19:8] led0 color
-                                                                      [7:0] LCD backlight brightness
-   3:     REG_ENCODER_0                  [31:0] encoder 0             [31:0] reserved                                                                   
-   4:     REG_LINE_OUT_L/LINE_IN_L       [23:0] line in L             [23:0] line out L                                                                      
-   5:     REG_LINE_OUT_R/LINE_IN_R       [23:0] line in R             [23:0] line out R                                                                      
-   6:     REG_PHONES_OUT_L               [31:0] encoder 1             [23:0] phones out L                                                                      
-   7:     REG_PHONES_OUT_R               [31:0] encoder 2             [23:0] phones out R
-                                                                         
-   8:     REG_TOUCH_I2C                  [31:0] I2C touch             [31:0] I2C touch                                                                      
-   9:     REG_AUDIO_I2C                  [31:0] I2C audio             [31:0] I2C audio                                                                      
-
-*/
-
-typedef enum logic [3:0] {
-    RD_REG_STATUS = 0,
-    RD_REG_PITCH_PERIOD = 1,
-    RD_REG_VOLUME_PERIOD = 2,
-    RD_REG_ENCODER_0 = 3,
-    RD_REG_LINE_IN_L = 4,
-    RD_REG_LINE_IN_R = 5,
-    RD_REG_ENCODER_1 = 6,
-    RD_REG_ENCODER_2 = 7,
-    RD_REG_AUDIO_I2C = 8,
-    RD_REG_TOUCH_I2C = 9    
-} reg_rd_addr_t;
-
-typedef enum logic [3:0] {
-    WR_REG_STATUS = 0,
-    WR_REG_LCD_FRAMEBUFFER_ADDR = 1,
-    WR_REG_PWM = 2,
-    WR_REG_LINE_OUT_L = 4,
-    WR_REG_LINE_OUT_R = 5,
-    WR_REG_PHONES_OUT_L = 6,
-    WR_REG_PHONES_OUT_R = 7,
-    WR_REG_AUDIO_I2C = 8,
-    WR_REG_TOUCH_I2C = 9    
-} reg_wr_addr_t;
 
 
 logic REG_WREN;                              // write enable for control register
@@ -739,14 +774,32 @@ axi4_lite_slave_reg_impl
 );
 
 
-logic audio_irq_enabled;
 logic [31:0] status_reg;
-always_comb status_reg[31] <= audio_irq_enabled; // audio irq enabled
-always_comb status_reg[30] <= AUDIO_IRQ;         // audio irq pending
+always_comb status_reg[31] <= 'b0; //audio_irq_enabled; // audio irq enabled
+always_comb status_reg[30] <= 'b0; //AUDIO_IRQ;         // audio irq pending
 always_comb status_reg[29:27] <= IIR_MAX_STAGE;  // read max IIR filter stage 1..7
 always_comb status_reg[26:10] <= 'b0;
 always_comb status_reg[9:0] <= {{(10 - Y_BITS){1'b0}}, lcd_row_index};
-assign AUDIO_IRQ_ACK = (REG_WREN & (REG_WR_ADDR == RD_REG_STATUS) & ~REG_WR_DATA[30]);
+
+logic audio_irq_enabled;
+logic [31:0] audio_status_reg;
+always_comb audio_status_reg[31] <= audio_irq_enabled; // audio irq enabled
+always_comb audio_status_reg[30] <= AUDIO_IRQ;         // audio irq pending
+always_comb audio_status_reg[11:0] <= SUBSAMPLE_COUNT; // audio subsample counter
+always_comb audio_status_reg[29:12] <= SAMPLE_COUNT; // audio sample counter
+
+always_ff @(posedge CLK) begin
+    if (RESET) begin
+        audio_status_reg[11:0] <= 'b0;
+    end else begin
+        audio_status_reg[11:0] <= 'b0;
+    end
+end
+
+// Registers read
+
+// write 0 to bit 30 of audio status reg to send audio IRQ ACK
+assign AUDIO_IRQ_ACK = (REG_WREN & (REG_WR_ADDR == WR_REG_AUDIO_STATUS) & ~REG_WR_DATA[30]);
 
 assign REG_RD_DATA = (REG_RD_ADDR == RD_REG_STATUS) ? status_reg
                    : (REG_RD_ADDR == RD_REG_PITCH_PERIOD) ? PITCH_PERIOD_FILTERED
@@ -758,7 +811,10 @@ assign REG_RD_DATA = (REG_RD_ADDR == RD_REG_STATUS) ? status_reg
                    : (REG_RD_ADDR == RD_REG_ENCODER_2) ? ENCODERS_R2
                    : (REG_RD_ADDR == RD_REG_AUDIO_I2C) ? { 22'b0, audio_i2c_status}
                    : (REG_RD_ADDR == RD_REG_TOUCH_I2C) ? { 22'b0, touch_i2c_status}
+                   : (REG_RD_ADDR == RD_REG_AUDIO_STATUS) ? { audio_status_reg }
                    :                                                 0;
+
+// Registers write
 
 always_ff @(posedge m00_axi_aclk) begin
     if (~m00_axi_aresetn) begin
@@ -774,10 +830,7 @@ always_ff @(posedge m00_axi_aclk) begin
         IIR_MAX_STAGE <= 3'b011; // 4 stages
     end else if (REG_WREN) begin
         case (REG_WR_ADDR)
-            WR_REG_STATUS: begin
-                audio_irq_enabled <= REG_WR_DATA[31];
-                IIR_MAX_STAGE <= REG_WR_DATA[29:27]; // 4 stages
-            end
+            WR_REG_STATUS: IIR_MAX_STAGE <= REG_WR_DATA[29:27]; // 4 stages
             WR_REG_LCD_FRAMEBUFFER_ADDR: lcd_buffer_start_address_reg <= REG_WR_DATA[C_S00_AXI_DATA_WIDTH-1:2];
             WR_REG_PWM: begin
                     lcd_backlight_brightness_reg <= REG_WR_DATA[7:0];
@@ -788,6 +841,7 @@ always_ff @(posedge m00_axi_aclk) begin
             WR_REG_LINE_OUT_R: OUT_RIGHT_CHANNEL0 <= REG_WR_DATA[23:0];
             WR_REG_PHONES_OUT_L: OUT_LEFT_CHANNEL1 <= REG_WR_DATA[23:0];
             WR_REG_PHONES_OUT_R: AUDIO_OUT_1_R: OUT_RIGHT_CHANNEL1 <= REG_WR_DATA[23:0];
+            WR_REG_AUDIO_STATUS: audio_irq_enabled <= REG_WR_DATA[31];
         endcase
     end
 end

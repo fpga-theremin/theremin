@@ -37,16 +37,16 @@ preplace netloc theremin_io_ip_0_TOUCH_RESET 1 2 2 NJ 280 NJ
 preplace netloc processing_system7_0_FCLK_RESET0_N 1 0 3 20 410 270J 410 780
 preplace netloc theremin_io_ip_0_m00_axi 1 1 2 300 40 780
 preplace netloc processing_system7_0_DDR 1 2 2 NJ 470 N
-preplace netloc theremin_io_ip_0_AUDIO_I2C 1 2 2 NJ 220 NJ
-preplace netloc theremin_io_ip_0_ENC_MUX 1 2 2 NJ 180 NJ
 preplace netloc ps7_0_axi_periph_M00_AXI 1 1 3 310J 380 NJ 380 1110
-preplace netloc theremin_io_ip_0_TOUCH_I2C 1 2 2 NJ 200 NJ
 preplace netloc theremin_io_ip_0_RGBLED0 1 2 2 NJ 240 NJ
-preplace netloc theremin_io_ip_0_RGBLED1 1 2 2 NJ 260 NJ
+preplace netloc theremin_io_ip_0_AUDIO_I2C 1 2 2 NJ 220 NJ
 preplace netloc theremin_io_ip_0_AUDIO_I2S 1 2 2 NJ 120 NJ
-preplace netloc processing_system7_0_FIXED_IO 1 2 2 NJ 490 N
+preplace netloc theremin_io_ip_0_RGBLED1 1 2 2 NJ 260 NJ
 preplace netloc processing_system7_0_M_AXI_GP0 1 2 1 810 530n
 preplace netloc theremin_io_ip_0_LCD 1 2 2 NJ 160 NJ
+preplace netloc theremin_io_ip_0_ENC_MUX 1 2 2 NJ 180 NJ
+preplace netloc theremin_io_ip_0_TOUCH_I2C 1 2 2 NJ 200 NJ
+preplace netloc processing_system7_0_FIXED_IO 1 2 2 NJ 490 N
 levelinfo -pg 1 0 130 550 960 1130
 pagesize -pg 1 -db -bbox -sgen -210 0 1310 830
 "
