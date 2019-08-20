@@ -1,0 +1,8 @@
+16:29:32 **** Incremental Build of configuration Debug for project theremin ****
+make pre-build main-build 
+a9-linaro-pre-build-step
+' '
+make: Nothing to be done for 'main-build'.
+
+16:29:33 Build Finished (took 283ms)
+
