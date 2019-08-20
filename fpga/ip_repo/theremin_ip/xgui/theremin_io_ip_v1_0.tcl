@@ -25,6 +25,8 @@ proc init_gui { IPINST } {
   ipgui::add_param $IPINST -name "VSW" -parent ${Page_0}
   ipgui::add_param $IPINST -name "VSYNC_POLARITY" -parent ${Page_0}
 
+  set PXCLK_POLARITY [ipgui::add_param $IPINST -name "PXCLK_POLARITY"]
+  set_property tooltip {0: data changed on raising edge, 1 on falling edge} ${PXCLK_POLARITY}
 
 }
 
@@ -217,6 +219,15 @@ proc validate_PARAM_VALUE.PITCH_PERIOD_BITS { PARAM_VALUE.PITCH_PERIOD_BITS } {
 	return true
 }
 
+proc update_PARAM_VALUE.PXCLK_POLARITY { PARAM_VALUE.PXCLK_POLARITY } {
+	# Procedure called to update PXCLK_POLARITY when any of the dependent parameters in the arguments change
+}
+
+proc validate_PARAM_VALUE.PXCLK_POLARITY { PARAM_VALUE.PXCLK_POLARITY } {
+	# Procedure called to validate PXCLK_POLARITY
+	return true
+}
+
 proc update_PARAM_VALUE.VBP { PARAM_VALUE.VBP } {
 	# Procedure called to update VBP when any of the dependent parameters in the arguments change
 }
@@ -405,5 +416,10 @@ proc update_MODELPARAM_VALUE.C_M00_AXI_RUSER_WIDTH { MODELPARAM_VALUE.C_M00_AXI_
 proc update_MODELPARAM_VALUE.C_M00_AXI_BUSER_WIDTH { MODELPARAM_VALUE.C_M00_AXI_BUSER_WIDTH PARAM_VALUE.C_M00_AXI_BUSER_WIDTH } {
 	# Procedure called to set VHDL generic/Verilog parameter value(s) based on TCL parameter value
 	set_property value [get_property value ${PARAM_VALUE.C_M00_AXI_BUSER_WIDTH}] ${MODELPARAM_VALUE.C_M00_AXI_BUSER_WIDTH}
+}
+
+proc update_MODELPARAM_VALUE.PXCLK_POLARITY { MODELPARAM_VALUE.PXCLK_POLARITY PARAM_VALUE.PXCLK_POLARITY } {
+	# Procedure called to set VHDL generic/Verilog parameter value(s) based on TCL parameter value
+	set_property value [get_property value ${PARAM_VALUE.PXCLK_POLARITY}] ${MODELPARAM_VALUE.PXCLK_POLARITY}
 }
 

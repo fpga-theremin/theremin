@@ -48,7 +48,7 @@
 
 
 // IP VLNV: coolreader_org:user:theremin_io_ip:1.0
-// IP Revision: 11
+// IP Revision: 20
 
 (* X_CORE_INFO = "theremin_io_ip,Vivado 2019.1.1" *)
 (* CHECK_LICENSE_TYPE = "theremin_hw_bd_theremin_io_ip_0_0,theremin_io_ip,{}" *)
@@ -67,10 +67,6 @@ module theremin_hw_bd_theremin_io_ip_0_0 (
   G,
   B,
   BACKLIGHT_PWM,
-  TOUCH_I2C_DATA,
-  TOUCH_I2C_CLK,
-  TOUCH_INTERRUPT,
-  TOUCH_RESET,
   PITCH_FREQ_IN,
   VOLUME_FREQ_IN,
   MCLK,
@@ -162,7 +158,7 @@ input wire CLK_SHIFTB;
 (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME CLK_DELAY, FREQ_HZ 196614583, PHASE 0.0, CLK_DOMAIN /clk_wiz_0_clk_out1, INSERT_VIP 0" *)
 (* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 CLK_DELAY CLK" *)
 input wire CLK_DELAY;
-(* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME CLK_PXCLK, FREQ_HZ 36865234, PHASE 0.0, CLK_DOMAIN /clk_wiz_0_clk_out1, INSERT_VIP 0" *)
+(* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME CLK_PXCLK, FREQ_HZ 18432617, PHASE 0.0, CLK_DOMAIN /clk_wiz_0_clk_out1, INSERT_VIP 0" *)
 (* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 CLK_PXCLK CLK" *)
 input wire CLK_PXCLK;
 (* X_INTERFACE_INFO = "coolreader.org:user:lcd_rgb_12bit:1.0 LCD PXCLK" *)
@@ -181,16 +177,6 @@ output wire [3 : 0] G;
 output wire [3 : 0] B;
 (* X_INTERFACE_INFO = "coolreader.org:user:lcd_rgb_12bit:1.0 LCD BACKLIGHT" *)
 output wire BACKLIGHT_PWM;
-(* X_INTERFACE_INFO = "coolreader.org:user:i2c:1.0 TOUCH_I2C SDA" *)
-inout wire TOUCH_I2C_DATA;
-(* X_INTERFACE_INFO = "coolreader.org:user:i2c:1.0 TOUCH_I2C SCL" *)
-inout wire TOUCH_I2C_CLK;
-(* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME TOUCH_INTERRUPT, SENSITIVITY LEVEL_HIGH, PortWidth 1" *)
-(* X_INTERFACE_INFO = "xilinx.com:signal:interrupt:1.0 TOUCH_INTERRUPT INTERRUPT" *)
-input wire TOUCH_INTERRUPT;
-(* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME TOUCH_RESET, POLARITY ACTIVE_LOW, INSERT_VIP 0" *)
-(* X_INTERFACE_INFO = "xilinx.com:signal:reset:1.0 TOUCH_RESET RST" *)
-output wire TOUCH_RESET;
 input wire PITCH_FREQ_IN;
 input wire VOLUME_FREQ_IN;
 (* X_INTERFACE_INFO = "coolreader.org:user:i2s_io:1.0 AUDIO_I2S MCLK" *)
@@ -363,12 +349,12 @@ input wire m00_axi_aresetn;
     .BURST_SIZE(8),
     .HPIXELS(800),
     .VPIXELS(480),
-    .HBP(2),
-    .VBP(2),
-    .HSW(10),
-    .VSW(2),
-    .HFP(2),
-    .VFP(2),
+    .HBP(13),
+    .VBP(23),
+    .HSW(29),
+    .VSW(9),
+    .HFP(12),
+    .VFP(8),
     .HSYNC_POLARITY(0),
     .VSYNC_POLARITY(0),
     .PITCH_PERIOD_BITS(16),
@@ -386,7 +372,8 @@ input wire m00_axi_aresetn;
     .C_M00_AXI_ARUSER_WIDTH(0),
     .C_M00_AXI_WUSER_WIDTH(0),
     .C_M00_AXI_RUSER_WIDTH(0),
-    .C_M00_AXI_BUSER_WIDTH(0)
+    .C_M00_AXI_BUSER_WIDTH(0),
+    .PXCLK_POLARITY(1)
   ) inst (
     .CLK_SHIFT(CLK_SHIFT),
     .CLK_SHIFTB(CLK_SHIFTB),
@@ -400,10 +387,6 @@ input wire m00_axi_aresetn;
     .G(G),
     .B(B),
     .BACKLIGHT_PWM(BACKLIGHT_PWM),
-    .TOUCH_I2C_DATA(TOUCH_I2C_DATA),
-    .TOUCH_I2C_CLK(TOUCH_I2C_CLK),
-    .TOUCH_INTERRUPT(TOUCH_INTERRUPT),
-    .TOUCH_RESET(TOUCH_RESET),
     .PITCH_FREQ_IN(PITCH_FREQ_IN),
     .VOLUME_FREQ_IN(VOLUME_FREQ_IN),
     .MCLK(MCLK),

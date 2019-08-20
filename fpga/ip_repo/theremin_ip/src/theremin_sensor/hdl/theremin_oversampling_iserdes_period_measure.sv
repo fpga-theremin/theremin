@@ -38,9 +38,6 @@ module theremin_oversampling_iserdes_period_measure
     // 200MHz input for driving IDELAYE2
     input logic CLK_DELAY,
     
-    // main clock ~100MHz for measured value outputs
-    input logic CLK,
-
     // reset, active 1, must be synchronous to CLK_SHIFT !!!
     input logic RESET,
 
@@ -129,7 +126,7 @@ oversampling_iserdes_period_measure
     .CLK_PARALLEL,
 
     // 200MHz input for driving IDELAYE2
-    .CLK_DELAY,
+    //.CLK_DELAY,
 
     // reset, active 1, must be synchronous to CLK_SHIFT !!!
     .RESET(reset_sync),
@@ -183,7 +180,7 @@ oversampling_iserdes_period_measure
     .CLK_PARALLEL,
 
     // 200MHz input for driving IDELAYE2
-    .CLK_DELAY,
+    //.CLK_DELAY,
 
     // reset, active 1, must be synchronous to CLK_SHIFT !!!
     .RESET(reset_sync),

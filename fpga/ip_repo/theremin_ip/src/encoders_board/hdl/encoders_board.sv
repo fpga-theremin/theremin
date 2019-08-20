@@ -76,7 +76,7 @@ mux_debouncer
 #(
     // Number of bits in CLK divider to produce MUX switching frequency.
     // For  CLK_DIV_BITS = 5, /32 divider gives 3MHz for 100MHz CLK.
-    .CLK_DIV_BITS(5),
+    .CLK_DIV_BITS(7),
     // Number of address bits for MUX. MUX has (1<<MUX_ADDR_BITS) inputs.
     // One input is read once per CLK/(1<<CLK_DIV_BITS)/(1<<MUX_ADDR_BITS)
     // For 5 bits in divider and bits in address, each input is checked once
@@ -87,10 +87,10 @@ mux_debouncer
     // For DEBOUNCE_COUNTER_BITS == 12, it's input check interval / 4096.
     // For default settings, 200KHz/4096 == 47Hz is max frequency of input change (unbounced)
     // which can be noticed.
-    .DEBOUNCE_COUNTER_BITS(12),
+    .DEBOUNCE_COUNTER_BITS(10),
     // Outputs are updated once per CLK/(1<<CLK_DIV_BITS)/(1<<MUX_ADDR_BITS)/(1<<UPDATE_DIVIDER_BITS)
     // For default settings it's approximately once per 100ms
-    .UPDATE_DIVIDER_BITS(11)
+    .UPDATE_DIVIDER_BITS(10)
 )
 mux_debouncer_inst
 (

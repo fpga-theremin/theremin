@@ -15,14 +15,15 @@ module theremin_io_ip #
     // LCD
     parameter integer HPIXELS = 800,
     parameter integer VPIXELS = 480,
-    parameter integer HBP = 2,
-    parameter integer VBP = 2,
-    parameter integer HSW = 10,
-    parameter integer VSW = 2,
-    parameter integer HFP = 2,
-    parameter integer VFP = 2,
+    parameter integer HBP = 13, // 2
+    parameter integer VBP = 23, // 2
+    parameter integer HSW = 29, // 10
+    parameter integer VSW = 9, // 2
+    parameter integer HFP = 12, // 2
+    parameter integer VFP = 8, // 2
     parameter integer HSYNC_POLARITY = 0,
     parameter integer VSYNC_POLARITY = 0,
+    parameter integer PXCLK_POLARITY = 0,
 
     parameter integer PITCH_PERIOD_BITS = 16,
     parameter integer VOLUME_PERIOD_BITS = 16,
@@ -91,10 +92,10 @@ module theremin_io_ip #
     output logic BACKLIGHT_PWM,
 
 
-    inout TOUCH_I2C_DATA,
-    inout TOUCH_I2C_CLK,        // 400KHz
-    input logic TOUCH_INTERRUPT,
-    output logic TOUCH_RESET,
+    //inout TOUCH_I2C_DATA,
+    //inout TOUCH_I2C_CLK,        // 400KHz
+    //input logic TOUCH_INTERRUPT,
+    //output logic TOUCH_RESET,
 
     // theremin sensor interface
     // serial input of pitch signal
@@ -240,6 +241,8 @@ module theremin_io_ip #
    8:     REG_TOUCH_I2C                  [31:0] I2C touch             [31:0] I2C touch                                                                      
    9:     REG_AUDIO_I2C                  [31:0] I2C audio             [31:0] I2C audio                                                                      
 
+   10:    REG_LCD_CONTROL                [31] 1: override color
+                                         [11:0] color val to override
    12:    REG_AUDIO_STATUS               [31] audio irq enabled       [31] audio irq enabled
                                          [30] audio irq 1=pending     [30] audio irq ack write 0 to ack
                                          [29:12] sample counter       [29:0] reserved
@@ -257,6 +260,7 @@ typedef enum logic [3:0] {
     RD_REG_ENCODER_2 = 7,
     RD_REG_AUDIO_I2C = 8,
     RD_REG_TOUCH_I2C = 9,
+    RD_REG_LCD_CONTROL = 10,
     RD_REG_AUDIO_STATUS = 12    // [31] Audio IRQ enable [30] Audio IRQ pending
 } reg_rd_addr_t;
 
@@ -269,18 +273,20 @@ typedef enum logic [3:0] {
     WR_REG_PHONES_OUT_L = 6,
     WR_REG_PHONES_OUT_R = 7,
     WR_REG_AUDIO_I2C = 8,
-    WR_REG_TOUCH_I2C = 9,    
+    WR_REG_TOUCH_I2C = 9,
+    WR_REG_LCD_CONTROL = 10,    
     WR_REG_AUDIO_STATUS = 12    // [31] Audio IRQ enable [30] Audio IRQ ack (write 0)
 } reg_wr_addr_t;
 
 
+logic [31:0] lcd_control_reg;
 
 wire RESET;
 wire CLK;
 assign RESET = ~s00_axi_aresetn;
 assign CLK = s00_axi_aclk;
 
-always_comb TOUCH_RESET <= 1'b0;
+//always_comb TOUCH_RESET <= 1'b0;
 
 //============================
 // AXI3 DMA signals
@@ -339,10 +345,11 @@ logic [Y_BITS-1:0] lcd_row_index;
 
 logic [15:0] lcd_pixel_data;
 
-always_comb R <= lcd_pixel_data[11:8];
-always_comb G <= lcd_pixel_data[7:4];
-always_comb B <= lcd_pixel_data[3:0];
-always_comb PXCLK <= CLK_PXCLK;
+always_comb R <= lcd_control_reg[31] ? lcd_control_reg[11:8] : lcd_pixel_data[11:8];
+always_comb G <= lcd_control_reg[31] ? lcd_control_reg[7:4] : lcd_pixel_data[7:4];
+always_comb B <= lcd_control_reg[31] ? lcd_control_reg[3:0] : lcd_pixel_data[3:0];
+always_comb PXCLK <= PXCLK_POLARITY ? ~CLK_PXCLK : CLK_PXCLK;
+
 
 lcd_controller_axi3_dma #(
     // burst size for single DMA read request: on single DMA_START request,  BURST_SIZE words will be written to FIFO via a sequence of DMA_RD_DATA_VALID
@@ -599,9 +606,6 @@ theremin_oversampling_iserdes_period_measure
 
     // 200MHz input for driving IDELAYE2
     .CLK_DELAY,
-    
-    // main clock ~100MHz for measured value outputs
-    .CLK,
 
     // reset, active 1, must be synchronous to CLK_SHIFT !!!
     .RESET,
@@ -653,24 +657,24 @@ theremin_i2c theremin_i2c_audio_inst (
     .I2C_CLK(AUDIO_I2C_CLK)        // 400KHz
 );
 
-logic touch_i2c_start;
-always_comb touch_i2c_start <= REG_WREN & (REG_WR_ADDR == WR_REG_TOUCH_I2C); 
-logic [10:0] touch_i2c_status;
-assign touch_i2c_status[10] = TOUCH_INTERRUPT;
+//logic touch_i2c_start;
+//always_comb touch_i2c_start <= REG_WREN & (REG_WR_ADDR == WR_REG_TOUCH_I2C); 
+//logic [10:0] touch_i2c_status;
+//assign touch_i2c_status[10] = TOUCH_INTERRUPT;
 
-theremin_i2c theremin_i2c_touch_inst (
-    .CLK,
-    .RESET,
+//theremin_i2c theremin_i2c_touch_inst (
+//    .CLK,
+//    .RESET,
     
-    .COMMAND(REG_WR_DATA[23:0]),  // [23:16] - device address/op, [15:8] register address, [7:0] data to write
-    .START(touch_i2c_start),           // 1 for one CLK to start operation according to COMMAND
-    .DATA_OUT(touch_i2c_status[7:0]), // data read from I2C
-    .READY(touch_i2c_status[8]),
-    .ERROR(touch_i2c_status[9]),
+//    .COMMAND(REG_WR_DATA[23:0]),  // [23:16] - device address/op, [15:8] register address, [7:0] data to write
+//    .START(touch_i2c_start),           // 1 for one CLK to start operation according to COMMAND
+//    .DATA_OUT(touch_i2c_status[7:0]), // data read from I2C
+//    .READY(touch_i2c_status[8]),
+//    .ERROR(touch_i2c_status[9]),
     
-    .I2C_DATA(TOUCH_I2C_DATA),
-    .I2C_CLK(TOUCH_I2C_CLK)        // 400KHz
-);
+//    .I2C_DATA(TOUCH_I2C_DATA),
+//    .I2C_CLK(TOUCH_I2C_CLK)        // 400KHz
+//);
 
 
 // color led0 control output {r,g,b}
@@ -778,7 +782,13 @@ logic [31:0] status_reg;
 always_comb status_reg[31] <= 'b0; //audio_irq_enabled; // audio irq enabled
 always_comb status_reg[30] <= 'b0; //AUDIO_IRQ;         // audio irq pending
 always_comb status_reg[29:27] <= IIR_MAX_STAGE;  // read max IIR filter stage 1..7
-always_comb status_reg[26:10] <= 'b0;
+always_comb status_reg[26:16] <= 'b0;
+always_comb status_reg[15] <= VSYNC;
+always_comb status_reg[14] <= HSYNC;
+always_comb status_reg[13] <= DE;
+always_comb status_reg[12] <= PXCLK;
+always_comb status_reg[11] <= 'b0;
+always_comb status_reg[10] <= 'b0;
 always_comb status_reg[9:0] <= {{(10 - Y_BITS){1'b0}}, lcd_row_index};
 
 logic audio_irq_enabled;
@@ -788,13 +798,6 @@ always_comb audio_status_reg[30] <= AUDIO_IRQ;         // audio irq pending
 always_comb audio_status_reg[11:0] <= SUBSAMPLE_COUNT; // audio subsample counter
 always_comb audio_status_reg[29:12] <= SAMPLE_COUNT; // audio sample counter
 
-always_ff @(posedge CLK) begin
-    if (RESET) begin
-        audio_status_reg[11:0] <= 'b0;
-    end else begin
-        audio_status_reg[11:0] <= 'b0;
-    end
-end
 
 // Registers read
 
@@ -810,7 +813,8 @@ assign REG_RD_DATA = (REG_RD_ADDR == RD_REG_STATUS) ? status_reg
                    : (REG_RD_ADDR == RD_REG_ENCODER_1) ? ENCODERS_R1
                    : (REG_RD_ADDR == RD_REG_ENCODER_2) ? ENCODERS_R2
                    : (REG_RD_ADDR == RD_REG_AUDIO_I2C) ? { 22'b0, audio_i2c_status}
-                   : (REG_RD_ADDR == RD_REG_TOUCH_I2C) ? { 22'b0, touch_i2c_status}
+                   //: (REG_RD_ADDR == RD_REG_TOUCH_I2C) ? { 22'b0, touch_i2c_status}
+                   : (REG_RD_ADDR == RD_REG_LCD_CONTROL) ? lcd_control_reg
                    : (REG_RD_ADDR == RD_REG_AUDIO_STATUS) ? { audio_status_reg }
                    :                                                 0;
 
@@ -828,6 +832,7 @@ always_ff @(posedge m00_axi_aclk) begin
         OUT_LEFT_CHANNEL1 <= 'b0;
         OUT_RIGHT_CHANNEL1 <= 'b0;
         IIR_MAX_STAGE <= 3'b011; // 4 stages
+        lcd_control_reg <= 'b0;
     end else if (REG_WREN) begin
         case (REG_WR_ADDR)
             WR_REG_STATUS: IIR_MAX_STAGE <= REG_WR_DATA[29:27]; // 4 stages
@@ -842,6 +847,7 @@ always_ff @(posedge m00_axi_aclk) begin
             WR_REG_PHONES_OUT_L: OUT_LEFT_CHANNEL1 <= REG_WR_DATA[23:0];
             WR_REG_PHONES_OUT_R: AUDIO_OUT_1_R: OUT_RIGHT_CHANNEL1 <= REG_WR_DATA[23:0];
             WR_REG_AUDIO_STATUS: audio_irq_enabled <= REG_WR_DATA[31];
+            WR_REG_LCD_CONTROL: lcd_control_reg <= REG_WR_DATA;
         endcase
     end
 end

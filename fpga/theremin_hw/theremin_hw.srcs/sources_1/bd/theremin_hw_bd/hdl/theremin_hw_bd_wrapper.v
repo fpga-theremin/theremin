@@ -1,7 +1,7 @@
 //Copyright 1986-2019 Xilinx, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
 //Tool Version: Vivado v.2019.1.1 (win64) Build 2580384 Sat Jun 29 08:12:21 MDT 2019
-//Date        : Mon Aug 19 17:37:49 2019
+//Date        : Tue Aug 20 16:13:15 2019
 //Host        : DTNN-VLOPATIN running 64-bit major release  (build 9200)
 //Command     : generate_target theremin_hw_bd_wrapper.bd
 //Design      : theremin_hw_bd_wrapper
@@ -56,10 +56,6 @@ module theremin_hw_bd_wrapper
     RGBLED1_0_b,
     RGBLED1_0_g,
     RGBLED1_0_r,
-    TOUCH_I2C_0_scl,
-    TOUCH_I2C_0_sda,
-    TOUCH_INTERRUPT_0,
-    TOUCH_RESET_0,
     VOLUME_FREQ_IN_0,
     sys_clock);
   inout AUDIO_I2C_0_scl;
@@ -108,10 +104,6 @@ module theremin_hw_bd_wrapper
   output RGBLED1_0_b;
   output RGBLED1_0_g;
   output RGBLED1_0_r;
-  inout TOUCH_I2C_0_scl;
-  inout TOUCH_I2C_0_sda;
-  input TOUCH_INTERRUPT_0;
-  output TOUCH_RESET_0;
   input VOLUME_FREQ_IN_0;
   input sys_clock;
 
@@ -161,10 +153,6 @@ module theremin_hw_bd_wrapper
   wire RGBLED1_0_b;
   wire RGBLED1_0_g;
   wire RGBLED1_0_r;
-  wire TOUCH_I2C_0_scl;
-  wire TOUCH_I2C_0_sda;
-  wire TOUCH_INTERRUPT_0;
-  wire TOUCH_RESET_0;
   wire VOLUME_FREQ_IN_0;
   wire sys_clock;
 
@@ -215,10 +203,6 @@ module theremin_hw_bd_wrapper
         .RGBLED1_0_b(RGBLED1_0_b),
         .RGBLED1_0_g(RGBLED1_0_g),
         .RGBLED1_0_r(RGBLED1_0_r),
-        .TOUCH_I2C_0_scl(TOUCH_I2C_0_scl),
-        .TOUCH_I2C_0_sda(TOUCH_I2C_0_sda),
-        .TOUCH_INTERRUPT_0(TOUCH_INTERRUPT_0),
-        .TOUCH_RESET_0(TOUCH_RESET_0),
         .VOLUME_FREQ_IN_0(VOLUME_FREQ_IN_0),
         .sys_clock(sys_clock));
 endmodule

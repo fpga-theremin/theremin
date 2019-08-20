@@ -1,7 +1,7 @@
 //Copyright 1986-2019 Xilinx, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
 //Tool Version: Vivado v.2019.1.1 (win64) Build 2580384 Sat Jun 29 08:12:21 MDT 2019
-//Date        : Mon Aug 19 17:37:49 2019
+//Date        : Tue Aug 20 16:13:15 2019
 //Host        : DTNN-VLOPATIN running 64-bit major release  (build 9200)
 //Command     : generate_target theremin_hw_bd.bd
 //Design      : theremin_hw_bd
@@ -362,10 +362,6 @@ module theremin_hw_bd
     RGBLED1_0_b,
     RGBLED1_0_g,
     RGBLED1_0_r,
-    TOUCH_I2C_0_scl,
-    TOUCH_I2C_0_sda,
-    TOUCH_INTERRUPT_0,
-    TOUCH_RESET_0,
     VOLUME_FREQ_IN_0,
     sys_clock);
   (* X_INTERFACE_INFO = "coolreader.org:user:i2c:1.0 AUDIO_I2C_0 SCL" *) inout AUDIO_I2C_0_scl;
@@ -414,19 +410,14 @@ module theremin_hw_bd
   (* X_INTERFACE_INFO = "coolreader.org:user:rgb_led:1.0 RGBLED1_0 B" *) output RGBLED1_0_b;
   (* X_INTERFACE_INFO = "coolreader.org:user:rgb_led:1.0 RGBLED1_0 G" *) output RGBLED1_0_g;
   (* X_INTERFACE_INFO = "coolreader.org:user:rgb_led:1.0 RGBLED1_0 R" *) output RGBLED1_0_r;
-  (* X_INTERFACE_INFO = "coolreader.org:user:i2c:1.0 TOUCH_I2C_0 SCL" *) inout TOUCH_I2C_0_scl;
-  (* X_INTERFACE_INFO = "coolreader.org:user:i2c:1.0 TOUCH_I2C_0 SDA" *) inout TOUCH_I2C_0_sda;
-  (* X_INTERFACE_INFO = "xilinx.com:signal:interrupt:1.0 INTR.TOUCH_INTERRUPT_0 INTERRUPT" *) (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME INTR.TOUCH_INTERRUPT_0, PortWidth 1, SENSITIVITY LEVEL_HIGH" *) input TOUCH_INTERRUPT_0;
-  (* X_INTERFACE_INFO = "xilinx.com:signal:reset:1.0 RST.TOUCH_RESET_0 RST" *) (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME RST.TOUCH_RESET_0, INSERT_VIP 0, POLARITY ACTIVE_LOW" *) output TOUCH_RESET_0;
   input VOLUME_FREQ_IN_0;
   (* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 CLK.SYS_CLOCK CLK" *) (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME CLK.SYS_CLOCK, CLK_DOMAIN theremin_hw_bd_sys_clock, FREQ_HZ 125000000, INSERT_VIP 0, PHASE 0.000" *) input sys_clock;
 
   wire PITCH_FREQ_IN_0_1;
-  wire TOUCH_INTERRUPT_0_1;
   wire VOLUME_FREQ_IN_0_1;
   wire clk_wiz_0_CLK;
   wire clk_wiz_0_CLK_DELAY;
-  wire clk_wiz_0_CLK_PXCLK;
+  wire clk_wiz_0_CLK_MCLK;
   wire clk_wiz_0_CLK_SHIFT;
   wire clk_wiz_0_CLK_SHIFTB;
   wire clk_wiz_0_locked;
@@ -536,9 +527,6 @@ module theremin_hw_bd
   wire theremin_io_ip_0_RGBLED1_B;
   wire theremin_io_ip_0_RGBLED1_G;
   wire theremin_io_ip_0_RGBLED1_R;
-  wire theremin_io_ip_0_TOUCH_I2C_SCL;
-  wire theremin_io_ip_0_TOUCH_I2C_SDA;
-  wire theremin_io_ip_0_TOUCH_RESET;
   wire [31:0]theremin_io_ip_0_m00_axi_ARADDR;
   wire [1:0]theremin_io_ip_0_m00_axi_ARBURST;
   wire [3:0]theremin_io_ip_0_m00_axi_ARCACHE;
@@ -599,8 +587,6 @@ module theremin_hw_bd
   assign RGBLED1_0_b = theremin_io_ip_0_RGBLED1_B;
   assign RGBLED1_0_g = theremin_io_ip_0_RGBLED1_G;
   assign RGBLED1_0_r = theremin_io_ip_0_RGBLED1_R;
-  assign TOUCH_INTERRUPT_0_1 = TOUCH_INTERRUPT_0;
-  assign TOUCH_RESET_0 = theremin_io_ip_0_TOUCH_RESET;
   assign VOLUME_FREQ_IN_0_1 = VOLUME_FREQ_IN_0;
   assign sys_clock_1 = sys_clock;
   assign theremin_io_ip_0_AUDIO_I2S_I2S_DATA_IN = AUDIO_I2S_0_i2s_data_in;
@@ -608,7 +594,7 @@ module theremin_hw_bd
   theremin_hw_bd_clk_wiz_0_0 clk_wiz_0
        (.CLK(clk_wiz_0_CLK),
         .CLK_DELAY(clk_wiz_0_CLK_DELAY),
-        .CLK_PXCLK(clk_wiz_0_CLK_PXCLK),
+        .CLK_MCLK(clk_wiz_0_CLK_MCLK),
         .CLK_SHIFT(clk_wiz_0_CLK_SHIFT),
         .CLK_SHIFTB(clk_wiz_0_CLK_SHIFTB),
         .clk_in1(sys_clock_1),
@@ -798,7 +784,7 @@ module theremin_hw_bd
         .BACKLIGHT_PWM(theremin_io_ip_0_LCD_BACKLIGHT),
         .BCLK(theremin_io_ip_0_AUDIO_I2S_BCLK),
         .CLK_DELAY(clk_wiz_0_CLK_DELAY),
-        .CLK_PXCLK(clk_wiz_0_CLK_PXCLK),
+        .CLK_PXCLK(clk_wiz_0_CLK_MCLK),
         .CLK_SHIFT(clk_wiz_0_CLK_SHIFT),
         .CLK_SHIFTB(clk_wiz_0_CLK_SHIFTB),
         .DE(theremin_io_ip_0_LCD_DE),
@@ -814,10 +800,6 @@ module theremin_hw_bd
         .PITCH_FREQ_IN(PITCH_FREQ_IN_0_1),
         .PXCLK(theremin_io_ip_0_LCD_PXCLK),
         .R(theremin_io_ip_0_LCD_R),
-        .TOUCH_I2C_CLK(TOUCH_I2C_0_scl),
-        .TOUCH_I2C_DATA(TOUCH_I2C_0_sda),
-        .TOUCH_INTERRUPT(TOUCH_INTERRUPT_0_1),
-        .TOUCH_RESET(theremin_io_ip_0_TOUCH_RESET),
         .VOLUME_FREQ_IN(VOLUME_FREQ_IN_0_1),
         .VSYNC(theremin_io_ip_0_LCD_VSYNC),
         .led0_b(theremin_io_ip_0_RGBLED0_B),

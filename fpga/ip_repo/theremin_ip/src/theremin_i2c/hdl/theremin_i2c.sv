@@ -22,6 +22,7 @@
 //`define debug_theremin_audio_i2c
 
 module theremin_i2c (
+    // ~150MHz
     input CLK,
     input RESET,
     
@@ -32,7 +33,7 @@ module theremin_i2c (
     output ERROR,
     
     inout I2C_DATA,
-    inout I2C_CLK        // 400KHz
+    inout I2C_CLK        // 200KHz
 
 `ifdef debug_theremin_audio_i2c
     , output [4:0] debug_state_reg
@@ -56,13 +57,14 @@ wire clk_in;
 wire clk_tri;
 assign clk_tri = 'b0;
 
-reg [7:0] clk_counter;
+reg [9:0] clk_counter;
 reg phase0;  // CLK 1->0
 reg phase1;  // middle of CLK==0
 reg phase2;  // CLK 0->1
 reg phase3;  // middle of CLK==1
 
 // divider 100MHz/250 = 400KHz 
+// UPD: divider 150MHz/750 = 200KHz -> 4 phases: 0, 187, 375, 562
 always_ff @(posedge CLK)
 begin
     if (RESET) begin
@@ -72,12 +74,12 @@ begin
         phase2 <= 'b0;
         phase3 <= 'b0;
     end else begin
-        phase0 <= (clk_counter == 8'd0);
-        phase1 <= (clk_counter == 8'd62);
-        phase2 <= (clk_counter == 8'd124);
-        phase3 <= (clk_counter == 8'd186);
-        if (clk_counter == 8'd249) begin
-            clk_counter <= 8'b0;
+        phase0 <= (clk_counter == 10'd0);
+        phase1 <= (clk_counter == 10'd186); // 62
+        phase2 <= (clk_counter == 10'd374); // 124
+        phase3 <= (clk_counter == 10'd561); // 186
+        if (clk_counter == 10'd749) begin
+            clk_counter <= 10'b0;
         end else begin
             clk_counter <= clk_counter + 1;
         end

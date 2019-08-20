@@ -38,6 +38,16 @@ logic BEFORE_FRAME;
 // 1 for one cycle near after frame ended
 logic AFTER_FRAME;
 
+//logic debug_vde;
+//logic debug_x_is_last_visible_pixel;
+//logic debug_x_is_last_col;
+//logic debug_x_is_sync_start;
+//logic debug_x_is_sync_end;
+//logic debug_y_is_last_visible_pixel;
+//logic debug_y_is_last_row;
+//logic debug_y_is_sync_start;
+//logic debug_y_is_sync_end;
+
 lcd_clk_gen lcd_clk_gen_inst
 (
     .*

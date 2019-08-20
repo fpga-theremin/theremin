@@ -172,13 +172,9 @@ proc create_root_design { parentCell } {
 
   set RGBLED1_0 [ create_bd_intf_port -mode Master -vlnv coolreader.org:user:rgb_led_rtl:1.0 RGBLED1_0 ]
 
-  set TOUCH_I2C_0 [ create_bd_intf_port -mode Master -vlnv coolreader.org:user:i2c_rtl:1.0 TOUCH_I2C_0 ]
-
 
   # Create ports
   set PITCH_FREQ_IN_0 [ create_bd_port -dir I PITCH_FREQ_IN_0 ]
-  set TOUCH_INTERRUPT_0 [ create_bd_port -dir I -type intr TOUCH_INTERRUPT_0 ]
-  set TOUCH_RESET_0 [ create_bd_port -dir O -type rst TOUCH_RESET_0 ]
   set VOLUME_FREQ_IN_0 [ create_bd_port -dir I VOLUME_FREQ_IN_0 ]
   set sys_clock [ create_bd_port -dir I -type clk sys_clock ]
   set_property -dict [ list \
@@ -713,6 +709,17 @@ proc create_root_design { parentCell } {
 
   # Create instance: theremin_io_ip_0, and set properties
   set theremin_io_ip_0 [ create_bd_cell -type ip -vlnv coolreader_org:user:theremin_io_ip:1.0 theremin_io_ip_0 ]
+  set_property -dict [ list \
+   CONFIG.HBP {13} \
+   CONFIG.HFP {12} \
+   CONFIG.HSW {29} \
+   CONFIG.HSYNC_POLARITY {0} \
+   CONFIG.PXCLK_POLARITY {1} \
+   CONFIG.VBP {23} \
+   CONFIG.VFP {8} \
+   CONFIG.VSW {9} \
+   CONFIG.VSYNC_POLARITY {0} \
+ ] $theremin_io_ip_0
 
   # Create interface connections
   connect_bd_intf_net -intf_net processing_system7_0_DDR [get_bd_intf_ports DDR] [get_bd_intf_pins processing_system7_0/DDR]
@@ -725,16 +732,14 @@ proc create_root_design { parentCell } {
   connect_bd_intf_net -intf_net theremin_io_ip_0_LCD [get_bd_intf_ports LCD_0] [get_bd_intf_pins theremin_io_ip_0/LCD]
   connect_bd_intf_net -intf_net theremin_io_ip_0_RGBLED0 [get_bd_intf_ports RGBLED0_0] [get_bd_intf_pins theremin_io_ip_0/RGBLED0]
   connect_bd_intf_net -intf_net theremin_io_ip_0_RGBLED1 [get_bd_intf_ports RGBLED1_0] [get_bd_intf_pins theremin_io_ip_0/RGBLED1]
-  connect_bd_intf_net -intf_net theremin_io_ip_0_TOUCH_I2C [get_bd_intf_ports TOUCH_I2C_0] [get_bd_intf_pins theremin_io_ip_0/TOUCH_I2C]
   connect_bd_intf_net -intf_net theremin_io_ip_0_m00_axi [get_bd_intf_pins processing_system7_0/S_AXI_HP0] [get_bd_intf_pins theremin_io_ip_0/m00_axi]
 
   # Create port connections
   connect_bd_net -net PITCH_FREQ_IN_0_1 [get_bd_ports PITCH_FREQ_IN_0] [get_bd_pins theremin_io_ip_0/PITCH_FREQ_IN]
-  connect_bd_net -net TOUCH_INTERRUPT_0_1 [get_bd_ports TOUCH_INTERRUPT_0] [get_bd_pins theremin_io_ip_0/TOUCH_INTERRUPT]
   connect_bd_net -net VOLUME_FREQ_IN_0_1 [get_bd_ports VOLUME_FREQ_IN_0] [get_bd_pins theremin_io_ip_0/VOLUME_FREQ_IN]
   connect_bd_net -net clk_wiz_0_CLK [get_bd_pins clk_wiz_0/CLK] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins processing_system7_0/S_AXI_HP0_ACLK] [get_bd_pins ps7_0_axi_periph/ACLK] [get_bd_pins ps7_0_axi_periph/M00_ACLK] [get_bd_pins ps7_0_axi_periph/S00_ACLK] [get_bd_pins rst_clk_wiz_0_147M/slowest_sync_clk] [get_bd_pins theremin_io_ip_0/m00_axi_aclk] [get_bd_pins theremin_io_ip_0/s00_axi_aclk]
   connect_bd_net -net clk_wiz_0_CLK_DELAY [get_bd_pins clk_wiz_0/CLK_DELAY] [get_bd_pins theremin_io_ip_0/CLK_DELAY]
-  connect_bd_net -net clk_wiz_0_CLK_PXCLK [get_bd_pins clk_wiz_0/CLK_PXCLK] [get_bd_pins theremin_io_ip_0/CLK_PXCLK]
+  connect_bd_net -net clk_wiz_0_CLK_MCLK [get_bd_pins clk_wiz_0/CLK_MCLK] [get_bd_pins theremin_io_ip_0/CLK_PXCLK]
   connect_bd_net -net clk_wiz_0_CLK_SHIFT [get_bd_pins clk_wiz_0/CLK_SHIFT] [get_bd_pins theremin_io_ip_0/CLK_SHIFT]
   connect_bd_net -net clk_wiz_0_CLK_SHIFTB [get_bd_pins clk_wiz_0/CLK_SHIFTB] [get_bd_pins theremin_io_ip_0/CLK_SHIFTB]
   connect_bd_net -net clk_wiz_0_locked [get_bd_pins clk_wiz_0/locked] [get_bd_pins rst_clk_wiz_0_147M/dcm_locked]
@@ -742,7 +747,6 @@ proc create_root_design { parentCell } {
   connect_bd_net -net rst_clk_wiz_0_147M_peripheral_aresetn [get_bd_pins ps7_0_axi_periph/ARESETN] [get_bd_pins ps7_0_axi_periph/M00_ARESETN] [get_bd_pins ps7_0_axi_periph/S00_ARESETN] [get_bd_pins rst_clk_wiz_0_147M/peripheral_aresetn] [get_bd_pins theremin_io_ip_0/m00_axi_aresetn] [get_bd_pins theremin_io_ip_0/s00_axi_aresetn]
   connect_bd_net -net sys_clock_1 [get_bd_ports sys_clock] [get_bd_pins clk_wiz_0/clk_in1]
   connect_bd_net -net theremin_io_ip_0_AUDIO_IRQ [get_bd_pins processing_system7_0/Core1_nFIQ] [get_bd_pins theremin_io_ip_0/AUDIO_IRQ]
-  connect_bd_net -net theremin_io_ip_0_TOUCH_RESET [get_bd_ports TOUCH_RESET_0] [get_bd_pins theremin_io_ip_0/TOUCH_RESET]
 
   # Create address segments
   create_bd_addr_seg -range 0x00010000 -offset 0x43C00000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs theremin_io_ip_0/s00_axi/THEREMIN_IP_REGS] SEG_theremin_io_ip_0_THEREMIN_IP_REGS

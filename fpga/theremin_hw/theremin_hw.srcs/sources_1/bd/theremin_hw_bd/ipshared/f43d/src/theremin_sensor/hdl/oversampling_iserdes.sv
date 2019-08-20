@@ -29,7 +29,7 @@ module oversampling_iserdes
     input logic CLK_PARALLEL,
 
     // 200MHz input for driving IDELAYE2
-    input logic CLK_DELAY,
+    //input logic CLK_DELAY,
     
     // reset, active 1, must be synchronous to CLK_PARALLEL !!!
     input logic RESET,
@@ -95,7 +95,7 @@ generate
             // 200MHz
             .CLK_PARALLEL,
 
-            .CLK_DELAY,
+            //.CLK_DELAY,
 
             // reset, active 1
             .RESET,

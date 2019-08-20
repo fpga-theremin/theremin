@@ -1,7 +1,7 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0x9CE736DCEF18FF52",
+      "boundary_crc": "0xB15AFB646D0AFDE9",
       "device": "xc7z010clg400-1",
       "name": "theremin_hw_bd",
       "synth_flow_mode": "None",
@@ -84,10 +84,6 @@
           }
         }
       },
-      "TOUCH_I2C_0": {
-        "mode": "Master",
-        "vlnv": "coolreader.org:user:i2c_rtl:1.0"
-      },
       "AUDIO_I2C_0": {
         "mode": "Master",
         "vlnv": "coolreader.org:user:i2c_rtl:1.0"
@@ -134,39 +130,11 @@
           }
         }
       },
-      "TOUCH_INTERRUPT_0": {
-        "type": "intr",
-        "direction": "I",
-        "parameters": {
-          "PortWidth": {
-            "value": "1",
-            "value_src": "default"
-          },
-          "SENSITIVITY": {
-            "value": "LEVEL_HIGH",
-            "value_src": "default"
-          }
-        }
-      },
       "PITCH_FREQ_IN_0": {
         "direction": "I"
       },
       "VOLUME_FREQ_IN_0": {
         "direction": "I"
-      },
-      "TOUCH_RESET_0": {
-        "type": "rst",
-        "direction": "O",
-        "parameters": {
-          "INSERT_VIP": {
-            "value": "0",
-            "value_src": "default"
-          },
-          "POLARITY": {
-            "value": "ACTIVE_LOW",
-            "value_src": "default"
-          }
-        }
       }
     },
     "components": {
@@ -1437,16 +1405,16 @@
               }
             },
             "interface_nets": {
-              "s00_couplers_to_auto_pc": {
-                "interface_ports": [
-                  "S_AXI",
-                  "auto_pc/S_AXI"
-                ]
-              },
               "auto_pc_to_s00_couplers": {
                 "interface_ports": [
                   "M_AXI",
                   "auto_pc/M_AXI"
+                ]
+              },
+              "s00_couplers_to_auto_pc": {
+                "interface_ports": [
+                  "S_AXI",
+                  "auto_pc/S_AXI"
                 ]
               }
             },
@@ -1509,20 +1477,67 @@
       },
       "theremin_io_ip_0": {
         "vlnv": "coolreader_org:user:theremin_io_ip:1.0",
-        "xci_name": "theremin_hw_bd_theremin_io_ip_0_0"
+        "xci_name": "theremin_hw_bd_theremin_io_ip_0_0",
+        "parameters": {
+          "HBP": {
+            "value": "13"
+          },
+          "HFP": {
+            "value": "12"
+          },
+          "HSW": {
+            "value": "29"
+          },
+          "HSYNC_POLARITY": {
+            "value": "0"
+          },
+          "PXCLK_POLARITY": {
+            "value": "1"
+          },
+          "VBP": {
+            "value": "23"
+          },
+          "VFP": {
+            "value": "8"
+          },
+          "VSW": {
+            "value": "9"
+          },
+          "VSYNC_POLARITY": {
+            "value": "0"
+          }
+        }
       }
     },
     "interface_nets": {
-      "processing_system7_0_DDR": {
+      "processing_system7_0_M_AXI_GP0": {
         "interface_ports": [
-          "DDR",
-          "processing_system7_0/DDR"
+          "processing_system7_0/M_AXI_GP0",
+          "ps7_0_axi_periph/S00_AXI"
         ]
       },
       "theremin_io_ip_0_ENC_MUX": {
         "interface_ports": [
           "ENC_MUX_0",
           "theremin_io_ip_0/ENC_MUX"
+        ]
+      },
+      "ps7_0_axi_periph_M00_AXI": {
+        "interface_ports": [
+          "ps7_0_axi_periph/M00_AXI",
+          "theremin_io_ip_0/s00_axi"
+        ]
+      },
+      "theremin_io_ip_0_m00_axi": {
+        "interface_ports": [
+          "theremin_io_ip_0/m00_axi",
+          "processing_system7_0/S_AXI_HP0"
+        ]
+      },
+      "theremin_io_ip_0_AUDIO_I2C": {
+        "interface_ports": [
+          "AUDIO_I2C_0",
+          "theremin_io_ip_0/AUDIO_I2C"
         ]
       },
       "theremin_io_ip_0_LCD": {
@@ -1537,42 +1552,6 @@
           "theremin_io_ip_0/RGBLED1"
         ]
       },
-      "ps7_0_axi_periph_M00_AXI": {
-        "interface_ports": [
-          "ps7_0_axi_periph/M00_AXI",
-          "theremin_io_ip_0/s00_axi"
-        ]
-      },
-      "processing_system7_0_M_AXI_GP0": {
-        "interface_ports": [
-          "processing_system7_0/M_AXI_GP0",
-          "ps7_0_axi_periph/S00_AXI"
-        ]
-      },
-      "theremin_io_ip_0_TOUCH_I2C": {
-        "interface_ports": [
-          "TOUCH_I2C_0",
-          "theremin_io_ip_0/TOUCH_I2C"
-        ]
-      },
-      "processing_system7_0_FIXED_IO": {
-        "interface_ports": [
-          "FIXED_IO",
-          "processing_system7_0/FIXED_IO"
-        ]
-      },
-      "theremin_io_ip_0_AUDIO_I2C": {
-        "interface_ports": [
-          "AUDIO_I2C_0",
-          "theremin_io_ip_0/AUDIO_I2C"
-        ]
-      },
-      "theremin_io_ip_0_m00_axi": {
-        "interface_ports": [
-          "theremin_io_ip_0/m00_axi",
-          "processing_system7_0/S_AXI_HP0"
-        ]
-      },
       "theremin_io_ip_0_RGBLED0": {
         "interface_ports": [
           "RGBLED0_0",
@@ -1583,6 +1562,18 @@
         "interface_ports": [
           "AUDIO_I2S_0",
           "theremin_io_ip_0/AUDIO_I2S"
+        ]
+      },
+      "processing_system7_0_DDR": {
+        "interface_ports": [
+          "DDR",
+          "processing_system7_0/DDR"
+        ]
+      },
+      "processing_system7_0_FIXED_IO": {
+        "interface_ports": [
+          "FIXED_IO",
+          "processing_system7_0/FIXED_IO"
         ]
       }
     },
@@ -1597,11 +1588,11 @@
         "ports": [
           "clk_wiz_0/CLK",
           "processing_system7_0/S_AXI_HP0_ACLK",
-          "rst_clk_wiz_0_147M/slowest_sync_clk",
           "ps7_0_axi_periph/ACLK",
           "processing_system7_0/M_AXI_GP0_ACLK",
           "ps7_0_axi_periph/S00_ACLK",
           "ps7_0_axi_periph/M00_ACLK",
+          "rst_clk_wiz_0_147M/slowest_sync_clk",
           "theremin_io_ip_0/s00_axi_aclk",
           "theremin_io_ip_0/m00_axi_aclk"
         ]
@@ -1628,12 +1619,6 @@
           "theremin_io_ip_0/CLK_DELAY"
         ]
       },
-      "clk_wiz_0_CLK_PXCLK": {
-        "ports": [
-          "clk_wiz_0/CLK_PXCLK",
-          "theremin_io_ip_0/CLK_PXCLK"
-        ]
-      },
       "clk_wiz_0_CLK_SHIFT": {
         "ports": [
           "clk_wiz_0/CLK_SHIFT",
@@ -1644,12 +1629,6 @@
         "ports": [
           "clk_wiz_0/CLK_SHIFTB",
           "theremin_io_ip_0/CLK_SHIFTB"
-        ]
-      },
-      "TOUCH_INTERRUPT_0_1": {
-        "ports": [
-          "TOUCH_INTERRUPT_0",
-          "theremin_io_ip_0/TOUCH_INTERRUPT"
         ]
       },
       "PITCH_FREQ_IN_0_1": {
@@ -1664,12 +1643,6 @@
           "theremin_io_ip_0/VOLUME_FREQ_IN"
         ]
       },
-      "theremin_io_ip_0_TOUCH_RESET": {
-        "ports": [
-          "theremin_io_ip_0/TOUCH_RESET",
-          "TOUCH_RESET_0"
-        ]
-      },
       "processing_system7_0_FCLK_RESET0_N": {
         "ports": [
           "processing_system7_0/FCLK_RESET0_N",
@@ -1681,6 +1654,12 @@
         "ports": [
           "theremin_io_ip_0/AUDIO_IRQ",
           "processing_system7_0/Core1_nFIQ"
+        ]
+      },
+      "clk_wiz_0_CLK_MCLK": {
+        "ports": [
+          "clk_wiz_0/CLK_MCLK",
+          "theremin_io_ip_0/CLK_PXCLK"
         ]
       }
     },

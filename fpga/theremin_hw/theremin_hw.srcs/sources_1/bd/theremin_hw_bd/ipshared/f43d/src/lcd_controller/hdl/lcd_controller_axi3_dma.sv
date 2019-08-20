@@ -25,12 +25,12 @@ module lcd_controller_axi3_dma #(
     parameter BURST_SIZE = 8,
     parameter HPIXELS = 800,
     parameter VPIXELS = 480,
-    parameter HBP = 2,
-    parameter VBP = 2,
-    parameter HSW = 10,
-    parameter VSW = 2,
-    parameter HFP = 2,
-    parameter VFP = 2,
+    parameter integer HBP = 13, // 2
+    parameter integer VBP = 23, // 2
+    parameter integer HSW = 29, // 10
+    parameter integer VSW = 9, // 2
+    parameter integer HFP = 12, // 2
+    parameter integer VFP = 8, // 2
     parameter HSYNC_POLARITY = 0,
     parameter VSYNC_POLARITY = 0,
     parameter Y_BITS = ( (VPIXELS+VBP+VSW+VFP) <= 256 ? 8

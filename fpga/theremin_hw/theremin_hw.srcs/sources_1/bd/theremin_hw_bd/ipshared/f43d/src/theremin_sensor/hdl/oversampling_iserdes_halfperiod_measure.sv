@@ -32,7 +32,7 @@ module oversampling_iserdes_halfperiod_measure
     input logic CLK_PARALLEL,
 
     // 200MHz input for driving IDELAYE2
-    input logic CLK_DELAY,
+    //input logic CLK_DELAY,
     
     // reset, active 1, must be synchronous to CLK_PARALLEL !!!
     input logic RESET,
@@ -66,7 +66,7 @@ oversampling_iserdes_with_detector oversampling_iserdes_with_detector_inst (
     .CLK_PARALLEL,
 
     // 200MHz input for driving IDELAYE2
-    .CLK_DELAY,
+    //.CLK_DELAY,
     
     // reset, active 1, must be synchronous to CLK_PARALLEL !!!
     .RESET,

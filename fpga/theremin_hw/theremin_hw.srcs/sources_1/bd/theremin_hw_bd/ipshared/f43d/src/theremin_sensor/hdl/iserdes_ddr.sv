@@ -31,8 +31,6 @@ module iserdes_ddr
     input CLK_SHIFTB,
     // 150MHz must be phase aligned CLK_SHIFT/4 
     input CLK_PARALLEL,
-    // 200MHz
-    input CLK_DELAY,
 
     // reset, active 1, must be synchronous to CLK_SHIFT !!!
     input logic RESET,
