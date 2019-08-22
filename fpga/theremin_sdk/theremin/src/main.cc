@@ -97,12 +97,19 @@ int main()
 			px |= (y / 31) << 8;
 			px |= (x / 50) << 4;
 			px |= (x + y) / 100;
-			if ((x & 15) == 0)
-				px = 0xfff;
-			if ((y & 15) == 0)
-				px = 0x0ff;
+			//if ((x & 15) == 0)
+			//	px = 0xf40;
+			//if ((y & 15) == 0)
+			//	px = 0x04f;
+			if (x>=2 && x <= 10 && y>=2 && y<=10 )
+				px = 0xff0;
 			framebuffer[y*SCREEN_DX + x] = px; //0xf80 + x / 64; //y + ((x >> 6) * 4096);//(y&255) * 256 + (x &255);
 		}
+		thereminIO_flushCache(framebuffer + SCREEN_DX*y, SCREEN_DX*2);
+	}
+	for (int y = 0; y < SCREEN_DY; y++) {
+		uint16_t px = 0x00f;
+		framebuffer[y*SCREEN_DX + y] = px;
 		thereminIO_flushCache(framebuffer + SCREEN_DX*y, SCREEN_DX*2);
 	}
 	//thereminIO_flushCache(framebuffer, SCREEN_DX*SCREEN_DX*2);
@@ -113,8 +120,9 @@ int main()
 	usleep(1000);
 	xil_printf("Setting framebuffer address to %08x\r\n", framebuffer);
 	thereminLCD_setFramebufferAddress(framebuffer);
+	thereminIO_setBacklightBrightness(0x30);
 	print("    Done\r\n");
-	usleep(1000);
+	usleep(10000);
 
 	xil_printf("i2c reg 0 = %2x \r\n", thereminAudio_i2cRead(0));
 	xil_printf("i2c reg 2 = %2x \r\n", thereminAudio_i2cRead(2));
@@ -133,15 +141,15 @@ int main()
 //				rowIndex, 0 //irq_counter
 //				);
 //		print("..");
-		usleep(100000);
+		usleep(10000);
 //		print(".\r\n");
 		phase = (phase + 1)&7;
 		//setLeds(phase);
 		if (phase & 1) {
-			setLCDColor(0xfc8);
+			//setLCDColor(0xfc8);
 			//thereminIO_setBacklightBrightness(0x80);
 		} else {
-			setLCDColor(0x46a);
+			//setLCDColor(0x46a);
 			//thereminIO_setBacklightBrightness(0x20);
 		}
 //		uint32_t newEnc0 = thereminIO_readReg(THEREMIN_RD_REG_ENCODER_0);
@@ -156,7 +164,23 @@ int main()
 //			prevEnc2 = newEnc2;
 //		}
 		uint32_t s = thereminIO_readReg(0);
-		xil_printf("LCD controls: VSYNC=%d HSYNC=%d DE=%d PXCLK=%d\r\n", (s>>15)&1, (s>>14)&1, (s>>13)&1, (s>>12)&1);
+		int x = (s>>16)&0x3ff;
+		int y = (s)&0x3ff;
+		int vsync = (s>>15)&1;
+		int hsync = (s>>14)&1;
+		int de = (s>>13)&1;
+		int expectedDE = ((x < 800) && (y < 480)) ? 1 : 0;
+		int expectedVSYNC = (y >= 480+2 && y < 480+2+3) ? 0 : 1;
+		int expectedHSYNC = (x >= 800+2 && x < 800+2+12) ? 0 : 1;
+		if (de != expectedDE || vsync != expectedVSYNC || hsync != expectedHSYNC)
+			xil_printf("LCD controls: VSYNC=%d (%d)\t HSYNC=%d (%d)\t DE=%d (%d)\t x=%d\t y=%d\r\n",
+				vsync, expectedVSYNC,
+				hsync, expectedHSYNC,
+				de, expectedDE,
+				//(s>>11)&1, (s>>10)&1,
+				x,
+				y
+				);
 	}
 	return 0;
 }
