@@ -209,6 +209,10 @@ proc create_root_design { parentCell } {
    CONFIG.CLKOUT6_PHASE_ERROR {123.861} \
    CONFIG.CLKOUT6_REQUESTED_OUT_FREQ {18.432625} \
    CONFIG.CLKOUT6_USED {true} \
+   CONFIG.CLKOUT7_JITTER {211.190} \
+   CONFIG.CLKOUT7_PHASE_ERROR {123.861} \
+   CONFIG.CLKOUT7_REQUESTED_OUT_FREQ {9.216} \
+   CONFIG.CLKOUT7_USED {true} \
    CONFIG.CLK_IN1_BOARD_INTERFACE {sys_clock} \
    CONFIG.CLK_OUT1_PORT {CLK_SHIFT} \
    CONFIG.CLK_OUT2_PORT {CLK_SHIFTB} \
@@ -216,6 +220,7 @@ proc create_root_design { parentCell } {
    CONFIG.CLK_OUT4_PORT {CLK} \
    CONFIG.CLK_OUT5_PORT {CLK_PXCLK} \
    CONFIG.CLK_OUT6_PORT {CLK_MCLK} \
+   CONFIG.CLK_OUT7_PORT {CLK_10} \
    CONFIG.MMCM_CLKFBOUT_MULT_F {18.875} \
    CONFIG.MMCM_CLKOUT0_DIVIDE_F {2.000} \
    CONFIG.MMCM_CLKOUT1_DIVIDE {2} \
@@ -224,8 +229,9 @@ proc create_root_design { parentCell } {
    CONFIG.MMCM_CLKOUT3_DIVIDE {8} \
    CONFIG.MMCM_CLKOUT4_DIVIDE {32} \
    CONFIG.MMCM_CLKOUT5_DIVIDE {64} \
+   CONFIG.MMCM_CLKOUT6_DIVIDE {128} \
    CONFIG.MMCM_DIVCLK_DIVIDE {2} \
-   CONFIG.NUM_OUT_CLKS {6} \
+   CONFIG.NUM_OUT_CLKS {7} \
    CONFIG.RESET_PORT {resetn} \
    CONFIG.RESET_TYPE {ACTIVE_LOW} \
    CONFIG.USE_BOARD_FLOW {true} \
@@ -710,14 +716,13 @@ proc create_root_design { parentCell } {
   # Create instance: theremin_io_ip_0, and set properties
   set theremin_io_ip_0 [ create_bd_cell -type ip -vlnv coolreader_org:user:theremin_io_ip:1.0 theremin_io_ip_0 ]
   set_property -dict [ list \
-   CONFIG.HBP {13} \
-   CONFIG.HFP {12} \
-   CONFIG.HSW {29} \
+   CONFIG.HBP {10} \
+   CONFIG.HFP {10} \
+   CONFIG.HSW {25} \
    CONFIG.HSYNC_POLARITY {0} \
-   CONFIG.PXCLK_POLARITY {1} \
-   CONFIG.VBP {23} \
-   CONFIG.VFP {8} \
-   CONFIG.VSW {9} \
+   CONFIG.VBP {5} \
+   CONFIG.VFP {5} \
+   CONFIG.VSW {10} \
    CONFIG.VSYNC_POLARITY {0} \
  ] $theremin_io_ip_0
 
@@ -738,8 +743,8 @@ proc create_root_design { parentCell } {
   connect_bd_net -net PITCH_FREQ_IN_0_1 [get_bd_ports PITCH_FREQ_IN_0] [get_bd_pins theremin_io_ip_0/PITCH_FREQ_IN]
   connect_bd_net -net VOLUME_FREQ_IN_0_1 [get_bd_ports VOLUME_FREQ_IN_0] [get_bd_pins theremin_io_ip_0/VOLUME_FREQ_IN]
   connect_bd_net -net clk_wiz_0_CLK [get_bd_pins clk_wiz_0/CLK] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins processing_system7_0/S_AXI_HP0_ACLK] [get_bd_pins ps7_0_axi_periph/ACLK] [get_bd_pins ps7_0_axi_periph/M00_ACLK] [get_bd_pins ps7_0_axi_periph/S00_ACLK] [get_bd_pins rst_clk_wiz_0_147M/slowest_sync_clk] [get_bd_pins theremin_io_ip_0/m00_axi_aclk] [get_bd_pins theremin_io_ip_0/s00_axi_aclk]
+  connect_bd_net -net clk_wiz_0_CLK_10 [get_bd_pins clk_wiz_0/CLK_10] [get_bd_pins theremin_io_ip_0/CLK_PXCLK]
   connect_bd_net -net clk_wiz_0_CLK_DELAY [get_bd_pins clk_wiz_0/CLK_DELAY] [get_bd_pins theremin_io_ip_0/CLK_DELAY]
-  connect_bd_net -net clk_wiz_0_CLK_MCLK [get_bd_pins clk_wiz_0/CLK_MCLK] [get_bd_pins theremin_io_ip_0/CLK_PXCLK]
   connect_bd_net -net clk_wiz_0_CLK_SHIFT [get_bd_pins clk_wiz_0/CLK_SHIFT] [get_bd_pins theremin_io_ip_0/CLK_SHIFT]
   connect_bd_net -net clk_wiz_0_CLK_SHIFTB [get_bd_pins clk_wiz_0/CLK_SHIFTB] [get_bd_pins theremin_io_ip_0/CLK_SHIFTB]
   connect_bd_net -net clk_wiz_0_locked [get_bd_pins clk_wiz_0/locked] [get_bd_pins rst_clk_wiz_0_147M/dcm_locked]

@@ -1,7 +1,7 @@
 //Copyright 1986-2019 Xilinx, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
 //Tool Version: Vivado v.2019.1.1 (win64) Build 2580384 Sat Jun 29 08:12:21 MDT 2019
-//Date        : Tue Aug 20 16:13:15 2019
+//Date        : Thu Aug 22 17:05:17 2019
 //Host        : DTNN-VLOPATIN running 64-bit major release  (build 9200)
 //Command     : generate_target theremin_hw_bd.bd
 //Design      : theremin_hw_bd
@@ -416,8 +416,8 @@ module theremin_hw_bd
   wire PITCH_FREQ_IN_0_1;
   wire VOLUME_FREQ_IN_0_1;
   wire clk_wiz_0_CLK;
+  wire clk_wiz_0_CLK_10;
   wire clk_wiz_0_CLK_DELAY;
-  wire clk_wiz_0_CLK_MCLK;
   wire clk_wiz_0_CLK_SHIFT;
   wire clk_wiz_0_CLK_SHIFTB;
   wire clk_wiz_0_locked;
@@ -593,8 +593,8 @@ module theremin_hw_bd
   assign theremin_io_ip_0_ENC_MUX_MUX_DATA = ENC_MUX_0_mux_data;
   theremin_hw_bd_clk_wiz_0_0 clk_wiz_0
        (.CLK(clk_wiz_0_CLK),
+        .CLK_10(clk_wiz_0_CLK_10),
         .CLK_DELAY(clk_wiz_0_CLK_DELAY),
-        .CLK_MCLK(clk_wiz_0_CLK_MCLK),
         .CLK_SHIFT(clk_wiz_0_CLK_SHIFT),
         .CLK_SHIFTB(clk_wiz_0_CLK_SHIFTB),
         .clk_in1(sys_clock_1),
@@ -784,7 +784,7 @@ module theremin_hw_bd
         .BACKLIGHT_PWM(theremin_io_ip_0_LCD_BACKLIGHT),
         .BCLK(theremin_io_ip_0_AUDIO_I2S_BCLK),
         .CLK_DELAY(clk_wiz_0_CLK_DELAY),
-        .CLK_PXCLK(clk_wiz_0_CLK_MCLK),
+        .CLK_PXCLK(clk_wiz_0_CLK_10),
         .CLK_SHIFT(clk_wiz_0_CLK_SHIFT),
         .CLK_SHIFTB(clk_wiz_0_CLK_SHIFTB),
         .DE(theremin_io_ip_0_LCD_DE),

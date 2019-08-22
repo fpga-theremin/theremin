@@ -60,8 +60,12 @@ module lcd_dma_fifo
     // 1 for one CLK_PXCLK cycle to read next word
     input logic RDEN,
     // data read from queue, appears in next CLK_PXCLK cycle after RDEN=1
-    output logic [15:0] RDDATA
+    output logic [15:0] RDDATA,
 
+    // 1 for LCD side underflow - no data for pixel provided by DMA
+    output logic DMA_FIFO_RDERR,
+    // 1 for DMA side overflow - buffer full when trying to write data to FIFO
+    output logic DMA_FIFO_WRERR
 //    , output logic [31:0] debug_fifo_data_out
 //    , output logic debug_fifo_almost_empty // sync to pxclk
 //    , output logic [14:0] debug_dma_burst_count
@@ -212,9 +216,9 @@ FIFO18E1_inst (
   .EMPTY(fifo_empty),              // 1-bit output: Empty flag
   .FULL(fifo_full),                // 1-bit output: Full flag
   .RDCOUNT(),                      // 12-bit output: Read count
-  .RDERR(),                        // 1-bit output: Read error
+  .RDERR(DMA_FIFO_RDERR),          // 1-bit output: Read error
   .WRCOUNT(),                      // 12-bit output: Write count
-  .WRERR(),                        // 1-bit output: Write error
+  .WRERR(DMA_FIFO_WRERR),          // 1-bit output: Write error
   // Read Control Signals: 1-bit (each) input: Read clock, enable and reset input signals
   .RDCLK(CLK_PXCLK),               // 1-bit input: Read clock
   .RDEN(fifo_rden),                // 1-bit input: Read enable

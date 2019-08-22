@@ -26,18 +26,22 @@ module lcd_controller
     parameter integer BURST_SIZE = 8,
     parameter integer HPIXELS = 800,
     parameter integer VPIXELS = 480,
-    parameter integer HBP = 13, // 2
-    parameter integer VBP = 23, // 2
-    parameter integer HSW = 29, // 10
-    parameter integer VSW = 9, // 2
-    parameter integer HFP = 12, // 2
-    parameter integer VFP = 8, // 2
+    parameter integer HBP = 2,
+    parameter integer VBP = 2,
+    parameter integer HSW = 12,
+    parameter integer VSW = 3,
+    parameter integer HFP = 2,
+    parameter integer VFP = 2,
     parameter integer HSYNC_POLARITY = 0,
     parameter integer VSYNC_POLARITY = 0,
+    parameter integer X_BITS = ( (HPIXELS+HBP+HSW+HFP) <= 256 ? 8
+                               : (HPIXELS+HBP+HSW+HFP) <= 512 ? 9
+                               : (HPIXELS+HBP+HSW+HFP) <= 1024 ? 10
+                               :                                 11 ),
     parameter integer Y_BITS = ( (VPIXELS+VBP+VSW+VFP) <= 256 ? 8
-                             : (VPIXELS+VBP+VSW+VFP) <= 512 ? 9
-                             : (VPIXELS+VBP+VSW+VFP) <= 1024 ? 10
-                             :                                 11 )
+                               : (VPIXELS+VBP+VSW+VFP) <= 512 ? 9
+                               : (VPIXELS+VBP+VSW+VFP) <= 1024 ? 10
+                               :                                 11 )
 )
 (
     // DMA clock
@@ -57,6 +61,8 @@ module lcd_controller
     // pixel value
     output logic [15:0] PIXEL_DATA,
     
+    // current Y position (col index); cols 0..HPIXELS-1 are visible, in CLK_PXCLK domain
+    output logic [X_BITS-1:0] COL_INDEX,
     // current Y position (row index); rows 0..VPIXELS-1 are visible, in CLK_PXCLK domain
     output logic [Y_BITS-1:0] ROW_INDEX,
     
@@ -90,7 +96,14 @@ module lcd_controller
     // data read from DMA (when DMA_RD_DATA_VALID==1)
     input logic [31:0] DMA_RD_DATA,
     // 1 for one CLK cycle, when new data becomes available and should be written to FIFO 
-    input logic DMA_RD_DATA_VALID
+    input logic DMA_RD_DATA_VALID,
+
+
+    // 1 for LCD side underflow - no data for pixel provided by DMA
+    output logic DMA_FIFO_RDERR,
+    // 1 for DMA side overflow - buffer full when trying to write data to FIFO
+    output logic DMA_FIFO_WRERR
+
     //, output logic [14:0] debug_dma_burst_count
     //, output logic debug_running
 );
@@ -198,7 +211,7 @@ lcd_clk_gen
     .HSYNC(hsync),
     .VSYNC(vsync),
     .DE(de),
-    .X(),
+    .X(COL_INDEX),
     .Y(ROW_INDEX),
     // 1 for one cycle near before next frame begin
     .BEFORE_FRAME(start),
@@ -247,7 +260,12 @@ lcd_dma_fifo_inst
     // 1 for one CLK_PXCLK cycle to read next word
     .RDEN(de),
     // data read from queue, appears in next CLK_PXCLK cycle after RDEN=1
-    .RDDATA(PIXEL_DATA)
+    .RDDATA(PIXEL_DATA),
+
+    // 1 for LCD side underflow - no data for pixel provided by DMA
+    .DMA_FIFO_RDERR,
+    // 1 for DMA side overflow - buffer full when trying to write data to FIFO
+    .DMA_FIFO_WRERR
 
 //    , output logic [31:0] debug_fifo_data_out
 //    , output logic debug_fifo_almost_empty // sync to pxclk

@@ -23,7 +23,6 @@ module theremin_io_ip #
     parameter integer VFP = 8, // 2
     parameter integer HSYNC_POLARITY = 0,
     parameter integer VSYNC_POLARITY = 0,
-    parameter integer PXCLK_POLARITY = 0,
 
     parameter integer PITCH_PERIOD_BITS = 16,
     parameter integer VOLUME_PERIOD_BITS = 16,
@@ -241,8 +240,6 @@ module theremin_io_ip #
    8:     REG_TOUCH_I2C                  [31:0] I2C touch             [31:0] I2C touch                                                                      
    9:     REG_AUDIO_I2C                  [31:0] I2C audio             [31:0] I2C audio                                                                      
 
-   10:    REG_LCD_CONTROL                [31] 1: override color
-                                         [11:0] color val to override
    12:    REG_AUDIO_STATUS               [31] audio irq enabled       [31] audio irq enabled
                                          [30] audio irq 1=pending     [30] audio irq ack write 0 to ack
                                          [29:12] sample counter       [29:0] reserved
@@ -260,7 +257,6 @@ typedef enum logic [3:0] {
     RD_REG_ENCODER_2 = 7,
     RD_REG_AUDIO_I2C = 8,
     RD_REG_TOUCH_I2C = 9,
-    RD_REG_LCD_CONTROL = 10,
     RD_REG_AUDIO_STATUS = 12    // [31] Audio IRQ enable [30] Audio IRQ pending
 } reg_rd_addr_t;
 
@@ -274,17 +270,29 @@ typedef enum logic [3:0] {
     WR_REG_PHONES_OUT_R = 7,
     WR_REG_AUDIO_I2C = 8,
     WR_REG_TOUCH_I2C = 9,
-    WR_REG_LCD_CONTROL = 10,    
     WR_REG_AUDIO_STATUS = 12    // [31] Audio IRQ enable [30] Audio IRQ ack (write 0)
 } reg_wr_addr_t;
 
 
-logic [31:0] lcd_control_reg;
-
-wire RESET;
-wire CLK;
-assign RESET = ~s00_axi_aresetn;
-assign CLK = s00_axi_aclk;
+// CLK and RESET signals
+logic RESET;
+logic CLK;
+logic reset_reg;
+logic [2:0] reset_counter;
+always_ff @(posedge CLK_PXCLK) begin
+    if (~s00_axi_aresetn) begin
+        // reset from AXI
+        reset_reg <= 'b1;
+        reset_counter <= 3'b111;
+    end else begin
+        if (reset_counter != 3'b000) // keep reset active for at least 7 PXCLK cycles
+            reset_counter = reset_counter - 1;
+        else
+            reset_reg <= 'b0;
+    end
+end
+always_comb CLK <= s00_axi_aclk;
+always_comb RESET <= reset_reg;
 
 //always_comb TOUCH_RESET <= 1'b0;
 
@@ -326,6 +334,10 @@ assign m00_axi_wstrb = 4'h0;
 assign m00_axi_bready = 1'b0;
 
 
+localparam X_BITS = ( (HPIXELS+HBP+HSW+HFP) <= 256 ? 8
+                       : (HPIXELS+HBP+HSW+HFP) <= 512 ? 9
+                       : (HPIXELS+HBP+HSW+HFP) <= 1024 ? 10
+                       :                                 11 );
 localparam Y_BITS = ( (VPIXELS+VBP+VSW+VFP) <= 256 ? 8
                        : (VPIXELS+VBP+VSW+VFP) <= 512 ? 9
                        : (VPIXELS+VBP+VSW+VFP) <= 1024 ? 10
@@ -341,14 +353,35 @@ logic [11:0] rbg_led_color0_reg;
 logic [11:0] rbg_led_color1_reg;
 
 // readonly IP register
+logic [X_BITS-1:0] lcd_col_index;
 logic [Y_BITS-1:0] lcd_row_index;
+
+logic [X_BITS-1:0] lcd_col_index_delayed;
+logic [Y_BITS-1:0] lcd_row_index_delayed;
+always_ff @(posedge CLK_PXCLK) begin
+    if (RESET) begin
+        lcd_col_index_delayed <= 'b0;
+        lcd_row_index_delayed <= 'b0;
+    end else begin
+        lcd_col_index_delayed <= lcd_col_index;
+        lcd_row_index_delayed <= lcd_row_index;
+    end
+end
 
 logic [15:0] lcd_pixel_data;
 
-always_comb R <= lcd_control_reg[31] ? lcd_control_reg[11:8] : lcd_pixel_data[11:8];
-always_comb G <= lcd_control_reg[31] ? lcd_control_reg[7:4] : lcd_pixel_data[7:4];
-always_comb B <= lcd_control_reg[31] ? lcd_control_reg[3:0] : lcd_pixel_data[3:0];
-always_comb PXCLK <= PXCLK_POLARITY ? ~CLK_PXCLK : CLK_PXCLK;
+logic hw_grid;
+always_comb hw_grid <= (lcd_col_index_delayed[3:0] == 4'b0100)|(lcd_row_index_delayed[3:0] == 4'b0100);
+
+always_comb R <= hw_grid ? 4'hf : lcd_pixel_data[11:8];
+always_comb G <= hw_grid ? 4'h4 : lcd_pixel_data[7:4];
+always_comb B <= hw_grid ? 4'h0 : lcd_pixel_data[3:0];
+always_comb PXCLK <= CLK_PXCLK;
+
+// 1 for LCD side underflow - no data for pixel provided by DMA
+logic DMA_FIFO_RDERR;
+// 1 for DMA side overflow - buffer full when trying to write data to FIFO
+logic DMA_FIFO_WRERR;
 
 
 lcd_controller_axi3_dma #(
@@ -384,6 +417,8 @@ lcd_controller_axi3_dma_inst
     // pixel value
     .PIXEL_DATA(lcd_pixel_data),
     
+    // current X position (column index)
+    .COL_INDEX(lcd_col_index),
     // current Y position (row index); rows 0..VPIXELS-1 are visible, in CLK_PXCLK domain
     .ROW_INDEX(lcd_row_index),
     
@@ -402,6 +437,10 @@ lcd_controller_axi3_dma_inst
     // backlight PWM control output
     .BACKLIGHT_PWM,
 
+    // 1 for LCD side underflow - no data for pixel provided by DMA
+    .DMA_FIFO_RDERR,
+    // 1 for DMA side overflow - buffer full when trying to write data to FIFO
+    .DMA_FIFO_WRERR,
 
     // DMA interface, in CLK clock domain
     // start address of buffer to read: after new cycle started, BUFFER_SIZE words will be read 
@@ -782,14 +821,15 @@ logic [31:0] status_reg;
 always_comb status_reg[31] <= 'b0; //audio_irq_enabled; // audio irq enabled
 always_comb status_reg[30] <= 'b0; //AUDIO_IRQ;         // audio irq pending
 always_comb status_reg[29:27] <= IIR_MAX_STAGE;  // read max IIR filter stage 1..7
-always_comb status_reg[26:16] <= 'b0;
+always_comb status_reg[26] <= 'b0;
+always_comb status_reg[25:16] <= {{(10 - X_BITS){1'b0}}, lcd_col_index_delayed};
 always_comb status_reg[15] <= VSYNC;
 always_comb status_reg[14] <= HSYNC;
 always_comb status_reg[13] <= DE;
 always_comb status_reg[12] <= PXCLK;
-always_comb status_reg[11] <= 'b0;
-always_comb status_reg[10] <= 'b0;
-always_comb status_reg[9:0] <= {{(10 - Y_BITS){1'b0}}, lcd_row_index};
+always_comb status_reg[11] <= DMA_FIFO_RDERR;
+always_comb status_reg[10] <= DMA_FIFO_WRERR;
+always_comb status_reg[9:0] <= {{(10 - Y_BITS){1'b0}}, lcd_row_index_delayed};
 
 logic audio_irq_enabled;
 logic [31:0] audio_status_reg;
@@ -814,7 +854,6 @@ assign REG_RD_DATA = (REG_RD_ADDR == RD_REG_STATUS) ? status_reg
                    : (REG_RD_ADDR == RD_REG_ENCODER_2) ? ENCODERS_R2
                    : (REG_RD_ADDR == RD_REG_AUDIO_I2C) ? { 22'b0, audio_i2c_status}
                    //: (REG_RD_ADDR == RD_REG_TOUCH_I2C) ? { 22'b0, touch_i2c_status}
-                   : (REG_RD_ADDR == RD_REG_LCD_CONTROL) ? lcd_control_reg
                    : (REG_RD_ADDR == RD_REG_AUDIO_STATUS) ? { audio_status_reg }
                    :                                                 0;
 
@@ -832,7 +871,6 @@ always_ff @(posedge m00_axi_aclk) begin
         OUT_LEFT_CHANNEL1 <= 'b0;
         OUT_RIGHT_CHANNEL1 <= 'b0;
         IIR_MAX_STAGE <= 3'b011; // 4 stages
-        lcd_control_reg <= 'b0;
     end else if (REG_WREN) begin
         case (REG_WR_ADDR)
             WR_REG_STATUS: IIR_MAX_STAGE <= REG_WR_DATA[29:27]; // 4 stages
@@ -847,7 +885,6 @@ always_ff @(posedge m00_axi_aclk) begin
             WR_REG_PHONES_OUT_L: OUT_LEFT_CHANNEL1 <= REG_WR_DATA[23:0];
             WR_REG_PHONES_OUT_R: AUDIO_OUT_1_R: OUT_RIGHT_CHANNEL1 <= REG_WR_DATA[23:0];
             WR_REG_AUDIO_STATUS: audio_irq_enabled <= REG_WR_DATA[31];
-            WR_REG_LCD_CONTROL: lcd_control_reg <= REG_WR_DATA;
         endcase
     end
 end

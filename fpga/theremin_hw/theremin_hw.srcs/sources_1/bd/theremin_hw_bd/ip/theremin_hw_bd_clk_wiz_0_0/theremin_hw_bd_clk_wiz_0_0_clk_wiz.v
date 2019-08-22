@@ -62,6 +62,7 @@
 // _____CLK___147.461______0.000______50.0______117.580____123.861
 // CLK_PXCLK____36.865______0.000______50.0______155.334____123.861
 // CLK_MCLK____18.433______0.000______50.0______183.854____123.861
+// __CLK_10_____9.216______0.000______50.0______211.190____123.861
 //
 //----------------------------------------------------------------------------
 // Input Clock   Freq (MHz)    Input Jitter (UI)
@@ -80,6 +81,7 @@ module theremin_hw_bd_clk_wiz_0_0_clk_wiz
   output        CLK,
   output        CLK_PXCLK,
   output        CLK_MCLK,
+  output        CLK_10,
   // Status and control signals
   input         resetn,
   output        locked,
@@ -109,7 +111,7 @@ wire clk_in2_theremin_hw_bd_clk_wiz_0_0;
   wire        CLK_theremin_hw_bd_clk_wiz_0_0;
   wire        CLK_PXCLK_theremin_hw_bd_clk_wiz_0_0;
   wire        CLK_MCLK_theremin_hw_bd_clk_wiz_0_0;
-  wire        clk_out7_theremin_hw_bd_clk_wiz_0_0;
+  wire        CLK_10_theremin_hw_bd_clk_wiz_0_0;
 
   wire [15:0] do_unused;
   wire        drdy_unused;
@@ -122,7 +124,6 @@ wire clk_in2_theremin_hw_bd_clk_wiz_0_0;
    wire clkout1b_unused;
    wire clkout2b_unused;
    wire clkout3b_unused;
-  wire        clkout6_unused;
   wire        clkfbstopped_unused;
   wire        clkinstopped_unused;
   wire        reset_high;
@@ -156,6 +157,10 @@ wire clk_in2_theremin_hw_bd_clk_wiz_0_0;
     .CLKOUT5_PHASE        (0.000),
     .CLKOUT5_DUTY_CYCLE   (0.500),
     .CLKOUT5_USE_FINE_PS  ("FALSE"),
+    .CLKOUT6_DIVIDE       (128),
+    .CLKOUT6_PHASE        (0.000),
+    .CLKOUT6_DUTY_CYCLE   (0.500),
+    .CLKOUT6_USE_FINE_PS  ("FALSE"),
     .CLKIN1_PERIOD        (8.000))
   mmcm_adv_inst
     // Output clocks
@@ -172,7 +177,7 @@ wire clk_in2_theremin_hw_bd_clk_wiz_0_0;
     .CLKOUT3B            (clkout3b_unused),
     .CLKOUT4             (CLK_PXCLK_theremin_hw_bd_clk_wiz_0_0),
     .CLKOUT5             (CLK_MCLK_theremin_hw_bd_clk_wiz_0_0),
-    .CLKOUT6             (clkout6_unused),
+    .CLKOUT6             (CLK_10_theremin_hw_bd_clk_wiz_0_0),
      // Input clock control
     .CLKFBIN             (clkfbout_buf_theremin_hw_bd_clk_wiz_0_0),
     .CLKIN1              (clk_in1_theremin_hw_bd_clk_wiz_0_0),
@@ -239,6 +244,10 @@ wire clk_in2_theremin_hw_bd_clk_wiz_0_0;
   BUFG clkout6_buf
    (.O   (CLK_MCLK),
     .I   (CLK_MCLK_theremin_hw_bd_clk_wiz_0_0));
+
+  BUFG clkout7_buf
+   (.O   (CLK_10),
+    .I   (CLK_10_theremin_hw_bd_clk_wiz_0_0));
 
 
 

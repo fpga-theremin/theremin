@@ -22,21 +22,25 @@
 
 module lcd_controller_axi3_dma #(
     // burst size for single DMA read request: on single DMA_START request,  BURST_SIZE words will be written to FIFO via a sequence of DMA_RD_DATA_VALID
-    parameter BURST_SIZE = 8,
-    parameter HPIXELS = 800,
-    parameter VPIXELS = 480,
-    parameter integer HBP = 13, // 2
-    parameter integer VBP = 23, // 2
-    parameter integer HSW = 29, // 10
-    parameter integer VSW = 9, // 2
-    parameter integer HFP = 12, // 2
-    parameter integer VFP = 8, // 2
-    parameter HSYNC_POLARITY = 0,
-    parameter VSYNC_POLARITY = 0,
-    parameter Y_BITS = ( (VPIXELS+VBP+VSW+VFP) <= 256 ? 8
-                       : (VPIXELS+VBP+VSW+VFP) <= 512 ? 9
-                       : (VPIXELS+VBP+VSW+VFP) <= 1024 ? 10
-                       :                                 11 )
+    parameter integer BURST_SIZE = 8,
+    parameter integer HPIXELS = 800,
+    parameter integer VPIXELS = 480,
+    parameter integer HBP = 2,
+    parameter integer VBP = 2,
+    parameter integer HSW = 12,
+    parameter integer VSW = 3,
+    parameter integer HFP = 2,
+    parameter integer VFP = 2,
+    parameter integer HSYNC_POLARITY = 0,
+    parameter integer VSYNC_POLARITY = 0,
+    parameter integer X_BITS = ( (HPIXELS+HBP+HSW+HFP) <= 256 ? 8
+                               : (HPIXELS+HBP+HSW+HFP) <= 512 ? 9
+                               : (HPIXELS+HBP+HSW+HFP) <= 1024 ? 10
+                               :                                 11 ),
+    parameter integer Y_BITS = ( (VPIXELS+VBP+VSW+VFP) <= 256 ? 8
+                               : (VPIXELS+VBP+VSW+VFP) <= 512 ? 9
+                               : (VPIXELS+VBP+VSW+VFP) <= 1024 ? 10
+                               :                                 11 )
 )
 (
     // DMA clock
@@ -56,6 +60,8 @@ module lcd_controller_axi3_dma #(
     // pixel value
     output logic [15:0] PIXEL_DATA,
     
+    // current Y position (col index); cols 0..HPIXELS-1 are visible, in CLK_PXCLK domain
+    output logic [X_BITS-1:0] COL_INDEX,
     // current Y position (row index); rows 0..VPIXELS-1 are visible, in CLK_PXCLK domain
     output logic [Y_BITS-1:0] ROW_INDEX,
 
@@ -73,6 +79,11 @@ module lcd_controller_axi3_dma #(
     input logic [7:0] BACKLIGHT_BRIGHTNESS,
     // backlight PWM control output
     output logic BACKLIGHT_PWM,
+
+    // 1 for LCD side underflow - no data for pixel provided by DMA
+    output logic DMA_FIFO_RDERR,
+    // 1 for DMA side overflow - buffer full when trying to write data to FIFO
+    output logic DMA_FIFO_WRERR,
 
 
     // DMA interface, in CLK clock domain
@@ -137,6 +148,7 @@ lcd_controller_inst
     // pixel value
     .PIXEL_DATA,
     
+    .COL_INDEX,
     // current Y position (row index); rows 0..VPIXELS-1 are visible, in CLK_PXCLK domain
     .ROW_INDEX,
 
@@ -170,7 +182,13 @@ lcd_controller_inst
     // data read from DMA (when DMA_RD_DATA_VALID==1)
     .DMA_RD_DATA,
     // 1 for one CLK cycle, when new data becomes available and should be written to FIFO 
-    .DMA_RD_DATA_VALID
+    .DMA_RD_DATA_VALID,
+
+    // 1 for LCD side underflow - no data for pixel provided by DMA
+    .DMA_FIFO_RDERR,
+    // 1 for DMA side overflow - buffer full when trying to write data to FIFO
+    .DMA_FIFO_WRERR
+
 );
 
 

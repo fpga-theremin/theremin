@@ -1213,6 +1213,18 @@
           "CLKOUT6_USED": {
             "value": "true"
           },
+          "CLKOUT7_JITTER": {
+            "value": "211.190"
+          },
+          "CLKOUT7_PHASE_ERROR": {
+            "value": "123.861"
+          },
+          "CLKOUT7_REQUESTED_OUT_FREQ": {
+            "value": "9.216"
+          },
+          "CLKOUT7_USED": {
+            "value": "true"
+          },
           "CLK_IN1_BOARD_INTERFACE": {
             "value": "sys_clock"
           },
@@ -1233,6 +1245,9 @@
           },
           "CLK_OUT6_PORT": {
             "value": "CLK_MCLK"
+          },
+          "CLK_OUT7_PORT": {
+            "value": "CLK_10"
           },
           "MMCM_CLKFBOUT_MULT_F": {
             "value": "18.875"
@@ -1258,11 +1273,14 @@
           "MMCM_CLKOUT5_DIVIDE": {
             "value": "64"
           },
+          "MMCM_CLKOUT6_DIVIDE": {
+            "value": "128"
+          },
           "MMCM_DIVCLK_DIVIDE": {
             "value": "2"
           },
           "NUM_OUT_CLKS": {
-            "value": "6"
+            "value": "7"
           },
           "RESET_PORT": {
             "value": "resetn"
@@ -1405,16 +1423,16 @@
               }
             },
             "interface_nets": {
-              "auto_pc_to_s00_couplers": {
-                "interface_ports": [
-                  "M_AXI",
-                  "auto_pc/M_AXI"
-                ]
-              },
               "s00_couplers_to_auto_pc": {
                 "interface_ports": [
                   "S_AXI",
                   "auto_pc/S_AXI"
+                ]
+              },
+              "auto_pc_to_s00_couplers": {
+                "interface_ports": [
+                  "M_AXI",
+                  "auto_pc/M_AXI"
                 ]
               }
             },
@@ -1480,28 +1498,25 @@
         "xci_name": "theremin_hw_bd_theremin_io_ip_0_0",
         "parameters": {
           "HBP": {
-            "value": "13"
+            "value": "10"
           },
           "HFP": {
-            "value": "12"
+            "value": "10"
           },
           "HSW": {
-            "value": "29"
+            "value": "25"
           },
           "HSYNC_POLARITY": {
             "value": "0"
           },
-          "PXCLK_POLARITY": {
-            "value": "1"
-          },
           "VBP": {
-            "value": "23"
+            "value": "5"
           },
           "VFP": {
-            "value": "8"
+            "value": "5"
           },
           "VSW": {
-            "value": "9"
+            "value": "10"
           },
           "VSYNC_POLARITY": {
             "value": "0"
@@ -1656,9 +1671,9 @@
           "processing_system7_0/Core1_nFIQ"
         ]
       },
-      "clk_wiz_0_CLK_MCLK": {
+      "clk_wiz_0_CLK_10": {
         "ports": [
-          "clk_wiz_0/CLK_MCLK",
+          "clk_wiz_0/CLK_10",
           "theremin_io_ip_0/CLK_PXCLK"
         ]
       }

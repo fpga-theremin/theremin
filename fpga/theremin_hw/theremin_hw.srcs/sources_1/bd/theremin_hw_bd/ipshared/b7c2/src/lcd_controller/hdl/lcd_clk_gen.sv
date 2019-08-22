@@ -24,12 +24,12 @@ module lcd_clk_gen
 #(
     parameter integer HPIXELS = 800,
     parameter integer VPIXELS = 480,
-    parameter integer HBP = 13, // 2
-    parameter integer VBP = 23, // 2
-    parameter integer HSW = 29, // 10
-    parameter integer VSW = 9, // 2
-    parameter integer HFP = 12, // 2
-    parameter integer VFP = 8, // 2
+    parameter integer HBP = 2,
+    parameter integer VBP = 2,
+    parameter integer HSW = 12,
+    parameter integer VSW = 3,
+    parameter integer HFP = 2,
+    parameter integer VFP = 2,
     parameter integer HSYNC_POLARITY = 0,
     parameter integer VSYNC_POLARITY = 0,
     parameter integer X_BITS = ( (HPIXELS+HBP+HSW+HFP) <= 256 ? 8

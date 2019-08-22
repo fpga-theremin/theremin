@@ -62,6 +62,7 @@
 // _____CLK___147.461______0.000______50.0______117.580____123.861
 // CLK_PXCLK____36.865______0.000______50.0______155.334____123.861
 // CLK_MCLK____18.433______0.000______50.0______183.854____123.861
+// __CLK_10_____9.216______0.000______50.0______211.190____123.861
 //
 //----------------------------------------------------------------------------
 // Input Clock   Freq (MHz)    Input Jitter (UI)
@@ -70,7 +71,7 @@
 
 `timescale 1ps/1ps
 
-(* CORE_GENERATION_INFO = "theremin_hw_bd_clk_wiz_0_0,clk_wiz_v6_0_3_0_0,{component_name=theremin_hw_bd_clk_wiz_0_0,use_phase_alignment=true,use_min_o_jitter=false,use_max_i_jitter=false,use_dyn_phase_shift=false,use_inclk_switchover=false,use_dyn_reconfig=false,enable_axi=0,feedback_source=FDBK_AUTO,PRIMITIVE=MMCM,num_out_clk=6,clkin1_period=8.000,clkin2_period=10.000,use_power_down=false,use_reset=true,use_locked=true,use_inclk_stopped=false,feedback_type=SINGLE,CLOCK_MGR_TYPE=NA,manual_override=false}" *)
+(* CORE_GENERATION_INFO = "theremin_hw_bd_clk_wiz_0_0,clk_wiz_v6_0_3_0_0,{component_name=theremin_hw_bd_clk_wiz_0_0,use_phase_alignment=true,use_min_o_jitter=false,use_max_i_jitter=false,use_dyn_phase_shift=false,use_inclk_switchover=false,use_dyn_reconfig=false,enable_axi=0,feedback_source=FDBK_AUTO,PRIMITIVE=MMCM,num_out_clk=7,clkin1_period=8.000,clkin2_period=10.000,use_power_down=false,use_reset=true,use_locked=true,use_inclk_stopped=false,feedback_type=SINGLE,CLOCK_MGR_TYPE=NA,manual_override=false}" *)
 
 module theremin_hw_bd_clk_wiz_0_0 
  (
@@ -81,6 +82,7 @@ module theremin_hw_bd_clk_wiz_0_0
   output        CLK,
   output        CLK_PXCLK,
   output        CLK_MCLK,
+  output        CLK_10,
   // Status and control signals
   input         resetn,
   output        locked,
@@ -97,6 +99,7 @@ module theremin_hw_bd_clk_wiz_0_0
   .CLK(CLK),
   .CLK_PXCLK(CLK_PXCLK),
   .CLK_MCLK(CLK_MCLK),
+  .CLK_10(CLK_10),
   // Status and control signals               
   .resetn(resetn), 
   .locked(locked),
