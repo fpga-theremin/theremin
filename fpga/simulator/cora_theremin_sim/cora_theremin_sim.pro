@@ -29,12 +29,16 @@ SOURCES += \
     mainwindow.cpp \
     lcd_simulator.cpp \
     simulator_impl.cpp \
+    audiogen.cpp \
+    audioplayer.cpp \
     theremin_sensor_simulator.cpp
 
 HEADERS += \
     mainwindow.h \
     lcd_simulator.h \
     theremin_sensor_simulator.h \
+    audiogen.h \
+    audioplayer.h \
     simulator_impl.h
 
 RESOURCES += \

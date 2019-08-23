@@ -15,6 +15,7 @@
 #include <QToolBar>
 #include <QSpacerItem>
 #include <QAudioOutput>
+#include <QThread>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -74,11 +75,36 @@ MainWindow::MainWindow(QWidget *parent)
     QWidget * centralWidget = new QWidget(this);
     centralWidget->setLayout(mainLayout);
     setCentralWidget(centralWidget);
+
+
+    audioGen = new AudioGen(this);
+
+
+
+
+    audioThread = new QThread(this);
+    audioPlayer = new AudioPlayer(audioGen);
+    audioPlayer->moveToThread(audioThread);
+    //connect(thread, SIGNAL (started()), thread, SLOT (exec()));
+    connect(audioThread, SIGNAL (started()), this, SLOT (onThreadStarted()));
+    connect(audioThread, SIGNAL (finished()), this, SLOT (onThreadFinished()));
+    connect(audioThread, SIGNAL (finished()), audioPlayer, SLOT (deleteLater()));
+    connect(audioThread, SIGNAL (finished()), audioThread, SLOT (deleteLater()));
+
+    connect(this, SIGNAL (play()), audioPlayer, SLOT (start()));
+    connect(this, SIGNAL (stop()), audioPlayer, SLOT (stop()));
+    connect(audioPlayer, SIGNAL (started()), this, SLOT (onPlaybackStarted()));
+    connect(audioPlayer, SIGNAL (stopped()), this, SLOT (onPlaybackStopped()));
+    audioThread->start(QThread::Priority::TimeCriticalPriority);
+
 }
 
 MainWindow::~MainWindow()
 {
-
+    qDebug("MainWindow::~MainWindow() enter");
+    audioThread->quit();
+    audioThread->wait();
+    qDebug("MainWindow::~MainWindow() exit");
 }
 
 void MainWindow::onPlay() {
@@ -89,3 +115,22 @@ void MainWindow::onPause() {
     emit stop();
 }
 
+void MainWindow::onThreadStarted() {
+    qDebug("Thread started");
+}
+
+void MainWindow::onThreadFinished() {
+    qDebug("Thread stopped");
+}
+
+void MainWindow::onPlaybackStarted() {
+    qDebug("MainWindow::onPlayStarted");
+    playAction->setEnabled(false);
+    stopAction->setEnabled(true);
+}
+
+void MainWindow::onPlaybackStopped() {
+    qDebug("MainWindow::onPlayStopped");
+    playAction->setEnabled(true);
+    stopAction->setEnabled(false);
+}
