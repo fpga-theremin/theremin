@@ -716,13 +716,13 @@ proc create_root_design { parentCell } {
   # Create instance: theremin_io_ip_0, and set properties
   set theremin_io_ip_0 [ create_bd_cell -type ip -vlnv coolreader_org:user:theremin_io_ip:1.0 theremin_io_ip_0 ]
   set_property -dict [ list \
-   CONFIG.HBP {10} \
-   CONFIG.HFP {10} \
-   CONFIG.HSW {25} \
+   CONFIG.HBP {2} \
+   CONFIG.HFP {2} \
+   CONFIG.HSW {10} \
    CONFIG.HSYNC_POLARITY {0} \
-   CONFIG.VBP {5} \
-   CONFIG.VFP {5} \
-   CONFIG.VSW {10} \
+   CONFIG.VBP {2} \
+   CONFIG.VFP {2} \
+   CONFIG.VSW {2} \
    CONFIG.VSYNC_POLARITY {0} \
  ] $theremin_io_ip_0
 
@@ -743,8 +743,8 @@ proc create_root_design { parentCell } {
   connect_bd_net -net PITCH_FREQ_IN_0_1 [get_bd_ports PITCH_FREQ_IN_0] [get_bd_pins theremin_io_ip_0/PITCH_FREQ_IN]
   connect_bd_net -net VOLUME_FREQ_IN_0_1 [get_bd_ports VOLUME_FREQ_IN_0] [get_bd_pins theremin_io_ip_0/VOLUME_FREQ_IN]
   connect_bd_net -net clk_wiz_0_CLK [get_bd_pins clk_wiz_0/CLK] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins processing_system7_0/S_AXI_HP0_ACLK] [get_bd_pins ps7_0_axi_periph/ACLK] [get_bd_pins ps7_0_axi_periph/M00_ACLK] [get_bd_pins ps7_0_axi_periph/S00_ACLK] [get_bd_pins rst_clk_wiz_0_147M/slowest_sync_clk] [get_bd_pins theremin_io_ip_0/m00_axi_aclk] [get_bd_pins theremin_io_ip_0/s00_axi_aclk]
-  connect_bd_net -net clk_wiz_0_CLK_10 [get_bd_pins clk_wiz_0/CLK_10] [get_bd_pins theremin_io_ip_0/CLK_PXCLK]
   connect_bd_net -net clk_wiz_0_CLK_DELAY [get_bd_pins clk_wiz_0/CLK_DELAY] [get_bd_pins theremin_io_ip_0/CLK_DELAY]
+  connect_bd_net -net clk_wiz_0_CLK_MCLK [get_bd_pins clk_wiz_0/CLK_MCLK] [get_bd_pins theremin_io_ip_0/CLK_PXCLK]
   connect_bd_net -net clk_wiz_0_CLK_SHIFT [get_bd_pins clk_wiz_0/CLK_SHIFT] [get_bd_pins theremin_io_ip_0/CLK_SHIFT]
   connect_bd_net -net clk_wiz_0_CLK_SHIFTB [get_bd_pins clk_wiz_0/CLK_SHIFTB] [get_bd_pins theremin_io_ip_0/CLK_SHIFTB]
   connect_bd_net -net clk_wiz_0_locked [get_bd_pins clk_wiz_0/locked] [get_bd_pins rst_clk_wiz_0_147M/dcm_locked]

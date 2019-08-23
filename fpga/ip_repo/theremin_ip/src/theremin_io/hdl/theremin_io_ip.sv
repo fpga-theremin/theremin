@@ -29,7 +29,12 @@ module theremin_io_ip #
     parameter integer FILTER_OUT_BITS = 32,
     parameter integer FILTER_SHIFT_BITS = 8,
 
+
     // Encoders and buttons debouncer parameters
+
+    // when 0, use encoders_board instance, when 1, control mux directly using REG_ENCODERS_RAW
+    parameter integer MANUAL_ENCODERS = 1,
+
     // Number of bits in CLK divider to produce MUX switching frequency.
     // If clock is 37.5 MHz, 
     // For  CLK_DIV_BITS = 5, /32 divider gives 1.17MHz of mux switching, 73KHz of mux cycle
@@ -264,7 +269,7 @@ module theremin_io_ip #
    8:     REG_TOUCH_I2C                  [31:0] I2C touch             [31:0] I2C touch                                                                      
    9:     REG_AUDIO_I2C                  [31:0] I2C audio             [31:0] I2C audio                                                                      
 
-   10:    REG_ENCODERS_RAW               [20] mux out
+   11:    REG_ENCODERS_RAW               [20] mux out
                                          [19:16] mux address
                                          [15:0] debounced enc pins
    12:    REG_AUDIO_STATUS               [31] audio irq enabled       [31] audio irq enabled
@@ -284,7 +289,7 @@ typedef enum logic [3:0] {
     RD_REG_ENCODER_2 = 7,
     RD_REG_AUDIO_I2C = 8,
     RD_REG_TOUCH_I2C = 9,
-    RD_REG_ENCODERS_RAW = 10,
+    RD_REG_ENCODERS_RAW = 11,
     RD_REG_AUDIO_STATUS = 12    // [31] Audio IRQ enable [30] Audio IRQ pending
 } reg_rd_addr_t;
 
@@ -298,6 +303,7 @@ typedef enum logic [3:0] {
     WR_REG_PHONES_OUT_R = 7,
     WR_REG_AUDIO_I2C = 8,
     WR_REG_TOUCH_I2C = 9,
+    WR_REG_ENCODERS_RAW = 11,
     WR_REG_AUDIO_STATUS = 12    // [31] Audio IRQ enable [30] Audio IRQ ack (write 0)
 } reg_wr_addr_t;
 
@@ -445,7 +451,7 @@ always_comb R <= lcd_pixel_data[11:8];
 always_comb G <= lcd_pixel_data[7:4];
 always_comb B <= lcd_pixel_data[3:0];
 
-localparam INVERT_PXCLK = 1;
+localparam INVERT_PXCLK = 0;
 always_comb PXCLK <= INVERT_PXCLK ? ~CLK_PXCLK : CLK_PXCLK;
 
 // 1 for LCD side underflow - no data for pixel provided by DMA
@@ -640,6 +646,9 @@ always_ff @(posedge CLK)
         mux_out_sync <= 'b0;
     else
         mux_out_sync <= MUX_OUT;
+logic [3:0] encoders_addr;
+logic [3:0] mux_addr;
+always_comb MUX_ADDR <= MANUAL_ENCODERS ? encoders_addr : mux_addr;
 
 encoders_board 
 #(
@@ -670,9 +679,9 @@ encoders_board_inst
     // for reading encoders and button signals using MUX
     
     // MUX address for multiplexing N buttons into one MUX_OUT
-    .MUX_ADDR,
+    .MUX_ADDR(mux_addr),
     // input value from MUX (MUX_OUT <= button[MUX_ADDR])
-    .MUX_OUT,
+    .MUX_OUT(mux_out_sync),
 
     // exposing processed state as controller registers
     
@@ -944,7 +953,7 @@ assign REG_RD_DATA = (REG_RD_ADDR == RD_REG_STATUS) ? status_reg
                    : (REG_RD_ADDR == RD_REG_AUDIO_I2C) ? { 22'b0, audio_i2c_status}
                    //: (REG_RD_ADDR == RD_REG_TOUCH_I2C) ? { 22'b0, touch_i2c_status}
                    : (REG_RD_ADDR == RD_REG_AUDIO_STATUS) ? { audio_status_reg }
-                   : (REG_RD_ADDR == RD_REG_ENCODERS_RAW) ? {11'b0, mux_out_sync, MUX_ADDR, ENCODERS_DEBOUNCED}
+                   : (REG_RD_ADDR == RD_REG_ENCODERS_RAW) ? {31'b0, mux_out_sync} //ENCODERS_DEBOUNCED
                    :                                                 0;
 
 // Registers write
@@ -961,6 +970,7 @@ always_ff @(posedge m00_axi_aclk) begin
         OUT_LEFT_CHANNEL1 <= 'b0;
         OUT_RIGHT_CHANNEL1 <= 'b0;
         IIR_MAX_STAGE <= 3'b011; // 4 stages
+        encoders_addr <= 'b0;
     end else if (REG_WREN) begin
         case (REG_WR_ADDR)
             WR_REG_STATUS: IIR_MAX_STAGE <= REG_WR_DATA[29:27]; // 4 stages
@@ -975,6 +985,7 @@ always_ff @(posedge m00_axi_aclk) begin
             WR_REG_PHONES_OUT_L: OUT_LEFT_CHANNEL1 <= REG_WR_DATA[23:0];
             WR_REG_PHONES_OUT_R: AUDIO_OUT_1_R: OUT_RIGHT_CHANNEL1 <= REG_WR_DATA[23:0];
             WR_REG_AUDIO_STATUS: audio_irq_enabled <= REG_WR_DATA[31];
+            WR_REG_ENCODERS_RAW: encoders_addr <= REG_WR_DATA[3:0];
         endcase
     end
 end

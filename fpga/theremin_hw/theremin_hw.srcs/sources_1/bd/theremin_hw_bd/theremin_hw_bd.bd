@@ -1423,16 +1423,16 @@
               }
             },
             "interface_nets": {
-              "s00_couplers_to_auto_pc": {
-                "interface_ports": [
-                  "S_AXI",
-                  "auto_pc/S_AXI"
-                ]
-              },
               "auto_pc_to_s00_couplers": {
                 "interface_ports": [
                   "M_AXI",
                   "auto_pc/M_AXI"
+                ]
+              },
+              "s00_couplers_to_auto_pc": {
+                "interface_ports": [
+                  "S_AXI",
+                  "auto_pc/S_AXI"
                 ]
               }
             },
@@ -1498,25 +1498,25 @@
         "xci_name": "theremin_hw_bd_theremin_io_ip_0_0",
         "parameters": {
           "HBP": {
-            "value": "10"
+            "value": "2"
           },
           "HFP": {
-            "value": "10"
+            "value": "2"
           },
           "HSW": {
-            "value": "25"
+            "value": "10"
           },
           "HSYNC_POLARITY": {
             "value": "0"
           },
           "VBP": {
-            "value": "5"
+            "value": "2"
           },
           "VFP": {
-            "value": "5"
+            "value": "2"
           },
           "VSW": {
-            "value": "10"
+            "value": "2"
           },
           "VSYNC_POLARITY": {
             "value": "0"
@@ -1671,9 +1671,9 @@
           "processing_system7_0/Core1_nFIQ"
         ]
       },
-      "clk_wiz_0_CLK_10": {
+      "clk_wiz_0_CLK_MCLK": {
         "ports": [
-          "clk_wiz_0/CLK_10",
+          "clk_wiz_0/CLK_MCLK",
           "theremin_io_ip_0/CLK_PXCLK"
         ]
       }

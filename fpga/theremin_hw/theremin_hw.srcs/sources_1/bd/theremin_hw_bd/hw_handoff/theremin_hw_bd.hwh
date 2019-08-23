@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Thu Aug 22 17:05:19 2019" VIVADOVERSION="2019.1.1">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Fri Aug 23 11:30:51 2019" VIVADOVERSION="2019.1.1">
 
   <SYSTEMINFO ARCH="zynq" BOARD="digilentinc.com:cora-z7-10:part0:1.0" DEVICE="7z010" NAME="theremin_hw_bd" PACKAGE="clg400" SPEEDGRADE="-1"/>
 
@@ -950,17 +950,17 @@
           </CONNECTIONS>
         </PORT>
         <PORT CLKFREQUENCY="36865234" DIR="O" NAME="CLK_PXCLK" SIGIS="clk"/>
-        <PORT CLKFREQUENCY="18432617" DIR="O" NAME="CLK_MCLK" SIGIS="clk"/>
+        <PORT CLKFREQUENCY="18432617" DIR="O" NAME="CLK_MCLK" SIGIS="clk" SIGNAME="clk_wiz_0_CLK_MCLK">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="theremin_io_ip_0" PORT="CLK_PXCLK"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="O" NAME="locked" SIGIS="undef" SIGNAME="clk_wiz_0_locked">
           <CONNECTIONS>
             <CONNECTION INSTANCE="rst_clk_wiz_0_147M" PORT="dcm_locked"/>
           </CONNECTIONS>
         </PORT>
-        <PORT CLKFREQUENCY="9216308" DIR="O" NAME="CLK_10" SIGIS="clk" SIGNAME="clk_wiz_0_CLK_10">
-          <CONNECTIONS>
-            <CONNECTION INSTANCE="theremin_io_ip_0" PORT="CLK_PXCLK"/>
-          </CONNECTIONS>
-        </PORT>
+        <PORT CLKFREQUENCY="9216308" DIR="O" NAME="CLK_10" SIGIS="clk"/>
       </PORTS>
       <BUSINTERFACES/>
     </MODULE>
@@ -3404,7 +3404,7 @@
       </PORTS>
       <BUSINTERFACES/>
     </MODULE>
-    <MODULE COREREVISION="27" FULLNAME="/theremin_io_ip_0" HWVERSION="1.0" INSTANCE="theremin_io_ip_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="theremin_io_ip" VLNV="coolreader_org:user:theremin_io_ip:1.0">
+    <MODULE COREREVISION="35" FULLNAME="/theremin_io_ip_0" HWVERSION="1.0" INSTANCE="theremin_io_ip_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="theremin_io_ip" VLNV="coolreader_org:user:theremin_io_ip:1.0">
       <DOCUMENTS/>
       <ADDRESSBLOCKS>
         <ADDRESSBLOCK ACCESS="" INTERFACE="s00_axi" NAME="THEREMIN_IP_REGS" RANGE="4096" USAGE="register"/>
@@ -3413,12 +3413,12 @@
         <PARAMETER NAME="BURST_SIZE" VALUE="8"/>
         <PARAMETER NAME="HPIXELS" VALUE="800"/>
         <PARAMETER NAME="VPIXELS" VALUE="480"/>
-        <PARAMETER NAME="HBP" VALUE="10"/>
-        <PARAMETER NAME="VBP" VALUE="5"/>
-        <PARAMETER NAME="HSW" VALUE="25"/>
-        <PARAMETER NAME="VSW" VALUE="10"/>
-        <PARAMETER NAME="HFP" VALUE="10"/>
-        <PARAMETER NAME="VFP" VALUE="5"/>
+        <PARAMETER NAME="HBP" VALUE="2"/>
+        <PARAMETER NAME="VBP" VALUE="2"/>
+        <PARAMETER NAME="HSW" VALUE="10"/>
+        <PARAMETER NAME="VSW" VALUE="2"/>
+        <PARAMETER NAME="HFP" VALUE="2"/>
+        <PARAMETER NAME="VFP" VALUE="2"/>
         <PARAMETER NAME="HSYNC_POLARITY" VALUE="0"/>
         <PARAMETER NAME="VSYNC_POLARITY" VALUE="0"/>
         <PARAMETER NAME="PITCH_PERIOD_BITS" VALUE="16"/>
@@ -3437,6 +3437,11 @@
         <PARAMETER NAME="C_M00_AXI_WUSER_WIDTH" VALUE="0"/>
         <PARAMETER NAME="C_M00_AXI_RUSER_WIDTH" VALUE="0"/>
         <PARAMETER NAME="C_M00_AXI_BUSER_WIDTH" VALUE="0"/>
+        <PARAMETER NAME="PWM_COUNTER_BITS" VALUE="16"/>
+        <PARAMETER NAME="DEBOUNCE_CLK_DIV_BITS" VALUE="7"/>
+        <PARAMETER NAME="DEBOUNCE_COUNTER_BITS" VALUE="8"/>
+        <PARAMETER NAME="DEBOUNCE_UPDATE_DIVIDER_BITS" VALUE="8"/>
+        <PARAMETER NAME="MANUAL_ENCODERS" VALUE="1"/>
         <PARAMETER NAME="Component_Name" VALUE="theremin_hw_bd_theremin_io_ip_0_0"/>
         <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
         <PARAMETER NAME="C_BASEADDR" VALUE="0x43C00000"/>
@@ -3458,9 +3463,9 @@
             <CONNECTION INSTANCE="clk_wiz_0" PORT="CLK_DELAY"/>
           </CONNECTIONS>
         </PORT>
-        <PORT CLKFREQUENCY="9216308" DIR="I" NAME="CLK_PXCLK" SIGIS="clk" SIGNAME="clk_wiz_0_CLK_10">
+        <PORT CLKFREQUENCY="18432617" DIR="I" NAME="CLK_PXCLK" SIGIS="clk" SIGNAME="clk_wiz_0_CLK_MCLK">
           <CONNECTIONS>
-            <CONNECTION INSTANCE="clk_wiz_0" PORT="CLK_10"/>
+            <CONNECTION INSTANCE="clk_wiz_0" PORT="CLK_MCLK"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="PXCLK" SIGIS="clk" SIGNAME="theremin_io_ip_0_PXCLK">

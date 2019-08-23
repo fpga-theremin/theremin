@@ -48,7 +48,7 @@
 
 
 // IP VLNV: coolreader_org:user:theremin_io_ip:1.0
-// IP Revision: 27
+// IP Revision: 35
 
 `timescale 1ns/1ps
 
@@ -158,7 +158,7 @@ input wire CLK_SHIFTB;
 (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME CLK_DELAY, FREQ_HZ 196614583, PHASE 0.0, CLK_DOMAIN /clk_wiz_0_clk_out1, INSERT_VIP 0" *)
 (* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 CLK_DELAY CLK" *)
 input wire CLK_DELAY;
-(* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME CLK_PXCLK, FREQ_HZ 9216308, PHASE 0.0, CLK_DOMAIN /clk_wiz_0_clk_out1, INSERT_VIP 0" *)
+(* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME CLK_PXCLK, FREQ_HZ 18432617, PHASE 0.0, CLK_DOMAIN /clk_wiz_0_clk_out1, INSERT_VIP 0" *)
 (* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 CLK_PXCLK CLK" *)
 input wire CLK_PXCLK;
 (* X_INTERFACE_INFO = "coolreader.org:user:lcd_rgb_12bit:1.0 LCD PXCLK" *)
@@ -349,12 +349,12 @@ input wire m00_axi_aresetn;
     .BURST_SIZE(8),
     .HPIXELS(800),
     .VPIXELS(480),
-    .HBP(10),
-    .VBP(5),
-    .HSW(25),
-    .VSW(10),
-    .HFP(10),
-    .VFP(5),
+    .HBP(2),
+    .VBP(2),
+    .HSW(10),
+    .VSW(2),
+    .HFP(2),
+    .VFP(2),
     .HSYNC_POLARITY(0),
     .VSYNC_POLARITY(0),
     .PITCH_PERIOD_BITS(16),
@@ -372,7 +372,12 @@ input wire m00_axi_aresetn;
     .C_M00_AXI_ARUSER_WIDTH(0),
     .C_M00_AXI_WUSER_WIDTH(0),
     .C_M00_AXI_RUSER_WIDTH(0),
-    .C_M00_AXI_BUSER_WIDTH(0)
+    .C_M00_AXI_BUSER_WIDTH(0),
+    .PWM_COUNTER_BITS(16),
+    .DEBOUNCE_CLK_DIV_BITS(7),
+    .DEBOUNCE_COUNTER_BITS(8),
+    .DEBOUNCE_UPDATE_DIVIDER_BITS(8),
+    .MANUAL_ENCODERS(1)
   ) inst (
     .CLK_SHIFT(CLK_SHIFT),
     .CLK_SHIFTB(CLK_SHIFTB),

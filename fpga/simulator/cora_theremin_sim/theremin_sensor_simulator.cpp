@@ -3,6 +3,7 @@
 #include <QPainter>
 
 #define FRAME_OFFSET 16
+#define SENSOR_HEIGHT (SCREEN_DY / 3)
 
 #define MARK_SIZE 8
 
@@ -10,8 +11,8 @@ ThereminSensorSimulator::ThereminSensorSimulator(QWidget *parent) : QWidget(pare
 {
     setMinimumWidth(SCREEN_DX);
     setMaximumWidth(SCREEN_DX);
-    setMinimumHeight(SCREEN_DY / 2);
-    setMaximumHeight(SCREEN_DY / 2);
+    setMinimumHeight(SENSOR_HEIGHT);
+    setMaximumHeight(SENSOR_HEIGHT);
 }
 
 
@@ -19,7 +20,7 @@ void ThereminSensorSimulator::paintEvent(QPaintEvent *event) {
     Q_UNUSED(event)
     QPainter painter(this);
     QBrush background(0xd0d8e0);
-    QPen frame(0x606060);
+    QPen frame(0xc0c0c0);
     QPen marker(0xf00000);
     painter.setRenderHint(QPainter::Antialiasing, false);
     painter.fillRect(0, 0, width(), height(), background);
