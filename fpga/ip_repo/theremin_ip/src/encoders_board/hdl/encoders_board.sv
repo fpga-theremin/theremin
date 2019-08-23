@@ -20,7 +20,29 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module encoders_board(
+module encoders_board
+#(
+    // Number of bits in CLK divider to produce MUX switching frequency.
+    // If clock is 37.5 MHz, 
+    // For  CLK_DIV_BITS = 5, /32 divider gives 1.17MHz of mux switching, 73KHz of mux cycle
+    // For  CLK_DIV_BITS = 6, /64 divider gives 585KHz of mux switching, 36.6KHz of mux cycle
+    // For  CLK_DIV_BITS = 7, /128 divider gives 292KHz of mux switching, 18.3KHz of mux cycle
+    // For  CLK_DIV_BITS = 8, /256 divider gives 292KHz of mux switching, 9.15KHz of mux cycle
+    parameter DEBOUNCE_CLK_DIV_BITS = 7,
+    // Debouncing counter determines how many cycles input should remain in the same state
+    // after change to propagate this change to output.
+    // For DEBOUNCE_COUNTER_BITS == 12, it's input check interval / 4096.
+    // For default settings, 200KHz/4096 == 47Hz is max frequency of input change (unbounced) which can be noticed.
+    // For 37.5MHz CLK and DEBOUNCE_CLK_DIV_BITS = 7 (state check clk is 18.3KHz)
+    //    debounce counter 8 bits gives minimum const interval 18.3/256 = 71.5Hz
+    //    debounce counter 8 bits gives minimum const interval 18.3/256 = 71.5Hz
+    parameter DEBOUNCE_COUNTER_BITS = 8,
+    // Outputs are updated once per CLK/(1<<DEBOUNCE_CLK_DIV_BITS)/(1<<MUX_ADDR_BITS)/(1<<DEBOUNCE_UPDATE_DIVIDER_BITS)
+    // For default settings it's approximately once per 100ms
+    parameter DEBOUNCE_UPDATE_DIVIDER_BITS = 8
+)
+(
+    // input clock, e.g. PXCLK or MCLK
     input CLK,
     input RESET,
     
@@ -61,11 +83,16 @@ module encoders_board(
     // [14:8]  encoder4 button state duration
     // [7:4]   encoder4 pressed state position
     // [3:0]   encoder4 normal state position
-    output logic[31:0] R2
+    output logic[31:0] R2,
+
+    // debounced value of 5 encoders and one button signals
+    output logic [15:0] ENCODERS_DEBOUNCED
 );
 
 // debounced output values: bit DEBOUNCED[i] is debounced value of MUX[i] input
 logic [15:0] DEBOUNCED;
+always_comb ENCODERS_DEBOUNCED <= DEBOUNCED;
+
 // change flags, CHANGE_FLAGS[i] set to 1 means that DEBOUNCED[i] is changed since
 // last UPDATED signal
 logic [15:0] CHANGE_FLAGS;
@@ -76,7 +103,7 @@ mux_debouncer
 #(
     // Number of bits in CLK divider to produce MUX switching frequency.
     // For  CLK_DIV_BITS = 5, /32 divider gives 3MHz for 100MHz CLK.
-    .CLK_DIV_BITS(7),
+    .CLK_DIV_BITS(DEBOUNCE_CLK_DIV_BITS),
     // Number of address bits for MUX. MUX has (1<<MUX_ADDR_BITS) inputs.
     // One input is read once per CLK/(1<<CLK_DIV_BITS)/(1<<MUX_ADDR_BITS)
     // For 5 bits in divider and bits in address, each input is checked once
@@ -87,10 +114,10 @@ mux_debouncer
     // For DEBOUNCE_COUNTER_BITS == 12, it's input check interval / 4096.
     // For default settings, 200KHz/4096 == 47Hz is max frequency of input change (unbounced)
     // which can be noticed.
-    .DEBOUNCE_COUNTER_BITS(10),
+    .DEBOUNCE_COUNTER_BITS(DEBOUNCE_COUNTER_BITS),
     // Outputs are updated once per CLK/(1<<CLK_DIV_BITS)/(1<<MUX_ADDR_BITS)/(1<<UPDATE_DIVIDER_BITS)
     // For default settings it's approximately once per 100ms
-    .UPDATE_DIVIDER_BITS(10)
+    .UPDATE_DIVIDER_BITS(DEBOUNCE_UPDATE_DIVIDER_BITS)
 )
 mux_debouncer_inst
 (

@@ -65,21 +65,6 @@ module lcd_controller_axi3_dma #(
     // current Y position (row index); rows 0..VPIXELS-1 are visible, in CLK_PXCLK domain
     output logic [Y_BITS-1:0] ROW_INDEX,
 
-    // color of LED0 (4 bits per R, G, B)    
-    input logic [11:0] RGB_LED_COLOR0,
-    // color of LED0 (4 bits per R, G, B)    
-    input logic [11:0] RGB_LED_COLOR1,
-
-    // color led0 control output {r,g,b}
-    output logic [2:0] LED0_PWM,
-    // color led1 control output {r,g,b}
-    output logic [2:0] LED1_PWM,
-
-    // backlight brightness setting, 0=dark, 255=light
-    input logic [7:0] BACKLIGHT_BRIGHTNESS,
-    // backlight PWM control output
-    output logic BACKLIGHT_PWM,
-
     // 1 for LCD side underflow - no data for pixel provided by DMA
     output logic DMA_FIFO_RDERR,
     // 1 for DMA side overflow - buffer full when trying to write data to FIFO
@@ -151,22 +136,6 @@ lcd_controller_inst
     .COL_INDEX,
     // current Y position (row index); rows 0..VPIXELS-1 are visible, in CLK_PXCLK domain
     .ROW_INDEX,
-
-
-    // color of LED0 (4 bits per R, G, B)    
-    .RGB_LED_COLOR0,
-    // color of LED0 (4 bits per R, G, B)    
-    .RGB_LED_COLOR1,
-
-    // color led0 control output {r,g,b}
-    .LED0_PWM,
-    // color led1 control output {r,g,b}
-    .LED1_PWM,
-    
-    // backlight brightness setting, 0=dark, 255=light
-    .BACKLIGHT_BRIGHTNESS,
-    // backlight PWM control output
-    .BACKLIGHT_PWM,
 
 
     // DMA interface, in CLK clock domain

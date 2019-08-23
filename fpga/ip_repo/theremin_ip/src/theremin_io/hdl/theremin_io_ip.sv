@@ -29,6 +29,30 @@ module theremin_io_ip #
     parameter integer FILTER_OUT_BITS = 32,
     parameter integer FILTER_SHIFT_BITS = 8,
 
+    // Encoders and buttons debouncer parameters
+    // Number of bits in CLK divider to produce MUX switching frequency.
+    // If clock is 37.5 MHz, 
+    // For  CLK_DIV_BITS = 5, /32 divider gives 1.17MHz of mux switching, 73KHz of mux cycle
+    // For  CLK_DIV_BITS = 6, /64 divider gives 585KHz of mux switching, 36.6KHz of mux cycle
+    // For  CLK_DIV_BITS = 7, /128 divider gives 292KHz of mux switching, 18.3KHz of mux cycle
+    // For  CLK_DIV_BITS = 8, /256 divider gives 292KHz of mux switching, 9.15KHz of mux cycle
+    parameter DEBOUNCE_CLK_DIV_BITS = 7,
+    // Debouncing counter determines how many cycles input should remain in the same state
+    // after change to propagate this change to output.
+    // For DEBOUNCE_COUNTER_BITS == 12, it's input check interval / 4096.
+    // For default settings, 200KHz/4096 == 47Hz is max frequency of input change (unbounced) which can be noticed.
+    // For 37.5MHz CLK and DEBOUNCE_CLK_DIV_BITS = 7 (state check clk is 18.3KHz)
+    //    debounce counter 8 bits gives minimum const interval 18.3/256 = 71.5Hz
+    //    debounce counter 8 bits gives minimum const interval 18.3/256 = 71.5Hz
+    parameter DEBOUNCE_COUNTER_BITS = 8,
+    // Outputs are updated once per CLK/(1<<DEBOUNCE_CLK_DIV_BITS)/(1<<MUX_ADDR_BITS)/(1<<DEBOUNCE_UPDATE_DIVIDER_BITS)
+    // For default settings it's approximately once per 100ms
+    parameter DEBOUNCE_UPDATE_DIVIDER_BITS = 8,
+
+    // divider counter bits to divide CLK_PXCLK to get backlight and RGB LED PWM signal
+    // for 38MHz PXCLK, 16 bits divider gives ~570Hz PWM 
+    parameter integer PWM_COUNTER_BITS = 16,
+
     // User parameters ends
     // Do not modify the parameters beyond this line
 
@@ -240,6 +264,9 @@ module theremin_io_ip #
    8:     REG_TOUCH_I2C                  [31:0] I2C touch             [31:0] I2C touch                                                                      
    9:     REG_AUDIO_I2C                  [31:0] I2C audio             [31:0] I2C audio                                                                      
 
+   10:    REG_ENCODERS_RAW               [20] mux out
+                                         [19:16] mux address
+                                         [15:0] debounced enc pins
    12:    REG_AUDIO_STATUS               [31] audio irq enabled       [31] audio irq enabled
                                          [30] audio irq 1=pending     [30] audio irq ack write 0 to ack
                                          [29:12] sample counter       [29:0] reserved
@@ -257,6 +284,7 @@ typedef enum logic [3:0] {
     RD_REG_ENCODER_2 = 7,
     RD_REG_AUDIO_I2C = 8,
     RD_REG_TOUCH_I2C = 9,
+    RD_REG_ENCODERS_RAW = 10,
     RD_REG_AUDIO_STATUS = 12    // [31] Audio IRQ enable [30] Audio IRQ pending
 } reg_rd_addr_t;
 
@@ -334,6 +362,46 @@ assign m00_axi_wstrb = 4'h0;
 assign m00_axi_bready = 1'b0;
 
 
+//=========================================================================================
+// PWM brightness control for LCD backlight and two Cora Z7 on-board RGB leds
+
+// writeable IP register
+logic [7:0] lcd_backlight_brightness_reg;
+// color of LED0 (4 bits per R, G, B)    
+logic [11:0] rbg_led_color0_reg;
+// color of LED0 (4 bits per R, G, B)    
+logic [11:0] rbg_led_color1_reg;
+
+
+theremin_pwm
+#(
+    .PWM_COUNTER_BITS(PWM_COUNTER_BITS)
+) theremin_pwm_inst
+(
+    // input clock
+    .CLK(CLK_PXCLK),
+    // reset, active 1
+    .RESET,
+
+    // color of LED0 (4 bits per R, G, B)    
+    .RGB_LED_COLOR0(rbg_led_color0_reg),
+    // color of LED0 (4 bits per R, G, B)    
+    .RGB_LED_COLOR1(rbg_led_color1_reg),
+    
+    // color led0 control output {r,g,b}
+    .LED0_PWM,
+    // color led1 control output {r,g,b}
+    .LED1_PWM,
+    
+    // backlight brightness setting, 0=dark, 255=light
+    .BACKLIGHT_BRIGHTNESS(lcd_backlight_brightness_reg),
+    // backlight PWM control output
+    .BACKLIGHT_PWM
+);
+
+//=========================================================================
+// LCD controller
+
 localparam X_BITS = ( (HPIXELS+HBP+HSW+HFP) <= 256 ? 8
                        : (HPIXELS+HBP+HSW+HFP) <= 512 ? 9
                        : (HPIXELS+HBP+HSW+HFP) <= 1024 ? 10
@@ -343,14 +411,6 @@ localparam Y_BITS = ( (VPIXELS+VBP+VSW+VFP) <= 256 ? 8
                        : (VPIXELS+VBP+VSW+VFP) <= 1024 ? 10
                        :                                 11 );
 
-// writeable IP register
-logic [29:0] lcd_buffer_start_address_reg;
-// writeable IP register
-logic [7:0] lcd_backlight_brightness_reg;
-// color of LED0 (4 bits per R, G, B)    
-logic [11:0] rbg_led_color0_reg;
-// color of LED0 (4 bits per R, G, B)    
-logic [11:0] rbg_led_color1_reg;
 
 // readonly IP register
 logic [X_BITS-1:0] lcd_col_index;
@@ -368,7 +428,12 @@ always_ff @(posedge CLK_PXCLK) begin
     end
 end
 
+
+// writeable IP register
+logic [29:0] lcd_buffer_start_address_reg;
+
 logic [15:0] lcd_pixel_data;
+
 
 //logic hw_grid;
 //always_comb hw_grid <= (lcd_col_index_delayed[3:0] == 4'b0100)|(lcd_row_index_delayed[3:0] == 4'b0100);
@@ -379,7 +444,9 @@ logic [15:0] lcd_pixel_data;
 always_comb R <= lcd_pixel_data[11:8];
 always_comb G <= lcd_pixel_data[7:4];
 always_comb B <= lcd_pixel_data[3:0];
-always_comb PXCLK <= CLK_PXCLK;
+
+localparam INVERT_PXCLK = 1;
+always_comb PXCLK <= INVERT_PXCLK ? ~CLK_PXCLK : CLK_PXCLK;
 
 // 1 for LCD side underflow - no data for pixel provided by DMA
 logic DMA_FIFO_RDERR;
@@ -425,21 +492,6 @@ lcd_controller_axi3_dma_inst
     // current Y position (row index); rows 0..VPIXELS-1 are visible, in CLK_PXCLK domain
     .ROW_INDEX(lcd_row_index),
     
-    // color of LED0 (4 bits per R, G, B)    
-    .RGB_LED_COLOR0(rbg_led_color0_reg),
-    // color of LED0 (4 bits per R, G, B)    
-    .RGB_LED_COLOR1(rbg_led_color1_reg),
-    
-    // color led0 control output {r,g,b}
-    .LED0_PWM,
-    // color led1 control output {r,g,b}
-    .LED1_PWM,
-    
-    // backlight brightness setting, 0=dark, 255=light
-    .BACKLIGHT_BRIGHTNESS(lcd_backlight_brightness_reg),
-    // backlight PWM control output
-    .BACKLIGHT_PWM,
-
     // 1 for LCD side underflow - no data for pixel provided by DMA
     .DMA_FIFO_RDERR,
     // 1 for DMA side overflow - buffer full when trying to write data to FIFO
@@ -579,8 +631,40 @@ logic[31:0] ENCODERS_R1;
 // [3:0]   encoder4 normal state position
 logic[31:0] ENCODERS_R2;
 
-encoders_board encoders_board_inst (
-    .CLK,
+// debounced value of 5 encoders and one button signals
+logic [15:0] ENCODERS_DEBOUNCED;
+
+logic mux_out_sync;
+always_ff @(posedge CLK)
+    if (RESET)
+        mux_out_sync <= 'b0;
+    else
+        mux_out_sync <= MUX_OUT;
+
+encoders_board 
+#(
+    // Number of bits in CLK divider to produce MUX switching frequency.
+    // If clock is 37.5 MHz, 
+    // For  CLK_DIV_BITS = 5, /32 divider gives 1.17MHz of mux switching, 73KHz of mux cycle
+    // For  CLK_DIV_BITS = 6, /64 divider gives 585KHz of mux switching, 36.6KHz of mux cycle
+    // For  CLK_DIV_BITS = 7, /128 divider gives 292KHz of mux switching, 18.3KHz of mux cycle
+    // For  CLK_DIV_BITS = 8, /256 divider gives 292KHz of mux switching, 9.15KHz of mux cycle
+    .DEBOUNCE_CLK_DIV_BITS(DEBOUNCE_CLK_DIV_BITS),
+    // Debouncing counter determines how many cycles input should remain in the same state
+    // after change to propagate this change to output.
+    // For DEBOUNCE_COUNTER_BITS == 12, it's input check interval / 4096.
+    // For default settings, 200KHz/4096 == 47Hz is max frequency of input change (unbounced) which can be noticed.
+    // For 37.5MHz CLK and DEBOUNCE_CLK_DIV_BITS = 7 (state check clk is 18.3KHz)
+    //    debounce counter 8 bits gives minimum const interval 18.3/256 = 71.5Hz
+    //    debounce counter 8 bits gives minimum const interval 18.3/256 = 71.5Hz
+    .DEBOUNCE_COUNTER_BITS(DEBOUNCE_COUNTER_BITS),
+    // Outputs are updated once per CLK/(1<<DEBOUNCE_CLK_DIV_BITS)/(1<<MUX_ADDR_BITS)/(1<<DEBOUNCE_UPDATE_DIVIDER_BITS)
+    // For default settings it's approximately once per 100ms
+    .DEBOUNCE_UPDATE_DIVIDER_BITS(DEBOUNCE_UPDATE_DIVIDER_BITS)
+) 
+encoders_board_inst
+(
+    .CLK(CLK_PXCLK),
     .RESET,
     
     // for reading encoders and button signals using MUX
@@ -620,7 +704,9 @@ encoders_board encoders_board_inst (
     // [14:8]  encoder4 button state duration
     // [7:4]   encoder4 pressed state position
     // [3:0]   encoder4 normal state position
-    .R2(ENCODERS_R2)
+    .R2(ENCODERS_R2),
+    
+    .ENCODERS_DEBOUNCED
 );
 
 
@@ -858,6 +944,7 @@ assign REG_RD_DATA = (REG_RD_ADDR == RD_REG_STATUS) ? status_reg
                    : (REG_RD_ADDR == RD_REG_AUDIO_I2C) ? { 22'b0, audio_i2c_status}
                    //: (REG_RD_ADDR == RD_REG_TOUCH_I2C) ? { 22'b0, touch_i2c_status}
                    : (REG_RD_ADDR == RD_REG_AUDIO_STATUS) ? { audio_status_reg }
+                   : (REG_RD_ADDR == RD_REG_ENCODERS_RAW) ? {11'b0, mux_out_sync, MUX_ADDR, ENCODERS_DEBOUNCED}
                    :                                                 0;
 
 // Registers write
