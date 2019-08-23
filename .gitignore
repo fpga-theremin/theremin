@@ -1,5 +1,10 @@
 *.log
-
+.history
+*.snap
+*.pdom
+.markers
+webtalk
+RemoteSystemsTempFiles
 
 # Prerequisites
 *.d
