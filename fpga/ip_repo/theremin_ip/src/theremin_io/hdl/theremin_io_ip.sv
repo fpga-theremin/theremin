@@ -15,12 +15,12 @@ module theremin_io_ip #
     // LCD
     parameter integer HPIXELS = 800,
     parameter integer VPIXELS = 480,
-    parameter integer HBP = 13, // 2
-    parameter integer VBP = 23, // 2
-    parameter integer HSW = 29, // 10
-    parameter integer VSW = 9, // 2
-    parameter integer HFP = 12, // 2
-    parameter integer VFP = 8, // 2
+    parameter integer HBP = 2,
+    parameter integer VBP = 2,
+    parameter integer HSW = 10,
+    parameter integer VSW = 2,
+    parameter integer HFP = 2,
+    parameter integer VFP = 2,
     parameter integer HSYNC_POLARITY = 0,
     parameter integer VSYNC_POLARITY = 0,
 
@@ -370,12 +370,15 @@ end
 
 logic [15:0] lcd_pixel_data;
 
-logic hw_grid;
-always_comb hw_grid <= (lcd_col_index_delayed[3:0] == 4'b0100)|(lcd_row_index_delayed[3:0] == 4'b0100);
+//logic hw_grid;
+//always_comb hw_grid <= (lcd_col_index_delayed[3:0] == 4'b0100)|(lcd_row_index_delayed[3:0] == 4'b0100);
 
-always_comb R <= hw_grid ? 4'hf : lcd_pixel_data[11:8];
-always_comb G <= hw_grid ? 4'h4 : lcd_pixel_data[7:4];
-always_comb B <= hw_grid ? 4'h0 : lcd_pixel_data[3:0];
+//always_comb R <= hw_grid ? 4'hf : lcd_pixel_data[11:8];
+//always_comb G <= hw_grid ? 4'h4 : lcd_pixel_data[7:4];
+//always_comb B <= hw_grid ? 4'h0 : lcd_pixel_data[3:0];
+always_comb R <= lcd_pixel_data[11:8];
+always_comb G <= lcd_pixel_data[7:4];
+always_comb B <= lcd_pixel_data[3:0];
 always_comb PXCLK <= CLK_PXCLK;
 
 // 1 for LCD side underflow - no data for pixel provided by DMA

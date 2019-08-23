@@ -112,7 +112,7 @@ logic pwm;
 logic [2:0] ledpwm0;
 logic [2:0] ledpwm1;
 
-logic [12:0] pwm_counter;
+logic [10:0] pwm_counter;
 
 always @(posedge CLK_PXCLK) begin
     if (RESET) begin
@@ -122,45 +122,45 @@ always @(posedge CLK_PXCLK) begin
         ledpwm1 <= 'b0;
     end else begin
         pwm_counter <= pwm_counter + 1;
-        if (pwm_counter[4:0] == 5'b11111) begin
-            if (pwm_counter[12:5] == 8'b11111111) begin
+        if (pwm_counter[2:0] == 3'b111) begin
+            if (pwm_counter[10:3] == 8'b11111111) begin
                 pwm <= 1'b1;
             end else begin
-                if (pwm_counter[12:5] == BACKLIGHT_BRIGHTNESS)
+                if (pwm_counter[10:3] == BACKLIGHT_BRIGHTNESS)
                     pwm <= 1'b0;
             end
         end
-        if (pwm_counter[7:0] == 8'b00000000) begin
+        if (pwm_counter[5:0] == 6'b000000) begin
             // led0
-            if (pwm_counter[12:8] == 5'b00000) begin
+            if (pwm_counter[10:6] == 5'b00000) begin
                 ledpwm0[2] <= 3'b1;
-            end if (pwm_counter[12:8] == {1'b0, RGB_LED_COLOR0[11:8]}) begin
+            end if (pwm_counter[10:6] == {1'b0, RGB_LED_COLOR0[11:8]}) begin
                 ledpwm0[2] <= 3'b0;
             end
-            if (pwm_counter[12:8] == 5'b00000) begin
+            if (pwm_counter[10:6] == 5'b00000) begin
                 ledpwm0[1] <= 3'b1;
-            end if (pwm_counter[12:8] == {1'b0, RGB_LED_COLOR0[7:4]}) begin
+            end if (pwm_counter[10:6] == {1'b0, RGB_LED_COLOR0[7:4]}) begin
                 ledpwm0[1] <= 3'b0;
             end
-            if (pwm_counter[12:8] == 5'b00000) begin
+            if (pwm_counter[10:6] == 5'b00000) begin
                 ledpwm0[0] <= 3'b1;
-            end if (pwm_counter[12:8] == {1'b0, RGB_LED_COLOR0[3:0]}) begin
+            end if (pwm_counter[10:6] == {1'b0, RGB_LED_COLOR0[3:0]}) begin
                 ledpwm0[0] <= 3'b0;
             end
             // led1
-            if (pwm_counter[12:8] == 5'b00000) begin
+            if (pwm_counter[10:6] == 5'b00000) begin
                 ledpwm1[2] <= 3'b1;
-            end if (pwm_counter[12:8] == {1'b0, RGB_LED_COLOR1[11:8]}) begin
+            end if (pwm_counter[10:6] == {1'b0, RGB_LED_COLOR1[11:8]}) begin
                 ledpwm1[2] <= 3'b0;
             end
-            if (pwm_counter[12:8] == 5'b00000) begin
+            if (pwm_counter[10:6] == 5'b00000) begin
                 ledpwm1[1] <= 3'b1;
-            end if (pwm_counter[12:8] == {1'b0, RGB_LED_COLOR1[7:4]}) begin
+            end if (pwm_counter[10:6] == {1'b0, RGB_LED_COLOR1[7:4]}) begin
                 ledpwm1[1] <= 3'b0;
             end
-            if (pwm_counter[12:8] == 5'b00000) begin
+            if (pwm_counter[10:6] == 5'b00000) begin
                 ledpwm1[0] <= 3'b1;
-            end if (pwm_counter[12:8] == {1'b0, RGB_LED_COLOR1[3:0]}) begin
+            end if (pwm_counter[10:6] == {1'b0, RGB_LED_COLOR1[3:0]}) begin
                 ledpwm1[0] <= 3'b0;
             end
         end
