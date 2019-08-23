@@ -1,8 +1,11 @@
 #include <mutex>
 #include "simulator_impl.h"
 
+extern std::mutex audio_sim_mutex;
+
 
 std::mutex audio_sim_mutex;
+
 #define AUDIO_GUARD() \
     std::lock_guard<std::mutex> lock(audio_sim_mutex)
 

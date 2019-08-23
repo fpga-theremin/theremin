@@ -85,6 +85,18 @@ uint32_t thereminAudio_i2cRead(uint8_t reg) {
 	return status & 0xff;
 }
 
+#define THEREMIN_RD_REG_ENCODERS_RAW (11*4)
+
+uint32_t readEncodersManual() {
+	uint32_t res = 0;
+	for (int i = 0; i < 16; i++) {
+		thereminIO_writeReg(THEREMIN_RD_REG_ENCODERS_RAW, i);
+		usleep(150000);
+		res = (res << 1) | (thereminIO_readReg(THEREMIN_RD_REG_ENCODERS_RAW) & 1);
+	}
+	return res;
+}
+
 int main()
 {
 	print("FPGA Theremin Project\r\n");
@@ -97,10 +109,10 @@ int main()
 			px |= (y / 31) << 8;
 			px |= (x / 50) << 4;
 			px |= (x + y) / 100;
-			//if ((x & 15) == 0)
-			//	px = 0xf40;
-			//if ((y & 15) == 0)
-			//	px = 0x04f;
+			if ((x & 15) == 0)
+				px = 0xf40;
+			if ((y & 15) == 0)
+				px = 0x04f;
 			if (x>=2 && x <= 10 && y>=2 && y<=10 )
 				px = 0xff0;
 			framebuffer[y*SCREEN_DX + x] = px; //0xf80 + x / 64; //y + ((x >> 6) * 4096);//(y&255) * 256 + (x &255);
@@ -120,9 +132,13 @@ int main()
 	usleep(1000);
 	xil_printf("Setting framebuffer address to %08x\r\n", framebuffer);
 	thereminLCD_setFramebufferAddress(framebuffer);
-	thereminIO_setBacklightBrightness(0x30);
+	thereminIO_setBacklightBrightness(0x40);
 	print("    Done\r\n");
 	usleep(10000);
+
+	for (int i = 0; i < 16; i++) {
+		xil_printf("REG[%d] = %08x\r\n", i, thereminIO_readReg(i*4));
+	}
 
 	xil_printf("i2c reg 0 = %2x \r\n", thereminAudio_i2cRead(0));
 	xil_printf("i2c reg 2 = %2x \r\n", thereminAudio_i2cRead(2));
@@ -132,6 +148,7 @@ int main()
 	uint32_t prevEnc0 = thereminIO_readReg(THEREMIN_RD_REG_ENCODER_0);
 	uint32_t prevEnc1 = thereminIO_readReg(THEREMIN_RD_REG_ENCODER_1);
 	uint32_t prevEnc2 = thereminIO_readReg(THEREMIN_RD_REG_ENCODER_2);
+	uint32_t prevEncRaw = 0; //thereminIO_readReg(10) & 0xffff;
 
 	int phase = 0;
 	for (;;) {
@@ -141,7 +158,7 @@ int main()
 //				rowIndex, 0 //irq_counter
 //				);
 //		print("..");
-		usleep(10000);
+		usleep(1000000);
 //		print(".\r\n");
 		phase = (phase + 1)&7;
 		//setLeds(phase);
@@ -155,14 +172,18 @@ int main()
 //		uint32_t newEnc0 = thereminIO_readReg(THEREMIN_RD_REG_ENCODER_0);
 //		uint32_t newEnc1 = thereminIO_readReg(THEREMIN_RD_REG_ENCODER_1);
 //		uint32_t newEnc2 = thereminIO_readReg(THEREMIN_RD_REG_ENCODER_2);
-//		if (prevEnc0 != newEnc0 || prevEnc1 != newEnc1 || prevEnc2 != newEnc2) {
-//			xil_printf("Encoders:    %08x   %08x    %08x\r\n",
-//					newEnc0, newEnc1, newEnc2
+//		uint32_t newEncRaw = 0; //thereminIO_readReg(10) & 0xffff;
+//		if (prevEnc0 != newEnc0 || prevEnc1 != newEnc1 || prevEnc2 != newEnc2 || prevEncRaw != newEncRaw) {
+//			xil_printf("Encoders:    %08x   %08x    %08x     raw:%04x\r\n",
+//					newEnc0, newEnc1, newEnc2, newEncRaw
 //					);
 //			prevEnc0 = newEnc0;
 //			prevEnc1 = newEnc1;
 //			prevEnc2 = newEnc2;
+//			prevEncRaw = newEncRaw;
 //		}
+		uint32_t enc = readEncodersManual();
+		xil_printf("Encoders \t%4x\r\n", enc);
 		uint32_t s = thereminIO_readReg(0);
 		int x = (s>>16)&0x3ff;
 		int y = (s)&0x3ff;
@@ -170,8 +191,8 @@ int main()
 		int hsync = (s>>14)&1;
 		int de = (s>>13)&1;
 		int expectedDE = ((x < 800) && (y < 480)) ? 1 : 0;
-		int expectedVSYNC = (y >= 480+2 && y < 480+2+3) ? 0 : 1;
-		int expectedHSYNC = (x >= 800+2 && x < 800+2+12) ? 0 : 1;
+		int expectedVSYNC = (y >= 480+2 && y < 480+2+2) ? 0 : 1;
+		int expectedHSYNC = (x >= 800+2 && x < 800+2+10) ? 0 : 1;
 		if (de != expectedDE || vsync != expectedVSYNC || hsync != expectedHSYNC)
 			xil_printf("LCD controls: VSYNC=%d (%d)\t HSYNC=%d (%d)\t DE=%d (%d)\t x=%d\t y=%d\r\n",
 				vsync, expectedVSYNC,
