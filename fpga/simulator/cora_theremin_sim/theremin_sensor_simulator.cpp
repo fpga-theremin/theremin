@@ -8,6 +8,10 @@
 
 #define MARK_SIZE 8
 
+
+static SensorConvertor pitchConv(DEF_PITCH_MIN_PERIOD, DEF_PITCH_MAX_PERIOD, 1.0f);
+static SensorConvertor volumeConv(DEF_VOLUME_MIN_PERIOD, DEF_VOLUME_MAX_PERIOD, 1.0f);
+
 ThereminSensorSimulator::ThereminSensorSimulator(QWidget *parent) : QWidget(parent)
 {
     markX = SCREEN_DX / 2;
@@ -16,6 +20,7 @@ ThereminSensorSimulator::ThereminSensorSimulator(QWidget *parent) : QWidget(pare
     setMaximumWidth(SCREEN_DX);
     setMinimumHeight(SENSOR_HEIGHT);
     setMaximumHeight(SENSOR_HEIGHT);
+    setMark(SCREEN_DX / 2, SENSOR_HEIGHT / 3);
 }
 
 
@@ -46,6 +51,12 @@ void ThereminSensorSimulator::setMark(int x, int y) {
         y = height() - 1;
     markX = x;
     markY = y;
+    float xx = (markX - FRAME_OFFSET) / static_cast<float>(SCREEN_DX - FRAME_OFFSET*2);
+    float yy = (markY - FRAME_OFFSET) / static_cast<float>(SCREEN_DY - FRAME_OFFSET*2);
+    pitchSensorValue = pitchConv.linearToPeriod(xx);
+    volumeSensorValue = volumeConv.linearToPeriod(yy);
+    sensorSim_setPitchSensor(pitchSensorValue);
+    sensorSim_setVolumeSensor(volumeSensorValue);
     update();
 }
 

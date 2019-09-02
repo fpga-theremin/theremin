@@ -8,6 +8,8 @@ class ThereminSensorSimulator : public QWidget
     Q_OBJECT
     int markX;
     int markY;
+    uint32_t pitchSensorValue;
+    uint32_t volumeSensorValue;
 protected:
     void paintEvent(QPaintEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;

@@ -95,12 +95,15 @@ MainWindow::MainWindow(QWidget *parent)
         rightLayout->addWidget(pedals[i], 0, Qt::AlignRight);
     }
     rightLayout->addStretch(1);
-    regWidgets[0] = new RegValueWidget(QString("ENC0"), THEREMIN_RD_REG_ENCODER_0, this);
-    regWidgets[1] = new RegValueWidget(QString("ENC1"), THEREMIN_RD_REG_ENCODER_1, this);
-    regWidgets[2] = new RegValueWidget(QString("ENC2"), THEREMIN_RD_REG_ENCODER_2, this);
-    regWidgets[3] = new RegValueWidget(QString("PED0"), THEREMIN_RD_REG_PEDALS_0, this);
-    regWidgets[4] = new RegValueWidget(QString("PED1"), THEREMIN_RD_REG_PEDALS_1, this);
-    regWidgets[5] = new RegValueWidget(QString("PED2"), THEREMIN_RD_REG_PEDALS_2, this);
+    int ri = 0;
+    regWidgets[ri++] = new RegValueWidget(QString("TPIT"), THEREMIN_RD_REG_PITCH_PERIOD, this);
+    regWidgets[ri++] = new RegValueWidget(QString("TVOL"), THEREMIN_RD_REG_VOLUME_PERIOD, this);
+    regWidgets[ri++] = new RegValueWidget(QString("ENC0"), THEREMIN_RD_REG_ENCODER_0, this);
+    regWidgets[ri++] = new RegValueWidget(QString("ENC1"), THEREMIN_RD_REG_ENCODER_1, this);
+    regWidgets[ri++] = new RegValueWidget(QString("ENC2"), THEREMIN_RD_REG_ENCODER_2, this);
+    regWidgets[ri++] = new RegValueWidget(QString("PED0"), THEREMIN_RD_REG_PEDALS_0, this);
+    regWidgets[ri++] = new RegValueWidget(QString("PED1"), THEREMIN_RD_REG_PEDALS_1, this);
+    regWidgets[ri++] = new RegValueWidget(QString("PED2"), THEREMIN_RD_REG_PEDALS_2, this);
     for (int i = 0; i < MAX_DISPLAY_REGS; i++)
         rightLayout->addWidget(regWidgets[i], 0, Qt::AlignCenter);
     rightLayout->addStretch(5);

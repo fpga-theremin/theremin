@@ -10,6 +10,9 @@ struct audio_sample_t {
     audio_sample_t(uint32_t l, uint32_t r) : left(l), right(r) {}
 };
 
+void sensorSim_setPitchSensor(uint32_t value);
+void sensorSim_setVolumeSensor(uint32_t value);
+
 audio_sample_t audioSim_getLineOut();
 audio_sample_t audioSim_getPhoneOut();
 void audioSim_setLineIn(audio_sample_t sample);
@@ -24,5 +27,19 @@ void encodersSim_setButtonState(int index, bool pressed);
 #define THEREMIN_RD_REG_PEDALS_1 (14*4)
 #define THEREMIN_RD_REG_PEDALS_2 (15*4)
 void pedalSim_setPedalValue(int index, float value);
+
+#define DEF_PITCH_MIN_PERIOD 0x35762147
+#define DEF_PITCH_MAX_PERIOD 0x393428BA
+#define DEF_VOLUME_MIN_PERIOD 0xAB6E2A8B
+#define DEF_VOLUME_MAX_PERIOD 0xB76E32A4
+
+struct SensorConvertor {
+    uint32_t minValue;
+    uint32_t maxValue;
+    float k;
+    SensorConvertor(uint32_t minv, uint32_t maxv, float linK) : minValue(minv), maxValue(maxv), k(linK) {}
+    uint32_t linearToPeriod(float v);
+    float periodToLinear(uint32_t v);
+};
 
 #endif // SIMULATOR_IMPL_H

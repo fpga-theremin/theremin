@@ -23,7 +23,8 @@ void thereminIO_init() {
 
 // Flush CPU cache
 void thereminIO_flushCache(void * addr, uint32_t size) {
-
+    Q_UNUSED(addr);
+    Q_UNUSED(size);
 }
 
 static uint32_t REG_VALUES[16] = {
@@ -33,9 +34,17 @@ static uint32_t REG_VALUES[16] = {
     0, 0, 0, 0,
 };
 
+void sensorSim_setPitchSensor(uint32_t value) {
+    REG_VALUES[THEREMIN_RD_REG_PITCH_PERIOD/4] = value;
+}
+void sensorSim_setVolumeSensor(uint32_t value) {
+    REG_VALUES[THEREMIN_RD_REG_VOLUME_PERIOD/4] = value;
+}
+
 // Write Theremin IP register value
 void thereminIO_writeReg(uint32_t offset, uint32_t value) {
-    REG_VALUES[offset] = value;
+    Q_ASSERT((offset & 3) == 0);
+    REG_VALUES[offset / 4] = value;
 }
 
 
@@ -191,8 +200,8 @@ struct ButtonState {
 
 
 struct EncoderState : public ButtonState {
-    uint8_t normalAngle;
-    uint8_t pressedAngle;
+    int32_t normalAngle;
+    int32_t pressedAngle;
     EncoderState() : ButtonState(), normalAngle(0), pressedAngle(0) {}
     bool updateAngle(int delta) {
         if (!delta)
@@ -205,15 +214,15 @@ struct EncoderState : public ButtonState {
         return true;
     }
     uint32_t getEncoderState() {
-        uint16_t res = getButtonState();
-        res |= (static_cast<uint16_t>(normalAngle & 0x0f) << 0);
-        res |= (static_cast<uint16_t>(pressedAngle & 0x0f) << 4);
+        uint32_t res = getButtonState();
+        res |= ((normalAngle & 0x0f) << 0);
+        res |= ((pressedAngle & 0x0f) << 4);
         return res;
     }
 };
 
-ButtonState tactButtonState;
-EncoderState encoderStates[5];
+static ButtonState tactButtonState;
+static EncoderState encoderStates[5];
 
 void encodersSim_setEncoderState(int index, bool pressed, int delta) {
     if (index < 0 || index >= 5)
@@ -268,6 +277,7 @@ void pedalSim_setPedalValue(int index, float value) {
 
 // Read Theremin IP register value
 uint32_t thereminIO_readReg(uint32_t offset) {
+    Q_ASSERT((offset & 3) == 0);
     switch(offset) {
     case THEREMIN_RD_REG_ENCODER_0:
         return encoderStates[0].getEncoderState() | (encoderStates[1].getEncoderState() << 16);
@@ -283,6 +293,25 @@ uint32_t thereminIO_readReg(uint32_t offset) {
         return pedalValues[4] | (static_cast<uint32_t>(pedalValues[5]) << 16);
 
     default:
-        return REG_VALUES[offset];
+        return REG_VALUES[offset/4];
     }
+}
+
+
+uint32_t SensorConvertor::linearToPeriod(float v) {
+    if (v < -0.05f)
+        v = -0.05f;
+    else if (v > 1.05f)
+        v = 1.05f;
+    float n = static_cast<float>(maxValue) + v * (static_cast<float>(minValue) - static_cast<float>(maxValue));
+    uint32_t res = static_cast<uint32_t>(n);
+    return res;
+}
+float SensorConvertor::periodToLinear(uint32_t v) {
+    float n = static_cast<float>(v - maxValue) * (static_cast<float>(minValue) - static_cast<float>(maxValue));
+    if (n < -0.05f)
+        n = -0.05f;
+    else if (n > 1.05f)
+        n = 1.05f;
+    return n;
 }

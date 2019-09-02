@@ -10,7 +10,7 @@
 #include "pedal_widget.h"
 #include "reg_value_widget.h"
 
-#define MAX_DISPLAY_REGS 6
+#define MAX_DISPLAY_REGS 8
 
 class MainWindow : public QMainWindow
 {
