@@ -2,11 +2,13 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QTimer>
 #include "audioplayer.h"
 #include "audiogen.h"
 #include "encoder_widget.h"
 #include "tact_button_widget.h"
 #include "pedal_widget.h"
+#include "reg_value_widget.h"
 
 class MainWindow : public QMainWindow
 {
@@ -15,6 +17,7 @@ class MainWindow : public QMainWindow
     TactButtonWidget * tactButton;
     EncoderWidget * encoders[5];
     PedalWidget * pedals[6];
+    RegValueWidget * regWidgets[3];
 
     QMenu *fileMenu;
     QMenu *deviceMenu;
@@ -24,6 +27,7 @@ class MainWindow : public QMainWindow
     AudioGen * audioGen;
     QThread* audioThread;
 
+    QTimer periodicTimer;
 public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
@@ -33,6 +37,8 @@ signals:
 public slots:
     void onPlay();
     void onPause();
+
+    void onPeriodicTimer();
 
     void onThreadStarted();
     void onThreadFinished();

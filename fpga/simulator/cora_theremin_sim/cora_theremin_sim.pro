@@ -33,6 +33,7 @@ SOURCES += \
     mainwindow.cpp \
     lcd_simulator.cpp \
     pedal_widget.cpp \
+    reg_value_widget.cpp \
     simulator_impl.cpp \
     audiogen.cpp \
     audioplayer.cpp \
@@ -45,6 +46,7 @@ HEADERS += \
     mainwindow.h \
     lcd_simulator.h \
     pedal_widget.h \
+    reg_value_widget.h \
     tact_button_widget.h \
     theremin_sensor_simulator.h \
     audiogen.h \

@@ -37,10 +37,6 @@ static uint32_t REG_VALUES[16] = {
 void thereminIO_writeReg(uint32_t offset, uint32_t value) {
     REG_VALUES[offset] = value;
 }
-// Read Theremin IP register value
-uint32_t thereminIO_readReg(uint32_t offset) {
-    return REG_VALUES[offset];
-}
 
 
 static volatile bool audio_irq_enabled = false;
@@ -166,6 +162,8 @@ uint32_t thereminLCD_getCurrentRowIndex() {
     return SCREEN_DY;
 }
 
+#define BUTTON_STATE_TIMER_RATE (1000/32)
+
 struct ButtonState {
     bool pressed;
     QTime timer;
@@ -176,14 +174,14 @@ struct ButtonState {
         if (pressed == flg)
             return false;
         pressed = flg;
-        timer.start();
+        timer.restart();
         return true;
     }
-    uint16_t getButtonState() {
+    uint32_t getButtonState() {
         uint16_t res = 0;
         if (pressed)
             res |= 0x8000;
-        int elapsed = timer.elapsed() / 100; // to 1/10 seconds
+        int elapsed = timer.elapsed() / BUTTON_STATE_TIMER_RATE; // to 1/10 seconds
         if (elapsed > 127)
             elapsed = 127;
         res |= (static_cast<uint16_t>(elapsed) << 8);
@@ -199,14 +197,14 @@ struct EncoderState : public ButtonState {
     bool updateAngle(int delta) {
         if (!delta)
             return false;
-        timer.start();
+        timer.restart();
         if (pressed)
             pressedAngle = (pressedAngle + delta) & 0x0f;
         else
             normalAngle = (normalAngle + delta) & 0x0f;
         return true;
     }
-    uint16_t getEncoderState() {
+    uint32_t getEncoderState() {
         uint16_t res = getButtonState();
         res |= (static_cast<uint16_t>(normalAngle & 0x0f) << 0);
         res |= (static_cast<uint16_t>(pressedAngle & 0x0f) << 4);
@@ -222,10 +220,49 @@ void encodersSim_setEncoderState(int index, bool pressed, int delta) {
         return;
     encoderStates[index].setPressed(pressed);
     encoderStates[index].updateAngle(delta);
+    int reg = 0;
+    int shift = 0;
+    switch(index) {
+    case 0:
+        reg = THEREMIN_RD_REG_ENCODER_0;
+        shift = 0;
+    break;
+    case 1:
+        reg = THEREMIN_RD_REG_ENCODER_0;
+        shift = 1;
+    break;
+    case 2:
+        reg = THEREMIN_RD_REG_ENCODER_1;
+        shift = 0;
+    break;
+    case 3:
+        reg = THEREMIN_RD_REG_ENCODER_1;
+        shift = 1;
+    break;
+    case 4:
+        reg = THEREMIN_RD_REG_ENCODER_2;
+        shift = 0;
+    break;
+    }
 }
 
 void encodersSim_setButtonState(int index, bool pressed) {
     if (index != 0)
         return;
     tactButtonState.setPressed(pressed);
+}
+
+
+// Read Theremin IP register value
+uint32_t thereminIO_readReg(uint32_t offset) {
+    switch(offset) {
+    case THEREMIN_RD_REG_ENCODER_0:
+        return encoderStates[0].getEncoderState() | (encoderStates[1].getEncoderState() << 16);
+    case THEREMIN_RD_REG_ENCODER_1:
+        return encoderStates[2].getEncoderState() | (encoderStates[3].getEncoderState() << 16);
+    case THEREMIN_RD_REG_ENCODER_2:
+        return encoderStates[4].getEncoderState() | (tactButtonState.getButtonState() << 16);
+    default:
+        return REG_VALUES[offset];
+    }
 }

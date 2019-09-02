@@ -35,14 +35,12 @@ void TactButtonWidget::paintEvent(QPaintEvent *event) {
 
 void TactButtonWidget::mousePressEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
-        pressed = true;
-        update();
+        setPressed(true);
     }
 }
 void TactButtonWidget::mouseReleaseEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
-        pressed = false;
-        update();
+        setPressed(false);
     }
 }
 void TactButtonWidget::mouseMoveEvent(QMouseEvent *event) {

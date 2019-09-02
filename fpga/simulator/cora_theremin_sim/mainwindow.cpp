@@ -3,6 +3,7 @@
 #include "simulator_impl.h"
 #include "lcd_simulator.h"
 #include "theremin_sensor_simulator.h"
+#include "reg_value_widget.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -93,7 +94,14 @@ MainWindow::MainWindow(QWidget *parent)
         pedals[i]->setValue(i * 0.15f);
         rightLayout->addWidget(pedals[i]);
     }
-    rightLayout->addStretch();
+    rightLayout->addStretch(1);
+    regWidgets[0] = new RegValueWidget(QString("ENC0"), THEREMIN_RD_REG_ENCODER_0, this);
+    regWidgets[1] = new RegValueWidget(QString("ENC1"), THEREMIN_RD_REG_ENCODER_1, this);
+    regWidgets[2] = new RegValueWidget(QString("ENC2"), THEREMIN_RD_REG_ENCODER_2, this);
+    rightLayout->addWidget(regWidgets[0], 0, Qt::AlignRight);
+    rightLayout->addWidget(regWidgets[1], 0, Qt::AlignRight);
+    rightLayout->addWidget(regWidgets[2], 0, Qt::AlignRight);
+    rightLayout->addStretch(5);
 
 
     ThereminSensorSimulator * sensorWidget = new ThereminSensorSimulator(this);
@@ -130,6 +138,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(audioPlayer, SIGNAL (stopped()), this, SLOT (onPlaybackStopped()));
     audioThread->start(QThread::Priority::TimeCriticalPriority);
 
+    connect(&periodicTimer, SIGNAL (timeout()), this, SLOT (onPeriodicTimer()));
+    periodicTimer.setInterval(500);
+    periodicTimer.start();
 }
 
 MainWindow::~MainWindow()
@@ -138,6 +149,12 @@ MainWindow::~MainWindow()
     audioThread->quit();
     audioThread->wait();
     qDebug("MainWindow::~MainWindow() exit");
+}
+
+void MainWindow::onPeriodicTimer() {
+    regWidgets[0]->updateValue();
+    regWidgets[1]->updateValue();
+    regWidgets[2]->updateValue();
 }
 
 void MainWindow::onPlay() {
