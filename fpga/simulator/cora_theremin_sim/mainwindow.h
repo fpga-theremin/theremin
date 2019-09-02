@@ -10,6 +10,8 @@
 #include "pedal_widget.h"
 #include "reg_value_widget.h"
 
+#define MAX_DISPLAY_REGS 6
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -17,7 +19,7 @@ class MainWindow : public QMainWindow
     TactButtonWidget * tactButton;
     EncoderWidget * encoders[5];
     PedalWidget * pedals[6];
-    RegValueWidget * regWidgets[6];
+    RegValueWidget * regWidgets[MAX_DISPLAY_REGS];
 
     QMenu *fileMenu;
     QMenu *deviceMenu;

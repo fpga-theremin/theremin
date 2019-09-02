@@ -101,8 +101,8 @@ MainWindow::MainWindow(QWidget *parent)
     regWidgets[3] = new RegValueWidget(QString("PED0"), THEREMIN_RD_REG_PEDALS_0, this);
     regWidgets[4] = new RegValueWidget(QString("PED1"), THEREMIN_RD_REG_PEDALS_1, this);
     regWidgets[5] = new RegValueWidget(QString("PED2"), THEREMIN_RD_REG_PEDALS_2, this);
-    for (int i = 0; i < 6; i++)
-        rightLayout->addWidget(regWidgets[i], 0, Qt::AlignRight);
+    for (int i = 0; i < MAX_DISPLAY_REGS; i++)
+        rightLayout->addWidget(regWidgets[i], 0, Qt::AlignCenter);
     rightLayout->addStretch(5);
 
 
@@ -154,9 +154,8 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::onPeriodicTimer() {
-    regWidgets[0]->updateValue();
-    regWidgets[1]->updateValue();
-    regWidgets[2]->updateValue();
+    for (int i = 0; i < MAX_DISPLAY_REGS; i++)
+        regWidgets[i]->updateValue();
 }
 
 void MainWindow::onPlay() {
