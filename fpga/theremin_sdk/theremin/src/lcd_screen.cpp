@@ -63,11 +63,21 @@ void lcd_fill_rect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t colo
     CHECK_RECT_ARGS();
     uint16_t * row = SCREEN + SCREEN_DX * y0 + x0;
     int16_t dx = x1 - x0;
+    int16_t startOddPixels = (x0 & 1);
+    int16_t endOddPixels = (x1 & 1);
+    uint32_t * row32 = reinterpret_cast<uint32_t *>(row + startOddPixels);
+    int16_t dx32 = (dx - startOddPixels) >> 1;
+    uint32_t color32 = color | (static_cast<uint32_t>(color) << 16);
     for (int16_t y = y0; y <= y1; y++) {
-        for (int16_t i = 0; i < dx; i++)
-            row[i] = color;
+        if (startOddPixels)
+            row[0] = color;
+        if (endOddPixels)
+            row[dx-1] = color;
+        for (int16_t i = 0; i < dx32; i++)
+            row32[i] = color32;
         dirty_row_flag[y] = 1;
         row += SCREEN_DX;
+        row32 += SCREEN_DX / 2;
     }
 }
 
