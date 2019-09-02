@@ -68,7 +68,7 @@ void lcd_fill_rect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t colo
     uint32_t * row32 = reinterpret_cast<uint32_t *>(row + startOddPixels);
     int16_t dx32 = (dx - startOddPixels) >> 1;
     uint32_t color32 = color | (static_cast<uint32_t>(color) << 16);
-    for (int16_t y = y0; y <= y1; y++) {
+    for (int16_t y = y0; y < y1; y++) {
         if (startOddPixels)
             row[0] = color;
         if (endOddPixels)

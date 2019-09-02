@@ -78,7 +78,7 @@ MainWindow::MainWindow(QWidget *parent)
     encodersLayout->addStretch(2);
     for (int i = 0; i < 5; i++) {
         encoders[i] = new EncoderWidget(i, this);
-        encoders[i] -> setAngle(i);
+        encoders[i] -> rotate(i);
         encoders[i] -> setPressed((i & 1) ? true : false);
         encodersLayout->addWidget(encoders[i]);
         encodersLayout->addStretch(3);

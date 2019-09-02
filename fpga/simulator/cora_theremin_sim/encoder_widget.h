@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QTime>
+#include "simulator_impl.h"
 
 #define ENCODER_TICKS 24
 class EncoderWidget : public QWidget
@@ -10,11 +11,8 @@ class EncoderWidget : public QWidget
     Q_OBJECT
     int index;
     int angle;
-    int angleNormal;
-    int anglePressed;
     int startX;
     bool pressed;
-    QTime stateTimer;
 protected:
     void paintEvent(QPaintEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
@@ -23,19 +21,19 @@ protected:
     void wheelEvent(QWheelEvent *event) override;
 public:
     explicit EncoderWidget(int index, QWidget *parent = nullptr);
-    void setAngle(int a) {
-        a = (a + 2*ENCODER_TICKS) % ENCODER_TICKS;
-        if (a == angle)
+    void rotate(int delta) {
+        if (delta == 0) {
             return;
-        angle = a;
-        stateTimer.start();
+        }
+        angle = (angle + delta + 2*ENCODER_TICKS) % ENCODER_TICKS;
+        encodersSim_setEncoderState(index, pressed, delta);
         update();
     }
     void setPressed(bool f) {
         if (f == pressed)
             return;
         pressed = f;
-        stateTimer.start();
+        encodersSim_setEncoderState(index, pressed, 0);
         update();
     }
     int getAngle() {

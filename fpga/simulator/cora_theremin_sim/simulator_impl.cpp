@@ -1,5 +1,6 @@
 #include <mutex>
 #include "simulator_impl.h"
+#include <QTime>
 
 extern std::mutex audio_sim_mutex;
 
@@ -163,4 +164,68 @@ uint32_t thereminIO_getBacklightBrightness() {
 // returns Y coordinate of row which is currently being displayed
 uint32_t thereminLCD_getCurrentRowIndex() {
     return SCREEN_DY;
+}
+
+struct ButtonState {
+    bool pressed;
+    QTime timer;
+    ButtonState() : pressed(false) {
+        timer.start();
+    }
+    bool setPressed(bool flg) {
+        if (pressed == flg)
+            return false;
+        pressed = flg;
+        timer.start();
+        return true;
+    }
+    uint16_t getButtonState() {
+        uint16_t res = 0;
+        if (pressed)
+            res |= 0x8000;
+        int elapsed = timer.elapsed() / 100; // to 1/10 seconds
+        if (elapsed > 127)
+            elapsed = 127;
+        res |= (static_cast<uint16_t>(elapsed) << 8);
+        return res;
+    }
+};
+
+
+struct EncoderState : public ButtonState {
+    uint8_t normalAngle;
+    uint8_t pressedAngle;
+    EncoderState() : ButtonState(), normalAngle(0), pressedAngle(0) {}
+    bool updateAngle(int delta) {
+        if (!delta)
+            return false;
+        timer.start();
+        if (pressed)
+            pressedAngle = (pressedAngle + delta) & 0x0f;
+        else
+            normalAngle = (normalAngle + delta) & 0x0f;
+        return true;
+    }
+    uint16_t getEncoderState() {
+        uint16_t res = getButtonState();
+        res |= (static_cast<uint16_t>(normalAngle & 0x0f) << 0);
+        res |= (static_cast<uint16_t>(pressedAngle & 0x0f) << 4);
+        return res;
+    }
+};
+
+ButtonState tactButtonState;
+EncoderState encoderStates[5];
+
+void encodersSim_setEncoderState(int index, bool pressed, int delta) {
+    if (index < 0 || index >= 5)
+        return;
+    encoderStates[index].setPressed(pressed);
+    encoderStates[index].updateAngle(delta);
+}
+
+void encodersSim_setButtonState(int index, bool pressed) {
+    if (index != 0)
+        return;
+    tactButtonState.setPressed(pressed);
 }

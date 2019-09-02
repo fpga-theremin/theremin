@@ -5,7 +5,7 @@
 #include <QDebug>
 
 EncoderWidget::EncoderWidget(int encoderIndex, QWidget *parent)
-    : QWidget(parent), index(encoderIndex), angle(0), angleNormal(0), anglePressed(0), pressed(false)
+    : QWidget(parent), index(encoderIndex), angle(0), pressed(false)
 {
     setMinimumWidth(60);
     setMaximumWidth(60);
@@ -72,14 +72,5 @@ void EncoderWidget::wheelEvent(QWheelEvent *event) {
     int delta = event->delta() / step;
     if (!event->inverted())
         delta = -delta;
-    if (pressed)
-        anglePressed += delta;
-    else
-        angleNormal += delta;
-    angleNormal = (angleNormal + ENCODER_TICKS*2) % ENCODER_TICKS;
-    anglePressed = (anglePressed + ENCODER_TICKS*2) % ENCODER_TICKS;
-    setAngle(angle + delta);
-    qDebug("wheel delta %d  angle=%d angleNormal=%d anglePressed=%d pressed=%d",
-           delta, angle, angleNormal, anglePressed, pressed ? 1 : 0);
+    rotate(delta);
 }
-
