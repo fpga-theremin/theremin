@@ -1,6 +1,7 @@
 #include "encoder_widget.h"
 
 #include <QPainter>
+#include <QMouseEvent>
 
 EncoderWidget::EncoderWidget(int encoderIndex, QWidget *parent)
     : QWidget(parent), index(encoderIndex), angle(0), pressed(false)
@@ -47,5 +48,27 @@ void EncoderWidget::paintEvent(QPaintEvent *event) {
 
     painter.setPen(markPen);
     painter.drawLine(x1, y1, x2, y2);
+}
+
+
+void EncoderWidget::mousePressEvent(QMouseEvent *event) {
+    if (event->button() == Qt::LeftButton) {
+        pressed = true;
+        update();
+    }
+}
+void EncoderWidget::mouseReleaseEvent(QMouseEvent *event) {
+    if (event->button() == Qt::LeftButton) {
+        pressed = false;
+        update();
+    }
+}
+void EncoderWidget::mouseMoveEvent(QMouseEvent *event) {
+    if (event->buttons() & Qt::LeftButton) {
+    }
+}
+
+void EncoderWidget::wheelEvent(QWheelEvent *event) {
+
 }
 

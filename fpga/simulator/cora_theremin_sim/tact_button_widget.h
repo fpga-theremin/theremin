@@ -10,6 +10,9 @@ class TactButtonWidget : public QWidget
     bool pressed;
 protected:
     void paintEvent(QPaintEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
 public:
     explicit TactButtonWidget(QWidget *parent = nullptr);
 

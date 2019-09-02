@@ -6,8 +6,14 @@
 class ThereminSensorSimulator : public QWidget
 {
     Q_OBJECT
+    int markX;
+    int markY;
 protected:
     void paintEvent(QPaintEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void setMark(int x, int y);
 public:
     explicit ThereminSensorSimulator(QWidget *parent = nullptr);
 

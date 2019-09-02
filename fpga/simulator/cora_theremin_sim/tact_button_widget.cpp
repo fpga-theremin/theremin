@@ -1,6 +1,7 @@
 #include "tact_button_widget.h"
 
 #include <QPainter>
+#include <QMouseEvent>
 
 TactButtonWidget::TactButtonWidget(QWidget *parent) : QWidget(parent), pressed(false)
 {
@@ -30,5 +31,22 @@ void TactButtonWidget::paintEvent(QPaintEvent *event) {
     painter.setPen(circlePen);
     painter.setBrush(QBrush(pressed ? 0xe0c0c0 : 0xe0e0e0));
     painter.drawEllipse(x0-rx, y0-ry, rx*2, ry*2);
+}
+
+void TactButtonWidget::mousePressEvent(QMouseEvent *event) {
+    if (event->button() == Qt::LeftButton) {
+        pressed = true;
+        update();
+    }
+}
+void TactButtonWidget::mouseReleaseEvent(QMouseEvent *event) {
+    if (event->button() == Qt::LeftButton) {
+        pressed = false;
+        update();
+    }
+}
+void TactButtonWidget::mouseMoveEvent(QMouseEvent *event) {
+    if (event->buttons() & Qt::LeftButton) {
+    }
 }
 
