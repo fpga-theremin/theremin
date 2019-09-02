@@ -11,7 +11,11 @@ class EncoderWidget : public QWidget
     Q_OBJECT
     int index;
     int angle;
-    int startX;
+    int normalStartX;
+    int pressedStartX;
+    int normalStartAngle;
+    int pressedStartAngle;
+    int lastAngle;
     bool pressed;
 protected:
     void paintEvent(QPaintEvent *event) override;

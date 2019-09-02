@@ -17,7 +17,7 @@ class MainWindow : public QMainWindow
     TactButtonWidget * tactButton;
     EncoderWidget * encoders[5];
     PedalWidget * pedals[6];
-    RegValueWidget * regWidgets[3];
+    RegValueWidget * regWidgets[6];
 
     QMenu *fileMenu;
     QMenu *deviceMenu;

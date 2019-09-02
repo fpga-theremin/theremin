@@ -5,7 +5,9 @@
 #include <QDebug>
 
 EncoderWidget::EncoderWidget(int encoderIndex, QWidget *parent)
-    : QWidget(parent), index(encoderIndex), angle(0), pressed(false)
+    : QWidget(parent), index(encoderIndex), angle(0)
+    , normalStartX(-1), pressedStartX(-1), normalStartAngle(0), pressedStartAngle(0), lastAngle(0)
+    , pressed(false)
 {
     setMinimumWidth(60);
     setMaximumWidth(60);
@@ -55,15 +57,45 @@ void EncoderWidget::paintEvent(QPaintEvent *event) {
 void EncoderWidget::mousePressEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton || event->button() == Qt::MiddleButton) {
         setPressed(true);
+        pressedStartX = event->x();
+        pressedStartAngle = angle;
+        lastAngle = angle;
+    } else if (event->button() == Qt::RightButton) {
+        setPressed(false);
+        normalStartX = event->x();
+        normalStartAngle = angle;
+        lastAngle = angle;
     }
 }
+
 void EncoderWidget::mouseReleaseEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton || event->button() == Qt::MiddleButton) {
         setPressed(false);
     }
 }
+
+#define ENCODER_X_TICK 10
 void EncoderWidget::mouseMoveEvent(QMouseEvent *event) {
-    if (event->buttons() & Qt::LeftButton) {
+    if ((event->buttons() & Qt::LeftButton) || (event->buttons() & Qt::MiddleButton)){
+        if (pressed) {
+            int deltaX = event->x() - pressedStartX;
+            int deltaAngle = deltaX / ENCODER_X_TICK;
+            int newAngle = pressedStartAngle + deltaAngle;
+            if (newAngle != lastAngle) {
+                rotate(newAngle - lastAngle);
+                lastAngle = newAngle;
+            }
+        }
+    } else if (event->buttons() & Qt::RightButton) {
+        if (!pressed) {
+            int deltaX = event->x() - normalStartX;
+            int deltaAngle = deltaX / ENCODER_X_TICK;
+            int newAngle = normalStartAngle + deltaAngle;
+            if (newAngle != lastAngle) {
+                rotate(newAngle - lastAngle);
+                lastAngle = newAngle;
+            }
+        }
     }
 }
 

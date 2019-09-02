@@ -92,15 +92,17 @@ MainWindow::MainWindow(QWidget *parent)
         pedals[i] = new PedalWidget(i, this);
         pedals[i] -> setPressed((i & 1) ? true : false);
         pedals[i]->setValue(i * 0.15f);
-        rightLayout->addWidget(pedals[i]);
+        rightLayout->addWidget(pedals[i], 0, Qt::AlignRight);
     }
     rightLayout->addStretch(1);
     regWidgets[0] = new RegValueWidget(QString("ENC0"), THEREMIN_RD_REG_ENCODER_0, this);
     regWidgets[1] = new RegValueWidget(QString("ENC1"), THEREMIN_RD_REG_ENCODER_1, this);
     regWidgets[2] = new RegValueWidget(QString("ENC2"), THEREMIN_RD_REG_ENCODER_2, this);
-    rightLayout->addWidget(regWidgets[0], 0, Qt::AlignRight);
-    rightLayout->addWidget(regWidgets[1], 0, Qt::AlignRight);
-    rightLayout->addWidget(regWidgets[2], 0, Qt::AlignRight);
+    regWidgets[3] = new RegValueWidget(QString("PED0"), THEREMIN_RD_REG_PEDALS_0, this);
+    regWidgets[4] = new RegValueWidget(QString("PED1"), THEREMIN_RD_REG_PEDALS_1, this);
+    regWidgets[5] = new RegValueWidget(QString("PED2"), THEREMIN_RD_REG_PEDALS_2, this);
+    for (int i = 0; i < 6; i++)
+        rightLayout->addWidget(regWidgets[i], 0, Qt::AlignRight);
     rightLayout->addStretch(5);
 
 

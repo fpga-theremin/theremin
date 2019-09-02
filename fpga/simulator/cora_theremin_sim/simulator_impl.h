@@ -20,5 +20,9 @@ audio_sample_t audioSim_simulateAudioInterrupt();
 void encodersSim_setEncoderState(int index, bool pressed, int deltaAngle);
 void encodersSim_setButtonState(int index, bool pressed);
 
+#define THEREMIN_RD_REG_PEDALS_0 (13*4)
+#define THEREMIN_RD_REG_PEDALS_1 (14*4)
+#define THEREMIN_RD_REG_PEDALS_2 (15*4)
+void pedalSim_setPedalValue(int index, float value);
 
 #endif // SIMULATOR_IMPL_H

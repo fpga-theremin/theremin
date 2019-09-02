@@ -252,6 +252,19 @@ void encodersSim_setButtonState(int index, bool pressed) {
     tactButtonState.setPressed(pressed);
 }
 
+static uint16_t pedalValues[6] = {0,0,0,0,0,0};
+
+void pedalSim_setPedalValue(int index, float value) {
+    if (index < 0 || index >= 6)
+        return;
+    int val = static_cast<int>(value * 65535);
+    if (val < 0)
+        val = 0;
+    else if (val > 65535)
+        val = 65535;
+    pedalValues[index] = static_cast<uint16_t>(val);
+}
+
 
 // Read Theremin IP register value
 uint32_t thereminIO_readReg(uint32_t offset) {
@@ -262,6 +275,13 @@ uint32_t thereminIO_readReg(uint32_t offset) {
         return encoderStates[2].getEncoderState() | (encoderStates[3].getEncoderState() << 16);
     case THEREMIN_RD_REG_ENCODER_2:
         return encoderStates[4].getEncoderState() | (tactButtonState.getButtonState() << 16);
+    case THEREMIN_RD_REG_PEDALS_0:
+        return pedalValues[0] | (static_cast<uint32_t>(pedalValues[1]) << 16);
+    case THEREMIN_RD_REG_PEDALS_1:
+        return pedalValues[2] | (static_cast<uint32_t>(pedalValues[3]) << 16);
+    case THEREMIN_RD_REG_PEDALS_2:
+        return pedalValues[4] | (static_cast<uint32_t>(pedalValues[5]) << 16);
+
     default:
         return REG_VALUES[offset];
     }

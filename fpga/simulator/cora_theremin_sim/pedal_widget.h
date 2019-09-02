@@ -2,6 +2,7 @@
 #define PEDAL_WIDGET_H
 
 #include <QWidget>
+#include "simulator_impl.h"
 
 class PedalWidget : public QWidget
 {
@@ -12,6 +13,9 @@ class PedalWidget : public QWidget
     float value;
 protected:
     void paintEvent(QPaintEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
 public:
     explicit PedalWidget(int index, QWidget *parent = nullptr);
 
@@ -29,6 +33,7 @@ public:
         else if (v > 1.0f)
             v = 1.0f;
         value = v;
+        pedalSim_setPedalValue(index, value);
         update();
     }
 signals:
