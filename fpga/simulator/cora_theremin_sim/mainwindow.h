@@ -4,10 +4,17 @@
 #include <QMainWindow>
 #include "audioplayer.h"
 #include "audiogen.h"
+#include "encoder_widget.h"
+#include "tact_button_widget.h"
+#include "pedal_widget.h"
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
+
+    TactButtonWidget * tactButton;
+    EncoderWidget * encoders[5];
+    PedalWidget * pedals[6];
 
     QMenu *fileMenu;
     QMenu *deviceMenu;

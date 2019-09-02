@@ -11,6 +11,8 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = cora_theremin_sim
 TEMPLATE = app
 
+DEFINES += THEREMIN_SIMULATOR
+
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which has been marked as deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
@@ -25,17 +27,25 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+    ../../theremin_sdk/theremin/src/lcd_screen.cpp \
+    encoder_widget.cpp \
     main.cpp \
     mainwindow.cpp \
     lcd_simulator.cpp \
+    pedal_widget.cpp \
     simulator_impl.cpp \
     audiogen.cpp \
     audioplayer.cpp \
+    tact_button_widget.cpp \
     theremin_sensor_simulator.cpp
 
 HEADERS += \
+    ../../theremin_sdk/theremin/src/lcd_screen.h \
+    encoder_widget.h \
     mainwindow.h \
     lcd_simulator.h \
+    pedal_widget.h \
+    tact_button_widget.h \
     theremin_sensor_simulator.h \
     audiogen.h \
     audioplayer.h \

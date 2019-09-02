@@ -28,6 +28,7 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowTitle(tr("Cora Z7 FPGA Theremin Emulator"));
     setWindowIcon(QIcon(":/images/theremin.png"));
 
+
     fileMenu = menuBar()->addMenu(tr("&File"));
     playAction = new QAction(tr("Play"), this);
     playAction->setEnabled(true);
@@ -65,15 +66,47 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     QVBoxLayout * mainLayout = new QVBoxLayout;
+    QVBoxLayout * rightLayout = new QVBoxLayout;
 
     LCDSimulator * lcdWidget = new LCDSimulator(this);
     mainLayout->addWidget(lcdWidget);
+
+    QHBoxLayout * encodersLayout = new QHBoxLayout;
+    tactButton = new TactButtonWidget(this);
+    encodersLayout->addStretch(1);
+    encodersLayout->addWidget(tactButton);
+    encodersLayout->addStretch(2);
+    for (int i = 0; i < 5; i++) {
+        encoders[i] = new EncoderWidget(i, this);
+        encoders[i] -> setAngle(i);
+        encoders[i] -> setPressed((i & 1) ? true : false);
+        encodersLayout->addWidget(encoders[i]);
+        encodersLayout->addStretch(3);
+    }
+    mainLayout->addLayout(encodersLayout);
+
+    QLabel * lblPedals = new QLabel(QString("Pedals"), this);
+    rightLayout->addWidget(lblPedals, 0, Qt::AlignCenter);
+    for (int i = 0; i < 6; i++) {
+        pedals[i] = new PedalWidget(i, this);
+        pedals[i] -> setPressed((i & 1) ? true : false);
+        pedals[i]->setValue(i * 0.15f);
+        rightLayout->addWidget(pedals[i]);
+    }
+    rightLayout->addStretch();
+
+
     ThereminSensorSimulator * sensorWidget = new ThereminSensorSimulator(this);
     mainLayout->addWidget(sensorWidget);
     mainLayout->addStretch();
 
+
+    QHBoxLayout * centralLayout = new QHBoxLayout;
+    centralLayout->addLayout(mainLayout);
+    centralLayout->addLayout(rightLayout);
+
     QWidget * centralWidget = new QWidget(this);
-    centralWidget->setLayout(mainLayout);
+    centralWidget->setLayout(centralLayout);
     setCentralWidget(centralWidget);
 
 
