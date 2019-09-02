@@ -9,6 +9,7 @@ TactButtonWidget::TactButtonWidget(QWidget *parent) : QWidget(parent), pressed(f
     setMaximumWidth(30);
     setMinimumHeight(60);
     setMaximumHeight(60);
+    stateTimer.start();
 }
 
 

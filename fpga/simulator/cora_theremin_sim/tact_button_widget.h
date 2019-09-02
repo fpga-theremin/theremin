@@ -2,12 +2,14 @@
 #define TACT_BUTTON_WIDGET_H
 
 #include <QWidget>
+#include <QTime>
 
 class TactButtonWidget : public QWidget
 {
     Q_OBJECT
 
     bool pressed;
+    QTime stateTimer;
 protected:
     void paintEvent(QPaintEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
@@ -18,6 +20,7 @@ public:
 
     void setPressed(bool f) {
         pressed = f;
+        stateTimer.start();
         update();
     }
 
