@@ -9,8 +9,8 @@
 #define MARK_SIZE 8
 
 
-static SensorConvertor pitchConv(DEF_PITCH_MIN_PERIOD, DEF_PITCH_MAX_PERIOD, 1.0f);
-static SensorConvertor volumeConv(DEF_VOLUME_MIN_PERIOD, DEF_VOLUME_MAX_PERIOD, 1.0f);
+static SensorConvertor pitchConv(DEF_PITCH_MIN_PERIOD, DEF_PITCH_MAX_PERIOD, -3.0f, 1.5f);
+static SensorConvertor volumeConv(DEF_VOLUME_MIN_PERIOD, DEF_VOLUME_MAX_PERIOD, -2.0f, 1.9f);
 
 ThereminSensorSimulator::ThereminSensorSimulator(QWidget *parent) : QWidget(parent)
 {
@@ -21,6 +21,19 @@ ThereminSensorSimulator::ThereminSensorSimulator(QWidget *parent) : QWidget(pare
     setMinimumHeight(SENSOR_HEIGHT);
     setMaximumHeight(SENSOR_HEIGHT);
     setMark(SCREEN_DX / 2, SENSOR_HEIGHT / 3);
+
+    for (int i = 0; i < 10; i++) {
+        float k = i / 10.0f;
+        uint32_t n = pitchConv.linearToPeriod(k);
+        float lin = pitchConv.periodToLinear(n);
+        qDebug("PITCH: dist %f to sensor = %08x    lin=%f", k, n, lin);
+    }
+    for (int i = 0; i < 10; i++) {
+        float k = i / 10.0f;
+        uint32_t n = volumeConv.linearToPeriod(k);
+        float lin = volumeConv.periodToLinear(n);
+        qDebug("VOLUME: dist %f to sensor = %08x    lin=%f", k, n, lin);
+    }
 }
 
 
@@ -66,7 +79,7 @@ void ThereminSensorSimulator::mousePressEvent(QMouseEvent *event) {
     }
 }
 void ThereminSensorSimulator::mouseReleaseEvent(QMouseEvent *event) {
-
+    Q_UNUSED(event);
 }
 void ThereminSensorSimulator::mouseMoveEvent(QMouseEvent *event) {
     if (event->buttons() & Qt::LeftButton) {

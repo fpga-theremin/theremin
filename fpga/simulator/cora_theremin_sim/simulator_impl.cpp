@@ -1,6 +1,7 @@
 #include <mutex>
 #include "simulator_impl.h"
 #include <QTime>
+#include "math.h"
 
 extern std::mutex audio_sim_mutex;
 
@@ -297,21 +298,55 @@ uint32_t thereminIO_readReg(uint32_t offset) {
     }
 }
 
+#define toFloat(x) static_cast<float>(x)
+
+SensorConvertor::SensorConvertor(uint32_t minv, uint32_t maxv, float linK0, float linK1)
+    : minValue(minv), maxValue(maxv), k0(linK0), k1(linK1)
+{
+    expk0 = toFloat(exp(k0));
+    expk1 = toFloat(exp(k1));
+}
 
 uint32_t SensorConvertor::linearToPeriod(float v) {
+    // v is 0..1 (0 is far, 1 is near)
     if (v < -0.05f)
         v = -0.05f;
     else if (v > 1.05f)
         v = 1.05f;
-    float n = static_cast<float>(maxValue) + v * (static_cast<float>(minValue) - static_cast<float>(maxValue));
+    //// convert 0..1 to expk0..expk1
+    // convert 0..1 to k0..k1
+    v = v * (k1-k0) + k0;
+    //v = v * (expk1-expk0) + expk0;
+    // v should be > 0
+    //if (v < 0.000001f)
+    //    v = 0.000001f;
+    //// convert expk0..expk1 to log k0..k1
+    // convert k0..k1 to expk0..expk1
+    //v = logf(v);
+    v = expf(v);
+    // convert expk0..expk1 to 0..1
+    v = (v - expk0) / (expk1 - expk0);
+    // convert 0..1 to maxPeriod..minPeriod
+    float n = toFloat(maxValue) + v * (toFloat(minValue) - toFloat(maxValue));
     uint32_t res = static_cast<uint32_t>(n);
     return res;
 }
-float SensorConvertor::periodToLinear(uint32_t v) {
-    float n = static_cast<float>(v - maxValue) * (static_cast<float>(minValue) - static_cast<float>(maxValue));
+float SensorConvertor::periodToLinear(uint32_t periodValue) {
+    // convert maxPeriod..minPeriod to 0..1
+    float n = (toFloat(periodValue) - toFloat(maxValue)) / (toFloat(minValue) - toFloat(maxValue));
     if (n < -0.05f)
         n = -0.05f;
     else if (n > 1.05f)
         n = 1.05f;
-    return n;
+    // convert 0..1 to expk0..expk1
+    float v = expk0 + n * (expk1 - expk0);
+    // convert expk0..expk1 to k0..k1
+    v = logf(v);
+    // convert k0..k1 to 0..1
+    v = (v - k0) / (k1 - k0);
+    if (v < -0.05f)
+        v = -0.05f;
+    else if (v > 1.05f)
+        v = 1.05f;
+    return v;
 }

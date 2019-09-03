@@ -36,8 +36,11 @@ void pedalSim_setPedalValue(int index, float value);
 struct SensorConvertor {
     uint32_t minValue;
     uint32_t maxValue;
-    float k;
-    SensorConvertor(uint32_t minv, uint32_t maxv, float linK) : minValue(minv), maxValue(maxv), k(linK) {}
+    float k0;
+    float k1;
+    float expk0;
+    float expk1;
+    SensorConvertor(uint32_t minv, uint32_t maxv, float linK0, float linK1);
     uint32_t linearToPeriod(float v);
     float periodToLinear(uint32_t v);
 };
