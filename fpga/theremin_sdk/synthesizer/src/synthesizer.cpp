@@ -3,6 +3,8 @@
 #include "../../common/src/noteutil.h"
 #include "theremin_ip.h"
 
+//#include <QDebug>
+
 //uint32_t audio_irq_counter = 0;
 
 //float min_note = (8+2)*12*256;
@@ -13,8 +15,10 @@
 //float volume_maxPeriod = 0xB76E32A4;
 
 static uint32_t currentPhase = 0;
+static int dumpCount = 0;
 
 void synth_audio_irq() {
+#if 1
     volatile SynthControl * control = getSynthControl();
     uint32_t pitchSensor = thereminSensor_readPitchPeriodFiltered();
     uint32_t volumeSensor = thereminSensor_readVolumePeriodFiltered();
@@ -42,13 +46,17 @@ void synth_audio_irq() {
     else if (vindex >= 1023)
         amp = control->volumePeriodToAmpTable[1023];
     else {
-        float n0 = control->pitchPeriodToNoteTable[pindex];
-        float n1 = control->pitchPeriodToNoteTable[pindex + 1];
+        float n0 = control->volumePeriodToAmpTable[vindex];
+        float n1 = control->volumePeriodToAmpTable[vindex + 1];
         float dn = n1 - n0;
         float partn = (volume24 & 0x3fff) / 16384.0f;
         amp = n0 + dn * partn;
     }
     uint32_t phaseIncrement = noteToPhaseIncrementFast(static_cast<uint32_t>(note));
+#else
+    float amp = 0.5f;
+    uint32_t phaseIncrement = 0xffffffff/440;
+#endif
     currentPhase += phaseIncrement;
     float sample = 0;
     // square wave
@@ -57,7 +65,12 @@ void synth_audio_irq() {
     } else {
         sample = -0.5f;
     }
+    amp = amp * 0.1f;
     sample = sample * amp;
     int32_t sample24 = static_cast<int32_t>(sample * 0x7fffff);
+    if (dumpCount < 2000) {
+        //qDebug("%d: %08x   phase=%08x phaseIncrement=%08x  amp=%f", dumpCount, sample24, currentPhase, phaseIncrement, amp);
+        dumpCount++;
+    }
     thereminAudio_writeLineOutLR(sample24);
 }

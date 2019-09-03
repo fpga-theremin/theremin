@@ -20,8 +20,10 @@ int interpolatedSin(uint32_t phase, int vol) {
 AudioGen::AudioGen(QObject *parent)
     : QObject(parent), _sampleRate(48000), _started(false)
 {
-    _prevPitchLinear = 0;
-    _prevVolumeLinear = 0;
+    //_prevPitchLinear = 0;
+    //_prevVolumeLinear = 0;
+    _prevPitchPeriod = DEF_PITCH_MAX_PERIOD;
+    _prevVolumePeriod = DEF_VOLUME_MAX_PERIOD;
 
 //    _phase = 0;
 
@@ -92,29 +94,42 @@ int AudioGen::generate(int * data, int maxlen) {
 
     uint32_t dstPitchPeriod = sensorSim_getPitchSensorTarget();
     uint32_t dstVolumePeriod = sensorSim_getVolumeSensorTarget();
-    float dstPitchLinear = pitchConv.periodToLinear(dstPitchPeriod);
-    float dstVolumeLinear = volumeConv.periodToLinear(dstVolumePeriod);
-    float diffPitchLinear = (dstPitchLinear - _prevPitchLinear) / maxlen;
-    float diffVolumeLinear = (dstVolumeLinear - _prevVolumeLinear) / maxlen;
+    //float dstPitchLinear = pitchConv.periodToLinear(dstPitchPeriod);
+    //float dstVolumeLinear = volumeConv.periodToLinear(dstVolumePeriod);
+    //float diffPitchLinear = (dstPitchLinear - _prevPitchLinear) / maxlen;
+    //float diffVolumeLinear = (dstVolumeLinear - _prevVolumeLinear) / maxlen;
 
-    float pitchLinear = _prevPitchLinear;
-    float volumeLinear = _prevVolumeLinear;
+    //float pitchLinear = _prevPitchLinear;
+    //float volumeLinear = _prevVolumeLinear;
+    int32_t diffPitch = static_cast<int32_t>(dstPitchPeriod - _prevPitchPeriod) / maxlen;
+    int32_t diffVolume = static_cast<int32_t>(dstVolumePeriod - _prevVolumePeriod) / maxlen;
+    uint32_t pitch = _prevPitchPeriod;
+    uint32_t volume = _prevVolumePeriod;
     for (int i = 0; i < maxlen; i++) {
-        pitchLinear += diffPitchLinear;
-        volumeLinear += diffVolumeLinear;
-        uint32_t pitch = pitchConv.linearToPeriod(pitchLinear);
-        uint32_t volume = volumeConv.linearToPeriod(volumeLinear);
+        pitch += diffPitch;
+        volume += diffVolume;
+        //pitchLinear += diffPitchLinear;
+        //volumeLinear += diffVolumeLinear;
+        //uint32_t pitch = pitchConv.linearToPeriod(pitchLinear);
+        //uint32_t volume = volumeConv.linearToPeriod(volumeLinear);
         audioSim_simulateAudioInterrupt(pitch, volume);
         audio_sample_t s = audioSim_getLineOut();
-        float sample = s.left;
-        if (sample > 1.0f)
-            sample = 1.0f;
-        else if (sample < -1.0f)
-            sample = -1.0f;
-        data[i] = static_cast<int>(sample * 0x7fffff);
+        int32_t sample = s.left;
+        if (sample < -0x7fffff)
+            sample = -0x7fffff;
+        else if (sample > 0x7fffff)
+            sample = 0x7fffff;
+//        float sample = s.left;
+//        if (sample > 1.0f)
+//            sample = 1.0f;
+//        else if (sample < -1.0f)
+//            sample = -1.0f;
+        data[i] = sample; //static_cast<int>(sample * 0x7fffff);
     }
-    _prevPitchLinear = dstPitchLinear;
-    _prevVolumeLinear = dstVolumeLinear;
+    //_prevPitchLinear = dstPitchLinear;
+    //_prevVolumeLinear = dstVolumeLinear;
+    _prevPitchPeriod = dstPitchPeriod;
+    _prevVolumePeriod = dstVolumePeriod;
     return maxlen;
 }
 

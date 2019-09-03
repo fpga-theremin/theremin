@@ -12,9 +12,12 @@ class AudioGen : public QObject //QIODevice
     QAudioFormat _format;
     int _sampleRate;
     bool _started;
-
+#if 0
     float _prevPitchLinear;
     float _prevVolumeLinear;
+#endif
+    uint32_t _prevPitchPeriod;
+    uint32_t _prevVolumePeriod;
 public:
 
     void start();
