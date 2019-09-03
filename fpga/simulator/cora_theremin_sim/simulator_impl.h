@@ -3,6 +3,7 @@
 
 #include "../../ip_repo/theremin_ip/drivers/theremin_ip/src/theremin_ip.h"
 #include "../../theremin_sdk/common/src/noteutil.h"
+#include "../../theremin_sdk/common/src/synth_control.h"
 
 
 struct audio_sample_t {
@@ -16,12 +17,17 @@ struct audio_sample_t {
 void sensorSim_setPitchSensor(uint32_t value);
 void sensorSim_setVolumeSensor(uint32_t value);
 
+void sensorSim_setPitchSensorTarget(uint32_t value);
+void sensorSim_setVolumeSensorTarget(uint32_t value);
+uint32_t sensorSim_getPitchSensorTarget();
+uint32_t sensorSim_getVolumeSensorTarget();
+
 audio_sample_t audioSim_getLineOut();
 audio_sample_t audioSim_getPhoneOut();
 void audioSim_setLineIn(audio_sample_t sample);
 
 // call audio interrupt handler, return LineOut value as a result
-audio_sample_t audioSim_simulateAudioInterrupt();
+audio_sample_t audioSim_simulateAudioInterrupt(uint32_t pitchSensor, uint32_t volSensor);
 
 void encodersSim_setEncoderState(int index, bool pressed, int deltaAngle);
 void encodersSim_setButtonState(int index, bool pressed);
@@ -73,5 +79,8 @@ uint32_t noteToPhaseIncrementD(int32_t note);
 
 
 void generateNoteTables();
+
+extern SensorConvertor pitchConv;
+extern SensorConvertor volumeConv;
 
 #endif // SIMULATOR_IMPL_H

@@ -1,4 +1,6 @@
 #include "audiogen.h"
+#include "../../theremin_sdk/synthesizer/src/synthesizer.h"
+#include "simulator_impl.h"
 
 static int sine_wave[1024];
 static bool sine_wave_initialized = false;
@@ -18,15 +20,18 @@ int interpolatedSin(uint32_t phase, int vol) {
 AudioGen::AudioGen(QObject *parent)
     : QObject(parent), _sampleRate(48000), _started(false)
 {
-    _phase = 0;
+    _prevPitchLinear = 0;
+    _prevVolumeLinear = 0;
 
-    _newVolume = 0x700000;
-    _newFrequency = 440.0f;
-    _newPhaseIncrement = static_cast<uint32_t>(_newFrequency * ((static_cast<uint64_t>(1)) << 32) / _sampleRate);
-    _volume = _newVolume;
-    _phaseIncrement = _newPhaseIncrement;
+//    _phase = 0;
 
-    qDebug("volume: 0x%x  freq:%f  phaseInc: 0x%x", _volume, _newFrequency, _phaseIncrement);
+//    _newVolume = 0x700000;
+//    _newFrequency = 440.0f;
+//    _newPhaseIncrement = static_cast<uint32_t>(_newFrequency * ((static_cast<uint64_t>(1)) << 32) / _sampleRate);
+//    _volume = _newVolume;
+//    _phaseIncrement = _newPhaseIncrement;
+
+//    qDebug("volume: 0x%x  freq:%f  phaseInc: 0x%x", _volume, _newFrequency, _phaseIncrement);
 
 
     //open(QIODevice::ReadOnly);
@@ -60,18 +65,18 @@ void AudioGen::stop()
     }
 }
 
-void AudioGen::setVolume(int volume)
-{
-    _newVolume = volume;
-    qDebug("volume: 0x%x  freq:%f  phaseInc: 0x%x", _volume, _newFrequency, _phaseIncrement);
-}
+//void AudioGen::setVolume(int volume)
+//{
+//    _newVolume = volume;
+//    qDebug("volume: 0x%x  freq:%f  phaseInc: 0x%x", _volume, _newFrequency, _phaseIncrement);
+//}
 
-void AudioGen::setFrequency(float freq)
-{
-    _newFrequency = freq;
-    _newPhaseIncrement = static_cast<uint32_t>(freq * ((static_cast<uint64_t>(1)) << 32) / _sampleRate);
-    qDebug("volume: 0x%x  freq:%f  phaseInc: 0x%x", _volume, _newFrequency, _phaseIncrement);
-}
+//void AudioGen::setFrequency(float freq)
+//{
+//    _newFrequency = freq;
+//    _newPhaseIncrement = static_cast<uint32_t>(freq * ((static_cast<uint64_t>(1)) << 32) / _sampleRate);
+//    qDebug("volume: 0x%x  freq:%f  phaseInc: 0x%x", _volume, _newFrequency, _phaseIncrement);
+//}
 
 void AudioGen::setFormat(QAudioFormat format) {
     qDebug("AudioGen::setFormat rate=%d sampleSize=%d sampleType=%d channels=%d", format.sampleRate(), format.sampleSize(), format.sampleType(), format.channelCount());
@@ -81,29 +86,35 @@ void AudioGen::setFormat(QAudioFormat format) {
 
 int AudioGen::generate(int * data, int maxlen) {
 
-    if (_volume == 0 || _phaseIncrement == 0) {
-        _phase = 0;
-    }
-    uint32_t phaseIncStart = _phaseIncrement;
-    uint32_t phaseIncEnd = _newPhaseIncrement;
-    int volumeStart = _volume;
-    int volumeEnd = _newVolume;
-
     if (!_started) {
         return 0;
     }
 
+    uint32_t dstPitchPeriod = sensorSim_getPitchSensorTarget();
+    uint32_t dstVolumePeriod = sensorSim_getVolumeSensorTarget();
+    float dstPitchLinear = pitchConv.periodToLinear(dstPitchPeriod);
+    float dstVolumeLinear = volumeConv.periodToLinear(dstVolumePeriod);
+    float diffPitchLinear = (dstPitchLinear - _prevPitchLinear) / maxlen;
+    float diffVolumeLinear = (dstVolumeLinear - _prevVolumeLinear) / maxlen;
+
+    float pitchLinear = _prevPitchLinear;
+    float volumeLinear = _prevVolumeLinear;
     for (int i = 0; i < maxlen; i++) {
-        uint32_t increment = phaseIncStart + (phaseIncEnd - phaseIncStart) * i / maxlen;
-        int vol = volumeStart + (volumeEnd - volumeStart) * i / maxlen;
-        int value = interpolatedSin(_phase, vol);
-        data[i] = value;
-        _phase += increment;
+        pitchLinear += diffPitchLinear;
+        volumeLinear += diffVolumeLinear;
+        uint32_t pitch = pitchConv.linearToPeriod(pitchLinear);
+        uint32_t volume = volumeConv.linearToPeriod(volumeLinear);
+        audioSim_simulateAudioInterrupt(pitch, volume);
+        audio_sample_t s = audioSim_getLineOut();
+        float sample = s.left;
+        if (sample > 1.0f)
+            sample = 1.0f;
+        else if (sample < -1.0f)
+            sample = -1.0f;
+        data[i] = static_cast<int>(sample * 0x7fffff);
     }
-
-    _phaseIncrement = phaseIncEnd;
-    _volume = volumeEnd;
-
+    _prevPitchLinear = dstPitchLinear;
+    _prevVolumeLinear = dstVolumeLinear;
     return maxlen;
 }
 

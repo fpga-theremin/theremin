@@ -13,13 +13,8 @@ class AudioGen : public QObject //QIODevice
     int _sampleRate;
     bool _started;
 
-    uint32_t _phase;
-    uint32_t _phaseIncrement;
-    int _volume;
-
-    int _newVolume;
-    float _newFrequency;
-    uint32_t _newPhaseIncrement;
+    float _prevPitchLinear;
+    float _prevVolumeLinear;
 public:
 
     void start();
@@ -36,8 +31,8 @@ public:
 
     virtual int generate(int * data, int maxlen);
 
-    void setVolume(int volume);
-    void setFrequency(float freq);
+    //void setVolume(int volume);
+    //void setFrequency(float freq);
 
     AudioGen(QObject *parent);
     virtual ~AudioGen();

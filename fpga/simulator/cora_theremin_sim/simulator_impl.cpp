@@ -3,6 +3,7 @@
 #include <QTime>
 #include "math.h"
 
+
 extern std::mutex audio_sim_mutex;
 
 
@@ -12,14 +13,70 @@ std::mutex audio_sim_mutex;
     std::lock_guard<std::mutex> lock(audio_sim_mutex)
 
 
+SensorConvertor pitchConv(DEF_PITCH_MIN_PERIOD, DEF_PITCH_MAX_PERIOD, 4.5f);
+SensorConvertor volumeConv(DEF_VOLUME_MIN_PERIOD, DEF_VOLUME_MAX_PERIOD, 3.9f);
+
+
+static volatile uint32_t pitchSensorTarget = DEF_PITCH_MAX_PERIOD;
+static volatile uint32_t volumeSensorTarget = DEF_VOLUME_MAX_PERIOD;
+
+void sensorSim_setPitchSensorTarget(uint32_t value) {
+    pitchSensorTarget = value;
+}
+
+void sensorSim_setVolumeSensorTarget(uint32_t value) {
+    volumeSensorTarget = value;
+}
+
+uint32_t sensorSim_getPitchSensorTarget() {
+    return pitchSensorTarget;
+}
+
+uint32_t sensorSim_getVolumeSensorTarget() {
+    return volumeSensorTarget;
+}
+
 // Send reset signal to PL
 void thereminIO_resetPL() {
 
 }
 
+volatile static SynthControl synthControl;
+
+volatile SynthControl * getSynthControl() {
+    return &synthControl;
+}
+
+void initSynthControl(volatile SynthControl * control) {
+    control->minNote = (8 + 2)*12*256;
+    control->maxNote = (8 + 6)*12*256;
+    control->pitchPeriodFar = static_cast<float>(DEF_PITCH_MAX_PERIOD);
+    float pitchPeriodRange = (static_cast<float>(DEF_PITCH_MIN_PERIOD) - DEF_PITCH_MAX_PERIOD);
+    control->pitchPeriodInvRange = 1.0f / pitchPeriodRange;
+    control->volumePeriodFar = static_cast<float>(DEF_VOLUME_MAX_PERIOD);
+    float volumePeriodRange = (static_cast<float>(DEF_VOLUME_MIN_PERIOD) - DEF_VOLUME_MAX_PERIOD);
+    control->volumePeriodInvRange = 1.0f / volumePeriodRange;
+    for (int i = 0; i < SYNTH_CONTROL_PITCH_TABLE_SIZE; i++) {
+        float period = control->pitchPeriodFar + pitchPeriodRange * i / SYNTH_CONTROL_PITCH_TABLE_SIZE;
+        float linear = pitchConv.periodToLinear(period);
+        float note = control->minNote + (control->maxNote - control->minNote) * linear;
+        control->pitchPeriodToNoteTable[i] = note;
+    }
+    for (int i = 0; i < SYNTH_CONTROL_VOLUME_TABLE_SIZE; i++) {
+        float period = control->volumePeriodFar + volumePeriodRange * i / SYNTH_CONTROL_VOLUME_TABLE_SIZE;
+        float linear = volumeConv.periodToLinear(period);
+        float amp = linear * linear;
+        if (amp > 1.0f)
+            amp = 1.0f;
+        if (amp < 0.0f)
+            amp = 1.0f;
+        control->volumePeriodToAmpTable[i] = amp;
+    }
+}
+
 // Init all peripherials
 void thereminIO_init() {
-
+    initSynthControl(&synthControl);
 }
 
 // Flush CPU cache
@@ -28,7 +85,7 @@ void thereminIO_flushCache(void * addr, uint32_t size) {
     Q_UNUSED(size);
 }
 
-static uint32_t REG_VALUES[16] = {
+static volatile uint32_t REG_VALUES[16] = {
     0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0,
@@ -86,8 +143,20 @@ void thereminAudio_disableIrq() {
     audio_irq_enabled = false;
 }
 
-audio_sample_t audioSim_simulateAudioInterrupt() {
+// Returns pitch sensor output filtered value
+uint32_t thereminSensor_readPitchPeriodFiltered() {
+    return REG_VALUES[THEREMIN_RD_REG_PITCH_PERIOD/4];
+}
+
+// Returns volume sensor output filtered value
+uint32_t thereminSensor_readVolumePeriodFiltered() {
+    return REG_VALUES[THEREMIN_RD_REG_VOLUME_PERIOD/4];
+}
+
+audio_sample_t audioSim_simulateAudioInterrupt(uint32_t pitchSensor, uint32_t volSensor) {
     AUDIO_GUARD();
+    REG_VALUES[THEREMIN_RD_REG_PITCH_PERIOD/4] = pitchSensor;
+    REG_VALUES[THEREMIN_RD_REG_VOLUME_PERIOD/4] = volSensor;
     if (audio_irq_enabled && audio_irq_handler) {
         audio_irq_handler();
         return audio_sample_t(line_out.left, line_out.right);
@@ -328,6 +397,7 @@ void SensorConvertor::updateTables() {
     invValueRange = 1.0f / valueRange;
 }
 
+
 uint32_t SensorConvertor::linearToPeriod(float v) {
     // v is 0..1 (0 is far, 1 is near)
     if (v < -0.1f)
@@ -441,7 +511,6 @@ void generateNoteTables() {
     qDebug("// Note to phase increment linear interpolation table pairs value + diff/64, step = 1/4 of note");
     qDebug("static const float NOTE_FREQ_TABLE[2048] {");
     for (int i = 0; i < 0x10000; i+=256) {
-        int idx = i / 1024 / 8;
         double freq0 = noteToFrequencyD(i+0*64);
         double freq1 = noteToFrequencyD(i+1*64);
         double freq2 = noteToFrequencyD(i+2*64);
@@ -461,7 +530,6 @@ void generateNoteTables() {
     qDebug("// Note to frequency linear interpolation table pairs value + diff/64, step = 1/4 of note");
     qDebug("static const uint32_t NOTE_PHASE_INC_TABLE[2048] {");
     for (int i = 0; i < 0x10000; i+=256) {
-        int idx = i / 1024 / 8;
         uint32_t freq0 = noteToPhaseIncrementD(i+0*64);
         uint32_t freq1 = noteToPhaseIncrementD(i+1*64);
         uint32_t freq2 = noteToPhaseIncrementD(i+2*64);
