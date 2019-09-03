@@ -300,53 +300,183 @@ uint32_t thereminIO_readReg(uint32_t offset) {
 
 #define toFloat(x) static_cast<float>(x)
 
-SensorConvertor::SensorConvertor(uint32_t minv, uint32_t maxv, float linK0, float linK1)
-    : minValue(minv), maxValue(maxv), k0(linK0), k1(linK1)
+// using exp range (0..k1) <-> (1..exp(k1))
+SensorConvertor::SensorConvertor(uint32_t minv, uint32_t maxv, float linK1)
+    : minValue(minv), maxValue(maxv), k1(linK1)
 {
-    expk0 = toFloat(exp(k0));
     expk1 = toFloat(exp(k1));
+    updateTables();
+}
+
+void SensorConvertor::setLinK(float linK1) {
+    k1 = linK1;
+    updateTables();
+}
+
+void SensorConvertor::setRange(uint32_t minv, uint32_t maxv) {
+    minValue = minv;
+    maxValue = maxv;
+    updateTables();
+}
+
+void SensorConvertor::updateTables() {
+    expk1 = expf(k1);
+    invK1 = 1.0f / k1;
+    expkDiff = expk1 - 1.0f;
+    invExpkDiff = 1.0f / expkDiff;
+    valueRange = static_cast<int32_t>(minValue - maxValue);
+    invValueRange = 1.0f / valueRange;
 }
 
 uint32_t SensorConvertor::linearToPeriod(float v) {
     // v is 0..1 (0 is far, 1 is near)
-    if (v < -0.05f)
-        v = -0.05f;
-    else if (v > 1.05f)
-        v = 1.05f;
+    if (v < -0.1f)
+        v = -0.1f;
+    else if (v > 1.1f)
+        v = 1.1f;
     //// convert 0..1 to expk0..expk1
-    // convert 0..1 to k0..k1
-    v = v * (k1-k0) + k0;
+    // convert 0..1 to 0..k1
+    v = v * k1;
     //v = v * (expk1-expk0) + expk0;
-    // v should be > 0
-    //if (v < 0.000001f)
-    //    v = 0.000001f;
-    //// convert expk0..expk1 to log k0..k1
-    // convert k0..k1 to expk0..expk1
-    //v = logf(v);
+    // convert 0..k1 to exp(0)..exp(k1)
     v = expf(v);
-    // convert expk0..expk1 to 0..1
-    v = (v - expk0) / (expk1 - expk0);
+    // convert exp(0)..exp(k1) to 0..1
+    v = (v - 1.0f) * invExpkDiff;
     // convert 0..1 to maxPeriod..minPeriod
-    float n = toFloat(maxValue) + v * (toFloat(minValue) - toFloat(maxValue));
-    uint32_t res = static_cast<uint32_t>(n);
-    return res;
+    int32_t n = maxValue + static_cast<int32_t>(v * valueRange); // valueRange == (toFloat(minValue) - toFloat(maxValue));
+    return static_cast<uint32_t>(n);
 }
+
 float SensorConvertor::periodToLinear(uint32_t periodValue) {
     // convert maxPeriod..minPeriod to 0..1
-    float n = (toFloat(periodValue) - toFloat(maxValue)) / (toFloat(minValue) - toFloat(maxValue));
-    if (n < -0.05f)
-        n = -0.05f;
-    else if (n > 1.05f)
-        n = 1.05f;
-    // convert 0..1 to expk0..expk1
-    float v = expk0 + n * (expk1 - expk0);
-    // convert expk0..expk1 to k0..k1
+    float n = static_cast<int32_t>(periodValue - maxValue) * invValueRange;
+//    if (n < -0.05f)
+//        n = -0.05f;
+//    else if (n > 1.05f)
+//        n = 1.05f;
+    // convert 0..1 to exp(0)..exp(k1)
+    float v = 1.0f + n * expkDiff;
+
+    // ensure v is > 0
+    if (v < 0.000001f)
+        v = 0.000001f;
+
+    // convert exp(0)..exp(k1) to 0..k1
     v = logf(v);
-    // convert k0..k1 to 0..1
-    v = (v - k0) / (k1 - k0);
-    if (v < -0.05f)
-        v = -0.05f;
-    else if (v > 1.05f)
-        v = 1.05f;
+    // convert 0..k1 to 0..1
+    v = (v) * invK1;
+//    if (v < -0.05f)
+//        v = -0.05f;
+//    else if (v > 1.05f)
+//        v = 1.05f;
     return v;
 }
+
+#define SCIENTIFIC_NOTATION_A4_FREQUENCY 440.0
+// C0 = SCIENTIFIC_NOTATION_A4_FREQUENCY*2^(-4.75)
+#define SCIENTIFIC_NOTATION_C0_FREQUENCY 16.3515978313
+// C(-1)
+#define SCIENTIFIC_NOTATION_C_1_FREQUENCY 8.17579891564
+// C(-2)
+#define SCIENTIFIC_NOTATION_C_2_FREQUENCY 4.08789945782
+// C(-3)
+#define SCIENTIFIC_NOTATION_C_3_FREQUENCY 2.04394972891
+// C(-4)
+#define SCIENTIFIC_NOTATION_C_4_FREQUENCY 1.02197486446
+// C(-5)
+#define SCIENTIFIC_NOTATION_C_5_FREQUENCY 0.51098743222
+// C(-6)  440*2^(-10.75)
+#define SCIENTIFIC_NOTATION_C_6_FREQUENCY 0.25549371611
+// C(-7)  440*2^(-11.75)
+#define SCIENTIFIC_NOTATION_C_7_FREQUENCY 0.12774685805
+// C(-8)  440*2^(-12.75)
+#define SCIENTIFIC_NOTATION_C_8_FREQUENCY 0.06387342902
+
+#define BASE_C_FREQUENCY SCIENTIFIC_NOTATION_C_8_FREQUENCY
+
+#define OCTAVES_SHIFT (-7)
+#define ONE_BY_12 0.08333333333
+#define ONE_BY_12_BY_256 0.00032552083333
+
+float noteToFrequency(int32_t note) {
+    float n = note * ONE_BY_12_BY_256; // /12.0f;
+    float f = BASE_C_FREQUENCY * exp2f(n);
+    return f;
+}
+
+double noteToFrequencyD(int32_t note) {
+    double n = note * ONE_BY_12_BY_256; // /12.0f;
+    double f = BASE_C_FREQUENCY * exp2(n);
+    return f;
+}
+
+int32_t frequencyToNote(float freq) {
+    float k = 12 * log2f(freq / BASE_C_FREQUENCY) * 256;
+    return static_cast<int32_t>(k + 0.5f);
+}
+
+uint32_t noteToPhaseIncrement(int32_t note) {
+    float f = noteToFrequency(note);
+    float df = f / SAMPLE_RATE;
+    if (df >= 0.5f)
+        df = 0.5f;
+    else if (df < 0.0f)
+        df = 0.0f;
+    float d = 0x100000000 * df + 0.5f;
+    return static_cast<uint32_t>(d);
+}
+
+uint32_t noteToPhaseIncrementD(int32_t note) {
+    double f = noteToFrequencyD(note);
+    double df = f / SAMPLE_RATE;
+    if (df >= 0.5)
+        df = 0.5;
+    else if (df < 0.0)
+        df = 0.0;
+    double d = 0x100000000 * df + 0.5;
+    return static_cast<uint32_t>(d);
+}
+
+void generateNoteTables() {
+    qDebug("// Note to phase increment linear interpolation table pairs value + diff/64, step = 1/4 of note");
+    qDebug("static const float NOTE_FREQ_TABLE[2048] {");
+    for (int i = 0; i < 0x10000; i+=256) {
+        int idx = i / 1024 / 8;
+        double freq0 = noteToFrequencyD(i+0*64);
+        double freq1 = noteToFrequencyD(i+1*64);
+        double freq2 = noteToFrequencyD(i+2*64);
+        double freq3 = noteToFrequencyD(i+3*64);
+        double freq4 = noteToFrequencyD(i+4*64);
+        qDebug("    %ff, %ef, %ff, %ef, %ff, %ef, %ff, %ef, // %d",
+               freq0, (freq1-freq0)/64,
+               freq1, (freq2-freq1)/64,
+               freq2, (freq3-freq2)/64,
+               freq3, (freq4-freq3)/64,
+               i/256);
+    }
+    qDebug("};");
+    qDebug("");
+
+    qDebug("");
+    qDebug("// Note to frequency linear interpolation table pairs value + diff/64, step = 1/4 of note");
+    qDebug("static const uint32_t NOTE_PHASE_INC_TABLE[2048] {");
+    for (int i = 0; i < 0x10000; i+=256) {
+        int idx = i / 1024 / 8;
+        uint32_t freq0 = noteToPhaseIncrementD(i+0*64);
+        uint32_t freq1 = noteToPhaseIncrementD(i+1*64);
+        uint32_t freq2 = noteToPhaseIncrementD(i+2*64);
+        uint32_t freq3 = noteToPhaseIncrementD(i+3*64);
+        uint32_t freq4 = noteToPhaseIncrementD(i+4*64);
+        qDebug("    0x%08x, 0x%x, 0x%08x, 0x%x, 0x%08x, 0x%x, 0x%08x, 0x%x, // %d",
+               freq0, (freq1-freq0 + 32)/64,
+               freq1, (freq2-freq1 + 32)/64,
+               freq2, (freq3-freq2 + 32)/64,
+               freq3, (freq4-freq3 + 32)/64,
+               i/256);
+    }
+    qDebug("};");
+    qDebug("");
+
+}
+
+

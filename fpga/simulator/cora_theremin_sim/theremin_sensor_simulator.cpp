@@ -9,8 +9,8 @@
 #define MARK_SIZE 8
 
 
-static SensorConvertor pitchConv(DEF_PITCH_MIN_PERIOD, DEF_PITCH_MAX_PERIOD, -3.0f, 1.5f);
-static SensorConvertor volumeConv(DEF_VOLUME_MIN_PERIOD, DEF_VOLUME_MAX_PERIOD, -2.0f, 1.9f);
+static SensorConvertor pitchConv(DEF_PITCH_MIN_PERIOD, DEF_PITCH_MAX_PERIOD, 4.5f);
+static SensorConvertor volumeConv(DEF_VOLUME_MIN_PERIOD, DEF_VOLUME_MAX_PERIOD, 3.9f);
 
 ThereminSensorSimulator::ThereminSensorSimulator(QWidget *parent) : QWidget(parent)
 {
@@ -22,18 +22,41 @@ ThereminSensorSimulator::ThereminSensorSimulator(QWidget *parent) : QWidget(pare
     setMaximumHeight(SENSOR_HEIGHT);
     setMark(SCREEN_DX / 2, SENSOR_HEIGHT / 3);
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i <= 10; i++) {
         float k = i / 10.0f;
         uint32_t n = pitchConv.linearToPeriod(k);
         float lin = pitchConv.periodToLinear(n);
         qDebug("PITCH: dist %f to sensor = %08x    lin=%f", k, n, lin);
     }
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i <= 10; i++) {
         float k = i / 10.0f;
         uint32_t n = volumeConv.linearToPeriod(k);
         float lin = volumeConv.periodToLinear(n);
         qDebug("VOLUME: dist %f to sensor = %08x    lin=%f", k, n, lin);
     }
+
+    for (int i = 0; i < 255; i++) {
+        int32_t note = i * 256;
+        int oct = i / 12;
+        int octn = i % 12;
+        float freq = noteToFrequency(note);
+        int32_t n = frequencyToNote(freq);
+        uint32_t inc = noteToPhaseIncrement(note);
+        qDebug("Note\t%d\t  oct\t%d\tn\t%d\tfreq=\t%f\tphase+:\t%08x\t->note:\t%d", i, oct, octn, freq, inc, n / 256);
+    }
+
+    for (int i = 12*9*256; i < 12*10*256; i++) {
+        double n1 = noteToFrequencyD(i);
+        double n2 = noteToFrequencyFast(i);
+        double diff = n2 - n1;
+        uint32_t p1 = noteToPhaseIncrementD(i);
+        uint32_t p2 = noteToPhaseIncrementFast(i);
+        int32_t pdiff = p2 - p1;
+        qDebug("%i: exact: %f \t table: %f \t diff: %f \t rel diff: %f    \t  phase exact:\t%08x  \tinterpolated: %08x \t diff: %x", i, n1, n2, diff, diff/n1
+               , p1, p2, pdiff);
+    }
+
+    //generateNoteTables();
 }
 
 
@@ -65,11 +88,14 @@ void ThereminSensorSimulator::setMark(int x, int y) {
     markX = x;
     markY = y;
     float xx = (markX - FRAME_OFFSET) / static_cast<float>(SCREEN_DX - FRAME_OFFSET*2);
-    float yy = (markY - FRAME_OFFSET) / static_cast<float>(SCREEN_DY - FRAME_OFFSET*2);
+    float yy = (markY - FRAME_OFFSET) / static_cast<float>(SENSOR_HEIGHT - FRAME_OFFSET*2);
     pitchSensorValue = pitchConv.linearToPeriod(xx);
     volumeSensorValue = volumeConv.linearToPeriod(yy);
     sensorSim_setPitchSensor(pitchSensorValue);
     sensorSim_setVolumeSensor(volumeSensorValue);
+    float linPitch = pitchConv.periodToLinear(pitchSensorValue);
+    float linVolume = volumeConv.periodToLinear(volumeSensorValue);
+    qDebug("Pitch: %7.6f %08x  Volume: %7.6f %08x", linPitch, pitchSensorValue, linVolume, volumeSensorValue);
     update();
 }
 

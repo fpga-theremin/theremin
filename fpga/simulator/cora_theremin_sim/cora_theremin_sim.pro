@@ -28,6 +28,7 @@ CONFIG += c++11
 
 SOURCES += \
     ../../theremin_sdk/theremin/src/lcd_screen.cpp \
+    ../../theremin_sdk/common/src/noteutil.cpp \
     encoder_widget.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -42,6 +43,7 @@ SOURCES += \
 
 HEADERS += \
     ../../theremin_sdk/theremin/src/lcd_screen.h \
+    ../../theremin_sdk/common/src/noteutil.h \
     encoder_widget.h \
     mainwindow.h \
     lcd_simulator.h \
