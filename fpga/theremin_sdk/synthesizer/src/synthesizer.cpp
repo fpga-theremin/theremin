@@ -53,7 +53,7 @@ void synth_audio_irq() {
         float partn = (volume24 & 0x3fff) / 16384.0f;
         amp = n0 + dn * partn;
     }
-    uint32_t phaseIncrement = noteToPhaseIncrementFast(static_cast<uint32_t>(note));
+    uint32_t phaseIncrement = noteToPhaseIncrementFast(static_cast<int32_t>(note));
 #else
     float amp = 0.5f;
     uint32_t phaseIncrement = 0xffffffff/440;
@@ -66,7 +66,7 @@ void synth_audio_irq() {
 //    } else {
 //        sample = -0.5f;
 //    }
-    sample = phaseSin_i24(currentPhase); // * (1.0f / 0x7fffff);
+    sample = static_cast<float>(phaseSin_i24(currentPhase)); // * (1.0f / 0x7fffff);
     //sample = phaseSin(currentPhase);
     amp = amp * 0.1f;
     sample = sample * amp;
