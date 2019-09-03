@@ -53,7 +53,7 @@ ThereminSensorSimulator::ThereminSensorSimulator(QWidget *parent) : QWidget(pare
                , p1, p2, pdiff);
     }
 
-    //generateNoteTables();
+    generateNoteTables();
 }
 
 

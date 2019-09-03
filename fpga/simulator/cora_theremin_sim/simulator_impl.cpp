@@ -507,6 +507,7 @@ uint32_t noteToPhaseIncrementD(int32_t note) {
     return static_cast<uint32_t>(d);
 }
 
+#define M_PI 3.14159265359
 void generateNoteTables() {
     qDebug("// Note to phase increment linear interpolation table pairs value + diff/64, step = 1/4 of note");
     qDebug("static const float NOTE_FREQ_TABLE[2048] {");
@@ -541,6 +542,35 @@ void generateNoteTables() {
                freq2, (freq3-freq2 + 32)/64,
                freq3, (freq4-freq3 + 32)/64,
                i/256);
+    }
+    qDebug("};");
+    qDebug("");
+
+    qDebug("");
+    qDebug("// Sine interpolation table");
+    qDebug("static const float SIN_TABLE_1024[1025] {");
+    for (int i = 0; i <= 1024; i+=8) {
+        double phi = M_PI * 2 * i / 1024;
+        double step = M_PI * 2 / 1024;
+        double s0 = sin(phi + step * 0);
+        double s1 = sin(phi + step * 1);
+        double s2 = sin(phi + step * 2);
+        double s3 = sin(phi + step * 3);
+        double s4 = sin(phi + step * 4);
+        double s5 = sin(phi + step * 5);
+        double s6 = sin(phi + step * 6);
+        double s7 = sin(phi + step * 7);
+        if (i == 1024) {
+            qDebug("    %ef, // %d",
+                   s0,
+                   i
+            );
+            break;
+        }
+        qDebug("    %ef, %ef, %ef, %ef, %ef, %ef, %ef, %ef, // %d",
+               s0, s1, s2, s3, s4, s5, s7, s7,
+               i
+        );
     }
     qDebug("};");
     qDebug("");

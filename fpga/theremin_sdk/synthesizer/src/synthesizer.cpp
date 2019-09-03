@@ -1,4 +1,5 @@
 #include "synthesizer.h"
+#include "synth_utils.h"
 #include "../../common/src/synth_control.h"
 #include "../../common/src/noteutil.h"
 #include "theremin_ip.h"
@@ -60,11 +61,12 @@ void synth_audio_irq() {
     currentPhase += phaseIncrement;
     float sample = 0;
     // square wave
-    if (currentPhase & 0x80000000) {
-        sample = 0.5f;
-    } else {
-        sample = -0.5f;
-    }
+//    if (currentPhase & 0x80000000) {
+//        sample = 0.5f;
+//    } else {
+//        sample = -0.5f;
+//    }
+    sample = phaseSin(currentPhase);
     amp = amp * 0.1f;
     sample = sample * amp;
     int32_t sample24 = static_cast<int32_t>(sample * 0x7fffff);
