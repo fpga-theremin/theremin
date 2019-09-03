@@ -507,6 +507,18 @@ uint32_t noteToPhaseIncrementD(int32_t note) {
     return static_cast<uint32_t>(d);
 }
 
+int32_t sin_i24(double phase) {
+    double s = sin(phase);
+    s *= 0x7fffff;
+    return static_cast<int32_t>(s + 0.5);
+}
+
+int16_t sin_i16(double phase) {
+    double s = sin(phase);
+    s *= 0x7fff;
+    return static_cast<int16_t>(s + 0.5);
+}
+
 #define M_PI 3.14159265359
 void generateNoteTables() {
     qDebug("// Note to phase increment linear interpolation table pairs value + diff/64, step = 1/4 of note");
@@ -569,6 +581,64 @@ void generateNoteTables() {
         }
         qDebug("    %ef, %ef, %ef, %ef, %ef, %ef, %ef, %ef, // %d",
                s0, s1, s2, s3, s4, s5, s7, s7,
+               i
+        );
+    }
+    qDebug("};");
+    qDebug("");
+
+    qDebug("");
+    qDebug("// Sine interpolation table - int24");
+    qDebug("static const int32_t SIN_TABLE_1024_I[1025] {");
+    for (int i = 0; i <= 1024; i+=8) {
+        double phi = M_PI * 2 * i / 1024;
+        double step = M_PI * 2 / 1024;
+        int32_t s0 = sin_i24(phi + step * 0);
+        int32_t s1 = sin_i24(phi + step * 1);
+        int32_t s2 = sin_i24(phi + step * 2);
+        int32_t s3 = sin_i24(phi + step * 3);
+        int32_t s4 = sin_i24(phi + step * 4);
+        int32_t s5 = sin_i24(phi + step * 5);
+        int32_t s6 = sin_i24(phi + step * 6);
+        int32_t s7 = sin_i24(phi + step * 7);
+        if (i == 1024) {
+            qDebug("    %d, // %d",
+                   s0,
+                   i
+            );
+            break;
+        }
+        qDebug("    %d, %d, %d, %d, %d, %d, %d, %d, // %d",
+               s0, s1, s2, s3, s4, s5, s6, s7,
+               i
+        );
+    }
+    qDebug("};");
+    qDebug("");
+
+    qDebug("");
+    qDebug("// Sine interpolation table - int16");
+    qDebug("static const int16_t SIN_TABLE_1024_I16[1025] {");
+    for (int i = 0; i <= 1024; i+=8) {
+        double phi = M_PI * 2 * i / 1024;
+        double step = M_PI * 2 / 1024;
+        int32_t s0 = sin_i16(phi + step * 0);
+        int32_t s1 = sin_i16(phi + step * 1);
+        int32_t s2 = sin_i16(phi + step * 2);
+        int32_t s3 = sin_i16(phi + step * 3);
+        int32_t s4 = sin_i16(phi + step * 4);
+        int32_t s5 = sin_i16(phi + step * 5);
+        int32_t s6 = sin_i16(phi + step * 6);
+        int32_t s7 = sin_i16(phi + step * 7);
+        if (i == 1024) {
+            qDebug("    %d, // %d",
+                   s0,
+                   i
+            );
+            break;
+        }
+        qDebug("    %d, %d, %d, %d, %d, %d, %d, %d, // %d",
+               s0, s1, s2, s3, s4, s5, s6, s7,
                i
         );
     }

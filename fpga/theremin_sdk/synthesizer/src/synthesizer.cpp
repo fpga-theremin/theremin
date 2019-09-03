@@ -66,10 +66,12 @@ void synth_audio_irq() {
 //    } else {
 //        sample = -0.5f;
 //    }
-    sample = phaseSin(currentPhase);
+    sample = phaseSin_i24(currentPhase); // * (1.0f / 0x7fffff);
+    //sample = phaseSin(currentPhase);
     amp = amp * 0.1f;
     sample = sample * amp;
-    int32_t sample24 = static_cast<int32_t>(sample * 0x7fffff);
+    //int32_t sample24 = static_cast<int32_t>(sample * 0x7fffff);
+    int32_t sample24 = static_cast<int32_t>(sample);
     if (dumpCount < 2000) {
         //qDebug("%d: %08x   phase=%08x phaseIncrement=%08x  amp=%f", dumpCount, sample24, currentPhase, phaseIncrement, amp);
         dumpCount++;
