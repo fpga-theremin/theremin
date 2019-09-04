@@ -151,6 +151,30 @@ void synthControl_setDefautFilter(synth_control_ptr_t control) {
     }
 }
 
+void synthControl_setSimpleAdditiveSynth(synth_control_ptr_t control, float evenAmp, float oddAmp, float evenPow, float oddPow, uint32_t phaseInc) {
+    control->synthType = SYNTH_ADDITIVE;
+    uint32_t phase = 0;
+    for (int i = 0; i < SYNTH_ADDITIVE_MAX_HARMONICS; i++) {
+        float n = i + 1.0f;
+        float k = 0.0f;
+        if (i & 1) {
+            // odd
+            k = oddAmp / powf(n, oddPow);
+        } else {
+            // even
+            k = evenAmp / powf(n, evenPow);
+        }
+        if (k > 1.0f)
+            k = 1.0f;
+        if (k < 0.0f)
+            k = 0.0f;
+        uint16_t ki = static_cast<uint16_t>(k * 0xffff);
+        control->additiveHarmonicsAmp[i] = ki;
+        control->additiveHarmonicsPhase[i] = phase >> 16;
+        phase = phase + phaseInc;
+    }
+}
+
 void initSynthControl(synth_control_ptr_t control) {
     //control->synthType = SYNTH_TRIANGLE; //SYNTH_ADDITIVE;
     control->synthType = SYNTH_ADDITIVE;
@@ -165,10 +189,9 @@ void initSynthControl(synth_control_ptr_t control) {
 
     synthControl_setDefautFilter(control);
 
-    for (int i = 0; i < SYNTH_ADDITIVE_MAX_HARMONICS; i++) {
-        control->additiveHarmonicsAmp[i] = 0x8000 / (i + 1);
-        control->additiveHarmonicsPhase[i] = (i & 1) ? 0x8000 : 0x0000;
-    }
+    synthControl_setSimpleAdditiveSynth(control,
+                                        0.99f, 0.0f, 1.0f, 1.0f, 0x80000000);
+
     // amp modulation
     uint16_t ampModulationAmount = 0; //0x3fff;
     uint16_t freqModulationAmount = 0x1fff; //0x3fff;

@@ -10,6 +10,7 @@ void synthControl_initVolumeSensor(synth_control_ptr_t control, uint32_t maxSens
 void synthControl_setNoteRange(synth_control_ptr_t control, int32_t minNote, int32_t maxNote);
 void synthControl_setVolumeRange(synth_control_ptr_t control, float muteDist);
 void synthControl_setDefautFilter(synth_control_ptr_t control);
+void synthControl_setSimpleAdditiveSynth(synth_control_ptr_t control, float evenAmp, float oddAmp, float evenPow, float oddPow, uint32_t phaseInc);
 
 float noteToFrequency(int32_t note);
 int32_t frequencyToNote(float freq);
