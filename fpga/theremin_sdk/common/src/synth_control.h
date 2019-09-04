@@ -6,8 +6,27 @@
 
 #define SYNTH_CONTROL_PITCH_TABLE_SIZE 1024
 #define SYNTH_CONTROL_VOLUME_TABLE_SIZE 1024
+#define SYNTH_CONTROL_FILTER_TABLE_SIZE 1024
+#define SYNTH_ADDITIVE_MAX_HARMONICS 256
+
+enum SynthType {
+    SYNTH_MUTED,
+    SYNTH_SINE,
+    SYNTH_TRIANGLE,
+    SYNTH_SQUARE,
+    SYNTH_SAWTOOTH,
+    SYNTH_ADDITIVE,
+};
+
+struct OscilEffectParams {
+    uint16_t offset;
+    uint16_t modulation;
+    uint16_t phaseIncDiv;
+    uint16_t phaseIncAdd;
+};
 
 struct SynthControl {
+    uint32_t synthType;
     float pitchPeriodFar;
     float pitchPeriodInvRange;
     float volumePeriodFar;
@@ -16,6 +35,11 @@ struct SynthControl {
     uint16_t volumePeriodToAmpTable[SYNTH_CONTROL_VOLUME_TABLE_SIZE];
     uint32_t minNote;
     uint32_t maxNote;
+    uint16_t filterAmp[SYNTH_CONTROL_FILTER_TABLE_SIZE];
+    uint16_t additiveHarmonicsAmp[SYNTH_ADDITIVE_MAX_HARMONICS];
+    uint16_t additiveHarmonicsPhase[SYNTH_ADDITIVE_MAX_HARMONICS];
+    OscilEffectParams ampModulation;
+    OscilEffectParams freqModulation;
 };
 
 volatile SynthControl * getSynthControl();

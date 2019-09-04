@@ -54,6 +54,20 @@ ThereminSensorSimulator::ThereminSensorSimulator(QWidget *parent) : QWidget(pare
                , p1, p2, pdiff);
     }
 
+    float f0 = 440.0f;
+    int32_t note0 = frequencyToNote(f0);
+    for (int i = 1; i < 20; i++) {
+        int32_t note = frequencyToNote(f0 * i);
+        qDebug("440.0*%d: note=\t%d\tdiff=\t%d", i, note, (note-note0));
+    }
+
+    f0 = 123.4f;
+    note0 = frequencyToNote(f0);
+    for (int i = 1; i < 20; i++) {
+        int32_t note = frequencyToNote(f0 * i);
+        qDebug("123.4*%d: note=\t%d\tdiff=\t%d", i, note, (note-note0));
+    }
+
     generateNoteTables();
 }
 

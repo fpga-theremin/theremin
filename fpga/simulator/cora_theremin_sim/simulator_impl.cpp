@@ -48,6 +48,8 @@ volatile SynthControl * getSynthControl() {
 }
 
 void initSynthControl(volatile SynthControl * control) {
+    //control->synthType = SYNTH_TRIANGLE; //SYNTH_ADDITIVE;
+    control->synthType = SYNTH_ADDITIVE;
     control->minNote = (8 + 2)*12*256;
     control->maxNote = (8 + 6)*12*256;
     control->pitchPeriodFar = static_cast<float>(DEF_PITCH_MAX_PERIOD);
@@ -78,6 +80,48 @@ void initSynthControl(volatile SynthControl * control) {
             ampi = 0;
         control->volumePeriodToAmpTable[i] = static_cast<uint16_t>(ampi);
     }
+    float filterAmp[SYNTH_CONTROL_FILTER_TABLE_SIZE];
+    for (int i = 0; i < SYNTH_CONTROL_FILTER_TABLE_SIZE; i++) {
+        int32_t note = i << 6;
+        float freq = noteToFrequency(note);
+        float boundsK = 1.0f;
+        if (freq < 5.0f)
+            boundsK = 0.0f;
+        else if (freq < 10.0f)
+            boundsK = (freq - 5.0f) / (10.0f - 5.0f);
+        else if (freq >= 24000.0f)
+            boundsK = 0.0f;
+        else if (freq >= 20000.0f)
+            boundsK = (24000.0f - freq) / (24000.0f - 20000.0f);
+        filterAmp[i] = boundsK;
+    }
+    for (int i = 0; i < SYNTH_CONTROL_FILTER_TABLE_SIZE; i++) {
+        float n = filterAmp[i];
+        int32_t k = n * 0xffff;
+        if (k < 0)
+            k = 0;
+        else if (k > 0xffff)
+            k = 0xffff;
+        control->filterAmp[i] = static_cast<uint16_t>(k);
+    }
+
+    for (int i = 0; i < SYNTH_ADDITIVE_MAX_HARMONICS; i++) {
+        control->additiveHarmonicsAmp[i] = 0x8000 / (i + 1);
+        control->additiveHarmonicsPhase[i] = (i & 1) ? 0x8000 : 0x0000;
+    }
+    // amp modulation
+    uint16_t ampModulationAmount = 0; //0x3fff;
+    uint16_t freqModulationAmount = 0x1fff; //0x3fff;
+
+    control->ampModulation.offset = 0xffff-ampModulationAmount;
+    control->ampModulation.modulation = ampModulationAmount;
+    control->ampModulation.phaseIncAdd = noteToPhaseIncrementFast(frequencyToNote(4.567f));
+    control->ampModulation.phaseIncDiv = 13;
+    // freq modulation
+    control->freqModulation.offset = 0;
+    control->freqModulation.modulation = freqModulationAmount;
+    control->freqModulation.phaseIncAdd = noteToPhaseIncrementFast(frequencyToNote(5.6789f));
+    control->freqModulation.phaseIncDiv = 11;
 }
 
 // Init all peripherials
