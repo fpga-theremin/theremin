@@ -78,7 +78,6 @@ uint32_t noteToPhaseIncrement(int32_t note);
 uint32_t noteToPhaseIncrementD(int32_t note);
 
 
-void generateNoteTables();
 
 extern SensorConvertor pitchConv;
 extern SensorConvertor volumeConv;

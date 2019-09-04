@@ -12,8 +12,8 @@ struct SynthControl {
     float pitchPeriodInvRange;
     float volumePeriodFar;
     float volumePeriodInvRange;
-    float pitchPeriodToNoteTable[SYNTH_CONTROL_PITCH_TABLE_SIZE];
-    float volumePeriodToAmpTable[SYNTH_CONTROL_VOLUME_TABLE_SIZE];
+    uint16_t pitchPeriodToNoteTable[SYNTH_CONTROL_PITCH_TABLE_SIZE];
+    uint16_t volumePeriodToAmpTable[SYNTH_CONTROL_VOLUME_TABLE_SIZE];
     uint32_t minNote;
     uint32_t maxNote;
 };

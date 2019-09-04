@@ -41,6 +41,7 @@ SOURCES += \
     audiogen.cpp \
     audioplayer.cpp \
     tact_button_widget.cpp \
+    codeutils.cpp \
     theremin_sensor_simulator.cpp
 
 HEADERS += \
@@ -56,6 +57,7 @@ HEADERS += \
     reg_value_widget.h \
     tact_button_widget.h \
     theremin_sensor_simulator.h \
+    codeutils.h \
     audiogen.h \
     audioplayer.h \
     simulator_impl.h

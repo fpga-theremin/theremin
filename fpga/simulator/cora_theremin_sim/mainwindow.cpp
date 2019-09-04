@@ -79,8 +79,8 @@ MainWindow::MainWindow(QWidget *parent)
     encodersLayout->addStretch(2);
     for (int i = 0; i < 5; i++) {
         encoders[i] = new EncoderWidget(i, this);
-        encoders[i] -> rotate(i);
-        encoders[i] -> setPressed((i & 1) ? true : false);
+        //encoders[i] -> rotate(i);
+        //encoders[i] -> setPressed((i & 1) ? true : false);
         encodersLayout->addWidget(encoders[i]);
         encodersLayout->addStretch(3);
     }
@@ -90,8 +90,8 @@ MainWindow::MainWindow(QWidget *parent)
     rightLayout->addWidget(lblPedals, 0, Qt::AlignCenter);
     for (int i = 0; i < 6; i++) {
         pedals[i] = new PedalWidget(i, this);
-        pedals[i] -> setPressed((i & 1) ? true : false);
-        pedals[i]->setValue(i * 0.15f);
+        //pedals[i] -> setPressed((i & 1) ? true : false);
+        //pedals[i]->setValue(i * 0.15f);
         rightLayout->addWidget(pedals[i], 0, Qt::AlignRight);
     }
     rightLayout->addStretch(1);
