@@ -1,7 +1,7 @@
 #include "codeutils.h"
 #include <QDebug>
 #include "simulator_impl.h"
-
+#include "../../theremin_sdk/theremin/src/synth_control_utils.h"
 
 int32_t sin_i24(double phase) {
     double s = sin(phase);
@@ -78,7 +78,7 @@ void generateNoteTables() {
             break;
         }
         qDebug("    %ef, %ef, %ef, %ef, %ef, %ef, %ef, %ef, // %d",
-               s0, s1, s2, s3, s4, s5, s7, s7,
+               s0, s1, s2, s3, s4, s5, s6, s7,
                i
         );
     }

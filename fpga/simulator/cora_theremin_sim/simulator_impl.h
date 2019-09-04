@@ -4,6 +4,7 @@
 #include "../../ip_repo/theremin_ip/drivers/theremin_ip/src/theremin_ip.h"
 #include "../../theremin_sdk/common/src/noteutil.h"
 #include "../../theremin_sdk/common/src/synth_control.h"
+#include "../../theremin_sdk/theremin/src/synth_control_utils.h"
 
 
 struct audio_sample_t {
@@ -42,40 +43,6 @@ void pedalSim_setPedalValue(int index, float value);
 #define DEF_VOLUME_MIN_PERIOD 0xAB6E2A8B
 #define DEF_VOLUME_MAX_PERIOD 0xB76E32A4
 
-struct SensorConvertor {
-    // sensor output (period value) when hand is at far distance from antenna
-    uint32_t minValue;
-    // sensor output (period value) when hand is at near to antenna
-    uint32_t maxValue;
-    // valueRange = maxValue - minValue (negative)
-    int32_t valueRange;
-    // 1 / valueRange
-    float invValueRange;
-    // k1 is linearity transform coefficient: exponent range exp(0..k1) <-> log(0)..log(exp(k1)) is used
-    float k1;
-    // 1/k1
-    float invK1;
-    // exp(k1)
-    float expk1;
-    // exp(k1) - exp(0)
-    float expkDiff;
-    // 1/expkDiff
-    float invExpkDiff;
-    SensorConvertor(uint32_t minv, uint32_t maxv, float linK1);
-    void setLinK(float linK1);
-    void setRange(uint32_t minv, uint32_t maxv);
-    void updateTables();
-    uint32_t linearToPeriod(float v);
-    float periodToLinear(uint32_t v);
-};
-
-float noteToFrequency(int32_t note);
-double noteToFrequencyD(int32_t note);
-
-int32_t frequencyToNote(float freq);
-
-uint32_t noteToPhaseIncrement(int32_t note);
-uint32_t noteToPhaseIncrementD(int32_t note);
 
 
 

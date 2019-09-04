@@ -522,6 +522,7 @@ static const uint32_t NOTE_PHASE_INC_TABLE[2048] {
     0x80000000, 0x0, 0x80000000, 0x0, 0x80000000, 0x0, 0x80000000, 0x0, // 255
 };
 
+
 // note to frequency using interpolation table
 float noteToFrequencyFast(int32_t note) {
     int index = (note >> 6) << 1;

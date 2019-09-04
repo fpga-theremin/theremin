@@ -38,7 +38,7 @@ static uint32_t additivePhases[256] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
 
-uint16_t ampModulation(volatile SynthControl * control, uint32_t phaseInc) {
+uint16_t ampModulation(synth_control_ptr_t control, uint32_t phaseInc) {
     int32_t modulation = control->ampModulation.modulation;
     int32_t offset = control->ampModulation.offset;
     if (!modulation)
@@ -55,7 +55,7 @@ uint16_t ampModulation(volatile SynthControl * control, uint32_t phaseInc) {
 }
 
 // modulate phase increment
-uint32_t freqModulation(volatile SynthControl * control, uint32_t phaseInc) {
+uint32_t freqModulation(synth_control_ptr_t control, uint32_t phaseInc) {
     int32_t modulation = control->freqModulation.modulation;
     if (!modulation)
         return phaseInc;
@@ -70,7 +70,7 @@ uint32_t freqModulation(volatile SynthControl * control, uint32_t phaseInc) {
     return static_cast<uint32_t>(s + phaseInc);
 }
 
-int32_t additiveSynth(volatile SynthControl * control, int32_t note0, uint32_t phaseInc0) {
+int32_t additiveSynth(synth_control_ptr_t control, int32_t note0, uint32_t phaseInc0) {
     int32_t sum = 0;
     for (int i = 0; i < SYNTH_ADDITIVE_MAX_HARMONICS; i++) {
         int32_t note = note0 + harmonicNoteOffset(i + 1);
@@ -106,7 +106,7 @@ int32_t additiveSynth(volatile SynthControl * control, int32_t note0, uint32_t p
 }
 
 void synth_audio_irq() {
-    volatile SynthControl * control = getSynthControl();
+    synth_control_ptr_t control = getSynthControl();
     uint32_t pitchSensor = thereminSensor_readPitchPeriodFiltered();
     uint32_t volumeSensor = thereminSensor_readVolumePeriodFiltered();
     float pitchScaled = (pitchSensor - control->pitchPeriodFar)*control->pitchPeriodInvRange;

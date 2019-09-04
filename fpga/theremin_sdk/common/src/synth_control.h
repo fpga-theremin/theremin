@@ -28,9 +28,13 @@ struct OscilEffectParams {
 struct SynthControl {
     uint32_t synthType;
     float pitchPeriodFar;
+    float pitchPeriodRange;
     float pitchPeriodInvRange;
+    float pitchLinearizationK;
     float volumePeriodFar;
+    float volumePeriodRange;
     float volumePeriodInvRange;
+    float volumeLinearizationK;
     uint16_t pitchPeriodToNoteTable[SYNTH_CONTROL_PITCH_TABLE_SIZE];
     uint16_t volumePeriodToAmpTable[SYNTH_CONTROL_VOLUME_TABLE_SIZE];
     uint32_t minNote;
@@ -42,7 +46,13 @@ struct SynthControl {
     OscilEffectParams freqModulation;
 };
 
-volatile SynthControl * getSynthControl();
+#ifdef THEREMIN_SIMULATOR
+typedef volatile SynthControl * synth_control_ptr_t;
+#else
+typedef SynthControl * synth_control_ptr_t;
+#endif
+
+synth_control_ptr_t getSynthControl();
 
 
 #endif // SYNTH_CONTROL_H_INCLUDED
