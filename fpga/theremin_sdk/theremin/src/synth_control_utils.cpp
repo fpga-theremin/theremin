@@ -175,6 +175,40 @@ void synthControl_setSimpleAdditiveSynth(synth_control_ptr_t control, float even
     }
 }
 
+void synthControl_setAmpModulation(synth_control_ptr_t control, float amount, float freqAdd, uint16_t freqDiv) {
+    // amp modulation
+    uint16_t ampModulationAmount = static_cast<uint16_t>(0xffff * amount); //0x3fff;
+    control->ampModulation.offset = 0xffff - ampModulationAmount;
+    control->ampModulation.modulation = ampModulationAmount;
+    control->ampModulation.phaseIncAdd = freqAdd > 1.0f ? noteToPhaseIncrementFast(frequencyToNote(freqAdd)) : 0;
+    control->ampModulation.phaseIncDiv = freqDiv;
+}
+
+void synthControl_setFreqModulation(synth_control_ptr_t control, float amount, float freqAdd, uint16_t freqDiv) {
+    // freq modulation
+    control->freqModulation.offset = 0;
+    control->freqModulation.modulation = static_cast<uint16_t>(0xffff * amount);
+    control->freqModulation.phaseIncAdd = freqAdd > 1.0f ? noteToPhaseIncrementFast(frequencyToNote(freqAdd)) : 0;
+    control->freqModulation.phaseIncDiv = freqDiv;
+}
+
+void synthControl_setAdditiveSquare(synth_control_ptr_t control, float amp) {
+    synthControl_setSimpleAdditiveSynth(control,
+                                        amp, 0.0f, 1.0f, 1.0f, 0x80000000);
+}
+
+void synthControl_setAdditiveTriangle(synth_control_ptr_t control, float amp) {
+//    synthControl_setSimpleAdditiveSynth(control,
+//                                        amp, amp, 2.0f, 2.0f, 0x80000000);
+    synthControl_setSimpleAdditiveSynth(control,
+                                        amp, 0, 2.0f, 2.0f, 0x40000000);
+}
+
+void synthControl_setAdditiveSawtooth(synth_control_ptr_t control, float amp) {
+    synthControl_setSimpleAdditiveSynth(control,
+                                        amp, amp, 1.0f, 1.0f, 0x00000000);
+}
+
 void initSynthControl(synth_control_ptr_t control) {
     //control->synthType = SYNTH_TRIANGLE; //SYNTH_ADDITIVE;
     control->synthType = SYNTH_ADDITIVE;
@@ -189,22 +223,12 @@ void initSynthControl(synth_control_ptr_t control) {
 
     synthControl_setDefautFilter(control);
 
-    synthControl_setSimpleAdditiveSynth(control,
-                                        0.99f, 0.0f, 1.0f, 1.0f, 0x80000000);
+    //synthControl_setAdditiveSquare(control,  0.5f);
+    synthControl_setAdditiveTriangle(control,  0.8f);
+    synthControl_setAdditiveSawtooth(control,  0.5f);
 
-    // amp modulation
-    uint16_t ampModulationAmount = 0; //0x3fff;
-    uint16_t freqModulationAmount = 0x1fff; //0x3fff;
-
-    control->ampModulation.offset = 0xffff-ampModulationAmount;
-    control->ampModulation.modulation = ampModulationAmount;
-    control->ampModulation.phaseIncAdd = noteToPhaseIncrementFast(frequencyToNote(4.567f));
-    control->ampModulation.phaseIncDiv = 13;
-    // freq modulation
-    control->freqModulation.offset = 0;
-    control->freqModulation.modulation = freqModulationAmount;
-    control->freqModulation.phaseIncAdd = noteToPhaseIncrementFast(frequencyToNote(5.6789f));
-    control->freqModulation.phaseIncDiv = 11;
+    synthControl_setAmpModulation(control, 0.0f, 4.5678f, 13);
+    synthControl_setFreqModulation(control, 0.0f, 5.9789f, 11);
 }
 
 #define toFloat(x) static_cast<float>(x)

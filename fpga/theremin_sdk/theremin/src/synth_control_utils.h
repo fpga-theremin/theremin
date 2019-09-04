@@ -12,6 +12,14 @@ void synthControl_setVolumeRange(synth_control_ptr_t control, float muteDist);
 void synthControl_setDefautFilter(synth_control_ptr_t control);
 void synthControl_setSimpleAdditiveSynth(synth_control_ptr_t control, float evenAmp, float oddAmp, float evenPow, float oddPow, uint32_t phaseInc);
 
+void synthControl_setAdditiveSquare(synth_control_ptr_t control, float amp);
+void synthControl_setAdditiveTriangle(synth_control_ptr_t control, float amp);
+void synthControl_setAdditiveSawtooth(synth_control_ptr_t control, float amp);
+
+
+void synthControl_setAmpModulation(synth_control_ptr_t control, float amount, float freqAdd, uint16_t freqDiv);
+void synthControl_setFreqModulation(synth_control_ptr_t control, float amount, float freqAdd, uint16_t freqDiv);
+
 float noteToFrequency(int32_t note);
 int32_t frequencyToNote(float freq);
 uint32_t noteToPhaseIncrement(int32_t note);
