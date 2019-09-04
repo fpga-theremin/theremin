@@ -1,3 +1,7 @@
+#ifndef THEREMIN_SIMULATOR
+#include "../../common/src/noteutil.cpp"
+#endif
+
 #include "synth_control_utils.h"
 #include "../../common/src/noteutil.h"
 #include <math.h>

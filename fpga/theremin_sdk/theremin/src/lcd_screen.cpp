@@ -1,7 +1,12 @@
 
 //#define THEREMIN_SIMULATOR
 
+#ifdef THEREMIN_SIMULATOR
 #include "../../ip_repo/theremin_ip/drivers/theremin_ip/src/theremin_ip.h"
+#else
+#include "theremin_ip.h"
+#endif
+
 #include "lcd_screen.h"
 
 #define CHECK_RECT_ARGS() \

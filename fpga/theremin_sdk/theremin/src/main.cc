@@ -115,6 +115,10 @@ int main()
 				px = 0x04f;
 			if (x>=2 && x <= 10 && y>=2 && y<=10 )
 				px = 0xff0;
+			if (y < 4)
+				px = ((x&0xf)<<8) | (((x>>4)&0xf)<<4);
+			else if (x == 32)
+				px = 0xff0;
 			framebuffer[y*SCREEN_DX + x] = px; //0xf80 + x / 64; //y + ((x >> 6) * 4096);//(y&255) * 256 + (x &255);
 		}
 		thereminIO_flushCache(framebuffer + SCREEN_DX*y, SCREEN_DX*2);

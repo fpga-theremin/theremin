@@ -52,7 +52,12 @@ typedef volatile SynthControl * synth_control_ptr_t;
 typedef SynthControl * synth_control_ptr_t;
 #endif
 
+#ifdef THEREMIN_SIMULATOR
 synth_control_ptr_t getSynthControl();
+#else
+#define getSynthControl() ((synth_control_ptr_t)(0xFFFF0020))
+#endif
+
 
 
 #endif // SYNTH_CONTROL_H_INCLUDED

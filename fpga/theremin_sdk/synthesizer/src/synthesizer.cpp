@@ -1,10 +1,15 @@
+#ifndef THEREMIN_SIMULATOR
+#include "../../common/src/noteutil.cpp"
+#endif
+
+
 #include "synthesizer.h"
 #include "synth_utils.h"
 #include "../../common/src/synth_control.h"
 #include "../../common/src/noteutil.h"
 #include "theremin_ip.h"
 
-#include <QDebug>
+//#include <QDebug>
 
 //uint32_t audio_irq_counter = 0;
 
@@ -224,11 +229,11 @@ void synth_audio_irq() {
     sample = (sample * amp) / 256;
     //int32_t sample24 = static_cast<int32_t>(sample * 0x7fffff);
     //int32_t sample24 = static_cast<int32_t>(sample);
-    if (dumpCount < 2000) {
-        //qDebug("%d: \t%f\t   phase=%08x phaseIncrement=%08x  amp=%f", dumpCount, sample/256, currentPhase, phaseIncrement, amp);
-        qDebug("%f", sample);
-        dumpCount++;
-    }
+//    if (dumpCount < 2000) {
+//        //qDebug("%d: \t%f\t   phase=%08x phaseIncrement=%08x  amp=%f", dumpCount, sample/256, currentPhase, phaseIncrement, amp);
+//        qDebug("%f", sample);
+//        dumpCount++;
+//    }
 
 
     thereminAudio_writeLineOutLR( static_cast<int32_t>(sample));
