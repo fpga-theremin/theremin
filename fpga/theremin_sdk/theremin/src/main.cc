@@ -17,8 +17,10 @@
 
 #include "xpseudo_asm.h"
 #include "xil_mmu.h"
+#include "lcd_screen.h"
+#include "bitmap_fonts.h"
 
-uint16_t framebuffer[SCREEN_DX*SCREEN_DY + 64]  __attribute__ ((aligned(32)));
+//uint16_t framebuffer[SCREEN_DX*SCREEN_DY + 64]  __attribute__ ((aligned(32)));
 
 void setLeds(int phase) {
 	switch(phase & 7) {
@@ -103,39 +105,40 @@ int main()
 	sleep(1);
 	print("FPGA Theremin Project\r\n");
 	print("(c) Vadim Lopatin, 2019\r\n");
-	for (int y = 0; y < SCREEN_DY; y++) {
-		for (int x = 0; x < SCREEN_DX; x++) {
-			uint16_t px = 0;
-			px |= (y / 31) << 8;
-			px |= (x / 50) << 4;
-			px |= (x + y) / 100;
-			if ((x & 15) == 0)
-				px = 0xf40;
-			if ((y & 15) == 0)
-				px = 0x04f;
-			if (x>=2 && x <= 10 && y>=2 && y<=10 )
-				px = 0xff0;
-			if (y < 4)
-				px = ((x&0xf)<<8) | (((x>>4)&0xf)<<4);
-			else if (x == 32)
-				px = 0xff0;
-			framebuffer[y*SCREEN_DX + x] = px; //0xf80 + x / 64; //y + ((x >> 6) * 4096);//(y&255) * 256 + (x &255);
-		}
-		thereminIO_flushCache(framebuffer + SCREEN_DX*y, SCREEN_DX*2);
-	}
-	for (int y = 0; y < SCREEN_DY; y++) {
-		uint16_t px = 0x00f;
-		framebuffer[y*SCREEN_DX + y] = px;
-		thereminIO_flushCache(framebuffer + SCREEN_DX*y, SCREEN_DX*2);
-	}
-	//thereminIO_flushCache(framebuffer, SCREEN_DX*SCREEN_DX*2);
 	print("Resetting PL\r\n");
 	thereminIO_init();
 	//setLeds(0);
 	print("    Done\r\n");
 	usleep(1000);
-	xil_printf("Setting framebuffer address to %08x\r\n", framebuffer);
-	thereminLCD_setFramebufferAddress(framebuffer);
+
+	lcd_init();
+    lcd_fill_rect(6, 5, 120, 50, 0x0f84);
+    lcd_fill_rect(5, 55, 121, 100, 0x058e);
+
+
+    for (int x = 50; x < SCREEN_DX; x+=5) {
+        lcd_draw_line(5, 5, x, SCREEN_DY-1, 0x305020);
+    }
+
+    lcd_draw_text(BIG_FONT, 100, 50, 0xff0, "Hello world! BIG", -32768);
+    lcd_draw_text(MEDIUM_FONT, 10, 10, 0x0f0, "Hello world! MEDIUM", -32768);
+    lcd_draw_text(SMALL_FONT, 10, 200, 0x0ff, "Hello world! SMALL", -32768);
+
+    lcd_draw_text(BIG_FONT, 100, 80, 0xfff, "WWWwww", -32768);
+
+    lcd_draw_rect(400, 50, 500, 100, 5, CL_RED, CL_YELLOW);
+    lcd_draw_rect(450, 70, 550, 120, 7, CL_BLUE, CL_TRANSPARENT);
+
+    for (int i = 0; i < SCREEN_DX; i++) {
+    	SCREEN[i] = 0xff0;
+    	SCREEN[i+SCREEN_DX] = 0xf0f;
+    	SCREEN[i+SCREEN_DX*2] = 0x0ff;
+    }
+
+    lcd_flush();
+	//thereminIO_flushCache(framebuffer, SCREEN_DX*SCREEN_DX*2);
+	//xil_printf("Setting framebuffer address to %08x\r\n", framebuffer);
+	//thereminLCD_setFramebufferAddress(framebuffer);
 	thereminIO_setBacklightBrightness(0x40);
 	print("    Done\r\n");
 	usleep(10000);

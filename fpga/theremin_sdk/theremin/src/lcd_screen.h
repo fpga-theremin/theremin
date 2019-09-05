@@ -15,7 +15,7 @@
 #define ALIGN_4_PREFIX  __declspec( align( 4 ) )
 #define ALIGN_4_ATTRIBUTE
 #else
-#define ALIGN_4_PRAGMA
+#define ALIGN_4_PREFIX
 #define ALIGN_4_ATTRIBUTE __attribute__((aligned(4)))
 #endif
 
@@ -23,7 +23,7 @@
 #define ALIGN_1_PREFIX  __declspec( align( 1 ) )
 #define ALIGN_1_ATTRIBUTE
 #else
-#define ALIGN_1_PRAGMA
+#define ALIGN_1_PREFIX
 #define ALIGN_1_ATTRIBUTE __attribute__((aligned(1)))
 #endif
 

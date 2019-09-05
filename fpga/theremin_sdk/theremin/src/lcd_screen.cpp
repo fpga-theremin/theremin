@@ -47,10 +47,10 @@ void lcd_init() {
 void lcd_flush() {
     uint16_t * prow = SCREEN;
     for (int i = 0; i < SCREEN_DY; i++) {
-        if (dirty_row_flag[i]) {
+        //if (dirty_row_flag[i]) {
             thereminIO_flushCache(prow, ROW_BYTES);
             dirty_row_flag[i] = 0;
-        }
+        //}
         prow += SCREEN_DX;
     }
 }
@@ -145,10 +145,10 @@ Returns NULL if glyph is not present in font.
 */
 const BitmapFontGlyph * lcd_get_bitmap_font_glyph(const BitmapFont * font, char ch) {
     if ((uint8_t)ch < (uint8_t)font->minChar || (uint8_t)ch > (uint8_t)font->maxChar)
-        return NULL;
+        return nullptr;
     uint32_t offset = font->glyphOffsets[(uint8_t)ch - (uint8_t)font->minChar];
     if (!offset)
-        return NULL;
+        return nullptr;
     return (const BitmapFontGlyph *) ( ((const uint8_t*)font) + offset*4 );
 }
 
