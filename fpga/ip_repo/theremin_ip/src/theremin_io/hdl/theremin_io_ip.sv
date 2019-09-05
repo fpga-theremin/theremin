@@ -23,6 +23,8 @@ module theremin_io_ip #
     parameter integer VFP = 2,
     parameter integer HSYNC_POLARITY = 0,
     parameter integer VSYNC_POLARITY = 0,
+    parameter integer DE_POLARITY = 0,
+    parameter integer PXCLK_INV = 0,
 
     parameter integer PITCH_PERIOD_BITS = 16,
     parameter integer VOLUME_PERIOD_BITS = 16,
@@ -451,14 +453,16 @@ always_comb R <= lcd_pixel_data[11:8];
 always_comb G <= lcd_pixel_data[7:4];
 always_comb B <= lcd_pixel_data[3:0];
 
-localparam INVERT_PXCLK = 0;
-always_comb PXCLK <= INVERT_PXCLK ? ~CLK_PXCLK : CLK_PXCLK;
+
+always_comb PXCLK <= PXCLK_INV ? ~CLK_PXCLK : CLK_PXCLK;
 
 // 1 for LCD side underflow - no data for pixel provided by DMA
 logic DMA_FIFO_RDERR;
 // 1 for DMA side overflow - buffer full when trying to write data to FIFO
 logic DMA_FIFO_WRERR;
 
+logic de_in;
+assign DE = DE_POLARITY ? ~de_in : de_in;
 
 lcd_controller_axi3_dma #(
     // burst size for single DMA read request: on single DMA_START request,  BURST_SIZE words will be written to FIFO via a sequence of DMA_RD_DATA_VALID
@@ -489,7 +493,7 @@ lcd_controller_axi3_dma_inst
     // vertical sync
     .VSYNC,
     // data enable
-    .DE,
+    .DE(de_in),
     // pixel value
     .PIXEL_DATA(lcd_pixel_data),
     

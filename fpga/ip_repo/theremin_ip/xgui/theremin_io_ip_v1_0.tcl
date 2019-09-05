@@ -24,6 +24,10 @@ proc init_gui { IPINST } {
   set_property tooltip {LCD Vertical Front Porch} ${VFP}
   ipgui::add_param $IPINST -name "VSW" -parent ${Page_0}
   ipgui::add_param $IPINST -name "VSYNC_POLARITY" -parent ${Page_0}
+  set DE_POLARITY [ipgui::add_param $IPINST -name "DE_POLARITY" -parent ${Page_0}]
+  set_property tooltip {0=active low, 1=active high} ${DE_POLARITY}
+  set PXCLK_INV [ipgui::add_param $IPINST -name "PXCLK_INV" -parent ${Page_0}]
+  set_property tooltip {1=invert, 0=normal} ${PXCLK_INV}
   set MANUAL_ENCODERS [ipgui::add_param $IPINST -name "MANUAL_ENCODERS" -parent ${Page_0}]
   set_property tooltip {0: use hardware encoders debouncer, 1: direct access to mux} ${MANUAL_ENCODERS}
   set DEBOUNCE_UPDATE_DIVIDER_BITS [ipgui::add_param $IPINST -name "DEBOUNCE_UPDATE_DIVIDER_BITS" -parent ${Page_0}]
@@ -184,6 +188,15 @@ proc validate_PARAM_VALUE.DEBOUNCE_UPDATE_DIVIDER_BITS { PARAM_VALUE.DEBOUNCE_UP
 	return true
 }
 
+proc update_PARAM_VALUE.DE_POLARITY { PARAM_VALUE.DE_POLARITY } {
+	# Procedure called to update DE_POLARITY when any of the dependent parameters in the arguments change
+}
+
+proc validate_PARAM_VALUE.DE_POLARITY { PARAM_VALUE.DE_POLARITY } {
+	# Procedure called to validate DE_POLARITY
+	return true
+}
+
 proc update_PARAM_VALUE.FILTER_OUT_BITS { PARAM_VALUE.FILTER_OUT_BITS } {
 	# Procedure called to update FILTER_OUT_BITS when any of the dependent parameters in the arguments change
 }
@@ -271,6 +284,15 @@ proc update_PARAM_VALUE.PWM_COUNTER_BITS { PARAM_VALUE.PWM_COUNTER_BITS } {
 
 proc validate_PARAM_VALUE.PWM_COUNTER_BITS { PARAM_VALUE.PWM_COUNTER_BITS } {
 	# Procedure called to validate PWM_COUNTER_BITS
+	return true
+}
+
+proc update_PARAM_VALUE.PXCLK_INV { PARAM_VALUE.PXCLK_INV } {
+	# Procedure called to update PXCLK_INV when any of the dependent parameters in the arguments change
+}
+
+proc validate_PARAM_VALUE.PXCLK_INV { PARAM_VALUE.PXCLK_INV } {
+	# Procedure called to validate PXCLK_INV
 	return true
 }
 
@@ -487,5 +509,15 @@ proc update_MODELPARAM_VALUE.DEBOUNCE_UPDATE_DIVIDER_BITS { MODELPARAM_VALUE.DEB
 proc update_MODELPARAM_VALUE.MANUAL_ENCODERS { MODELPARAM_VALUE.MANUAL_ENCODERS PARAM_VALUE.MANUAL_ENCODERS } {
 	# Procedure called to set VHDL generic/Verilog parameter value(s) based on TCL parameter value
 	set_property value [get_property value ${PARAM_VALUE.MANUAL_ENCODERS}] ${MODELPARAM_VALUE.MANUAL_ENCODERS}
+}
+
+proc update_MODELPARAM_VALUE.DE_POLARITY { MODELPARAM_VALUE.DE_POLARITY PARAM_VALUE.DE_POLARITY } {
+	# Procedure called to set VHDL generic/Verilog parameter value(s) based on TCL parameter value
+	set_property value [get_property value ${PARAM_VALUE.DE_POLARITY}] ${MODELPARAM_VALUE.DE_POLARITY}
+}
+
+proc update_MODELPARAM_VALUE.PXCLK_INV { MODELPARAM_VALUE.PXCLK_INV PARAM_VALUE.PXCLK_INV } {
+	# Procedure called to set VHDL generic/Verilog parameter value(s) based on TCL parameter value
+	set_property value [get_property value ${PARAM_VALUE.PXCLK_INV}] ${MODELPARAM_VALUE.PXCLK_INV}
 }
 
