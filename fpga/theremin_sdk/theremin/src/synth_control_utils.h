@@ -9,7 +9,15 @@ void synthControl_initPitchSensor(synth_control_ptr_t control, uint32_t maxSenso
 void synthControl_initVolumeSensor(synth_control_ptr_t control, uint32_t maxSensorPeriod, uint32_t minSensorPeriod, float linearizationK);
 void synthControl_setNoteRange(synth_control_ptr_t control, int32_t minNote, int32_t maxNote);
 void synthControl_setVolumeRange(synth_control_ptr_t control, float muteDist);
+
+
 void synthControl_setDefautFilter(synth_control_ptr_t control);
+// set filter from custom float table (SYNTH_CONTROL_FILTER_TABLE_SIZE elements in table)
+void synthControl_setFilterAmp(synth_control_ptr_t control, float * table);
+// inits flat filter (SYNTH_CONTROL_FILTER_TABLE_SIZE elements in table)
+void synthControl_initFlatFilter(float * table);
+void synthControl_addFilterFormant(float * table, float middleFrequency, float width, float amp);
+
 void synthControl_setSimpleAdditiveSynth(synth_control_ptr_t control, float evenAmp, float oddAmp, float evenPow, float oddPow, uint32_t phaseInc);
 
 void synthControl_setAdditiveSquare(synth_control_ptr_t control, float amp);

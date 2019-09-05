@@ -2,6 +2,10 @@
 #include "../../common/src/noteutil.h"
 #include "synth_control_utils.h"
 
+#ifdef THEREMIN_SIMULATOR
+#include "QDebug"
+#endif
+
 
 #define SCIENTIFIC_NOTATION_A4_FREQUENCY 440.0
 // C0 = SCIENTIFIC_NOTATION_A4_FREQUENCY*2^(-4.75)
@@ -124,8 +128,33 @@ void synthControl_setNoteRange(synth_control_ptr_t control, int32_t minNote, int
     }
 }
 
-void synthControl_setDefautFilter(synth_control_ptr_t control) {
-    float filterAmp[SYNTH_CONTROL_FILTER_TABLE_SIZE];
+void synthControl_scaleFilter(float * table) {
+    float maxValue = table[0];
+    for (int i = 1; i < SYNTH_CONTROL_FILTER_TABLE_SIZE; i++) {
+        if (maxValue < table[i])
+            maxValue = table[i];
+    }
+    for (int i = 0; i < SYNTH_CONTROL_FILTER_TABLE_SIZE; i++) {
+        table[i] = table[i] / maxValue;
+    }
+}
+
+// set filter from custom float table (SYNTH_CONTROL_FILTER_TABLE_SIZE elements in table)
+void synthControl_setFilterAmp(synth_control_ptr_t control, float * table) {
+    synthControl_scaleFilter(table);
+    for (int i = 0; i < SYNTH_CONTROL_FILTER_TABLE_SIZE; i++) {
+        float n = table[i];
+        int32_t k = n * 0xffff;
+        if (k < 0)
+            k = 0;
+        else if (k > 0xffff)
+            k = 0xffff;
+        control->filterAmp[i] = static_cast<uint16_t>(k);
+    }
+}
+
+// inits flat filter (SYNTH_CONTROL_FILTER_TABLE_SIZE elements in table)
+void synthControl_initFlatFilter(float * table) {
     for (int i = 0; i < SYNTH_CONTROL_FILTER_TABLE_SIZE; i++) {
         int32_t note = i << 6;
         float freq = noteToFrequency(note);
@@ -138,17 +167,42 @@ void synthControl_setDefautFilter(synth_control_ptr_t control) {
             boundsK = 0.0f;
         else if (freq >= 20000.0f)
             boundsK = (24000.0f - freq) / (24000.0f - 20000.0f);
-        filterAmp[i] = boundsK;
+        table[i] = boundsK;
     }
-    for (int i = 0; i < SYNTH_CONTROL_FILTER_TABLE_SIZE; i++) {
-        float n = filterAmp[i];
-        int32_t k = n * 0xffff;
-        if (k < 0)
-            k = 0;
-        else if (k > 0xffff)
-            k = 0xffff;
-        control->filterAmp[i] = static_cast<uint16_t>(k);
+}
+
+#define M_PI 3.14159265359
+
+// for x in range -n..n gives hump (cos()/2 + 0.5) with 1 at middle (0) and 0 at <=-n, >=n
+float hump(int x, int n) {
+    if (x < -n || x > n)
+        return 0;
+    float xf = x * M_PI / n;
+    float amp = (cosf(xf) + 1) / 2;
+    return amp;
+}
+
+void synthControl_addFilterFormant(float * table, float middleFrequency, float width, float amp) {
+    int32_t middleNote = frequencyToNote(middleFrequency);
+    int32_t maxNote = frequencyToNote(middleFrequency* (1 + width));
+    int32_t notesWidth = maxNote - middleNote;
+    // scale notes to table indexes
+    middleNote = (middleNote * SYNTH_CONTROL_FILTER_TABLE_SIZE) >> 16;
+    notesWidth = (notesWidth * SYNTH_CONTROL_FILTER_TABLE_SIZE) >> 16;
+    for (int i = -notesWidth; i <= notesWidth; i++) {
+        int note = i + middleNote;
+        if (note >= 0 && note < SYNTH_CONTROL_FILTER_TABLE_SIZE)
+            table[note] += hump(i, notesWidth);
     }
+}
+
+void synthControl_setDefautFilter(synth_control_ptr_t control) {
+    float filterAmp[SYNTH_CONTROL_FILTER_TABLE_SIZE];
+    synthControl_initFlatFilter(filterAmp);
+    synthControl_addFilterFormant(filterAmp, 550.0f, 0.5f, 5.0f);
+    synthControl_addFilterFormant(filterAmp, 2700.0f, 0.5f, 5.0f);
+    //synthControl_addFilterFormant(filterAmp, 5500.0f, 0.1f, 5.0f);
+    synthControl_setFilterAmp(control, filterAmp);
 }
 
 void synthControl_setSimpleAdditiveSynth(synth_control_ptr_t control, float evenAmp, float oddAmp, float evenPow, float oddPow, uint32_t phaseInc) {
@@ -223,9 +277,9 @@ void initSynthControl(synth_control_ptr_t control) {
 
     synthControl_setDefautFilter(control);
 
-    //synthControl_setAdditiveSquare(control,  0.5f);
+    synthControl_setAdditiveSquare(control,  0.5f);
     //synthControl_setAdditiveTriangle(control,  0.8f);
-    synthControl_setAdditiveSawtooth(control,  0.5f);
+    //synthControl_setAdditiveSawtooth(control,  0.5f);
 
     synthControl_setAmpModulation(control, 0.0f, 4.5678f, 13);
     synthControl_setFreqModulation(control, 0.0f, 5.9789f, 11);
