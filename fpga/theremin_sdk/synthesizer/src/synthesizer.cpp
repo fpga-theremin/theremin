@@ -70,15 +70,13 @@ uint32_t freqModulation(synth_control_ptr_t control, uint32_t phaseInc) {
     return static_cast<uint32_t>(s + phaseInc);
 }
 
-int32_t additiveSynth(synth_control_ptr_t control, int32_t note0, uint32_t phaseInc0) {
+int32_t additiveSynth(synth_control_ptr_t control, int32_t note0, uint32_t currentPhase) {
     int32_t sum = 0;
     for (int i = 0; i < SYNTH_ADDITIVE_MAX_HARMONICS; i++) {
         int32_t note = note0 + harmonicNoteOffset(i + 1);
         if (note >= MAX_AUDIBLE_NOTE)
             break;
-        uint32_t phaseInc = phaseInc0 * (i+1);
-        uint32_t phase = additivePhases[i];
-        additivePhases[i] = phase + phaseInc;
+        uint32_t phase = currentPhase * (i + 1);
         uint32_t amp = control->additiveHarmonicsAmp[i];
 
         //if (amp == 0 && i > 5)
@@ -106,15 +104,13 @@ int32_t additiveSynth(synth_control_ptr_t control, int32_t note0, uint32_t phase
     return sum;
 }
 
-float additiveSynthF(synth_control_ptr_t control, int32_t note0, uint32_t phaseInc0) {
+float additiveSynthF(synth_control_ptr_t control, int32_t note0, uint32_t currentPhase) {
     float sum = 0;
     for (int i = 0; i < SYNTH_ADDITIVE_MAX_HARMONICS; i++) {
         int32_t note = note0 + harmonicNoteOffset(i + 1);
         if (note >= MAX_AUDIBLE_NOTE)
             break;
-        uint32_t phaseInc = phaseInc0 * (i+1);
-        uint32_t phase = additivePhases[i];
-        additivePhases[i] = phase + phaseInc;
+        uint32_t phase = currentPhase * (i + 1);
         uint32_t amp = control->additiveHarmonicsAmp[i];
 
         //if (amp == 0 && i > 5)
@@ -209,7 +205,7 @@ void synth_audio_irq() {
         amp = amp >> 2;
         break;
     case SYNTH_ADDITIVE:
-        sample = additiveSynthF(control, note, phaseIncrement);
+        sample = static_cast<float>(additiveSynth(control, note, currentPhase));
         break;
     }
 

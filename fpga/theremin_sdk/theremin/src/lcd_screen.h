@@ -27,6 +27,18 @@
 #define ALIGN_1_ATTRIBUTE __attribute__((aligned(1)))
 #endif
 
+// 16/12 bit colors
+#define CL_BLACK       0x000
+#define CL_WHITE       0xfff
+#define CL_RED         0xf00
+#define CL_GREEN       0x0f0
+#define CL_BLUE        0x00f
+#define CL_YELLOW      0xff0
+#define CL_SILVER      0xeee
+#define CL_GREY        0xccc
+#define CL_TRANSPARENT 0xffff
+
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -51,6 +63,7 @@ void lcd_put_pixel(int x, int y, uint16_t color);
 void lcd_fill_rect(int x0, int y0, int x1, int y1, uint16_t color);
 /** Draw line with specified color */
 void lcd_draw_line(int x0, int y0, int x1, int y1, uint16_t color);
+void lcd_draw_rect(int x0, int y0, int x1, int y1, int width, uint16_t color, uint16_t innerColor);
 
 /****************************************
   Bitmap support

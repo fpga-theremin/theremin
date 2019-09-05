@@ -224,7 +224,7 @@ void initSynthControl(synth_control_ptr_t control) {
     synthControl_setDefautFilter(control);
 
     //synthControl_setAdditiveSquare(control,  0.5f);
-    synthControl_setAdditiveTriangle(control,  0.8f);
+    //synthControl_setAdditiveTriangle(control,  0.8f);
     synthControl_setAdditiveSawtooth(control,  0.5f);
 
     synthControl_setAmpModulation(control, 0.0f, 4.5678f, 13);

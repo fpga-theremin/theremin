@@ -26,7 +26,8 @@ int main(int argc, char *argv[])
 
     lcd_draw_text(BIG_FONT, 100, 80, 0xfff, "WWWwww", -32768);
 
-
+    lcd_draw_rect(400, 50, 500, 100, 5, CL_RED, CL_YELLOW);
+    lcd_draw_rect(450, 70, 550, 120, 7, CL_BLUE, CL_TRANSPARENT);
 
     lcd_flush();
 

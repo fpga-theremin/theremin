@@ -86,6 +86,22 @@ void lcd_fill_rect(int x0, int y0, int x1, int y1, uint16_t color) {
     }
 }
 
+void lcd_draw_rect(int x0, int y0, int x1, int y1, int width, uint16_t color, uint16_t innerColor) {
+    if (width <= 1)
+        return;
+    // top
+    lcd_fill_rect(x0, y0, x1, y0 + width, color);
+    // bottom
+    lcd_fill_rect(x0, y1-width, x1, y1, color);
+    // left
+    lcd_fill_rect(x0, y0+width, x0+width, y1 - width, color);
+    // right
+    lcd_fill_rect(x1-width, y0+width, x1, y1 - width, color);
+    if (innerColor != CL_TRANSPARENT)
+        lcd_fill_rect(x0+width, y0+width, x1 - width, y1 - width, innerColor);
+}
+
+
 inline int my_abs(int n) { return n < 0 ? -n : n; }
 
 void lcd_draw_line(int x0, int y0, int x1, int y1, uint16_t color) {
