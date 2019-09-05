@@ -1,10 +1,6 @@
-#ifndef THEREMIN_SIMULATOR
-#include "../../common/src/noteutil.cpp"
-#endif
-
-#include "synth_control_utils.h"
-#include "../../common/src/noteutil.h"
 #include <math.h>
+#include "../../common/src/noteutil.h"
+#include "synth_control_utils.h"
 
 
 #define SCIENTIFIC_NOTATION_A4_FREQUENCY 440.0

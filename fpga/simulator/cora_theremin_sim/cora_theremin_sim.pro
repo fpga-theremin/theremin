@@ -28,6 +28,7 @@ CONFIG += c++11
 
 SOURCES += \
     ../../theremin_sdk/theremin/src/lcd_screen.cpp \
+    ../../theremin_sdk/theremin/src/bitmap_fonts.cpp \
     ../../theremin_sdk/common/src/noteutil.cpp \
     ../../theremin_sdk/synthesizer/src/synthesizer.cpp \
     ../../theremin_sdk/synthesizer/src/synth_utils.cpp \
@@ -47,6 +48,7 @@ SOURCES += \
 
 HEADERS += \
     ../../theremin_sdk/theremin/src/lcd_screen.h \
+    ../../theremin_sdk/theremin/src/bitmap_fonts.h \
     ../../theremin_sdk/common/src/noteutil.h \
     ../../theremin_sdk/common/src/synth_control.h \
     ../../theremin_sdk/synthesizer/src/synthesizer.h \
