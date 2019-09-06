@@ -1,3 +1,4 @@
+#xil
 *.log
 .history
 *.snap
@@ -5,6 +6,17 @@
 .markers
 webtalk
 RemoteSystemsTempFiles
+theremin_hw.cache
+theremin_hw.hw
+theremin_hw.ip_user_files
+theremin_hw.runs
+theremin_hw.sdk
+theremin_io.cache
+theremin_io.hw
+theremin_io.ip_user_files
+theremin_io.runs
+theremin_io.sim
+
 
 # Prerequisites
 *.d
