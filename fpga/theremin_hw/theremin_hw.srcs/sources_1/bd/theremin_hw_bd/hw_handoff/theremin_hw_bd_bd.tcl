@@ -723,9 +723,9 @@ proc create_root_design { parentCell } {
    CONFIG.HFP {4} \
    CONFIG.HSW {29} \
    CONFIG.HSYNC_POLARITY {1} \
-   CONFIG.VBP {4} \
-   CONFIG.VFP {4} \
-   CONFIG.VSW {5} \
+   CONFIG.VBP {23} \
+   CONFIG.VFP {22} \
+   CONFIG.VSW {9} \
    CONFIG.VSYNC_POLARITY {1} \
  ] $theremin_io_ip_0
 

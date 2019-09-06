@@ -1,8 +1,8 @@
 //Copyright 1986-2019 Xilinx, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
 //Tool Version: Vivado v.2019.1.1 (win64) Build 2580384 Sat Jun 29 08:12:21 MDT 2019
-//Date        : Fri Sep  6 13:43:04 2019
-//Host        : DTNN-VLOPATIN running 64-bit major release  (build 9200)
+//Date        : Fri Sep  6 19:52:54 2019
+//Host        : LT-NN-VLOPATIN running 64-bit major release  (build 9200)
 //Command     : generate_target theremin_hw_bd.bd
 //Design      : theremin_hw_bd
 //Purpose     : IP block netlist

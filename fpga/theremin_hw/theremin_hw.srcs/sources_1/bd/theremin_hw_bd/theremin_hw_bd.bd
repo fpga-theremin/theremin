@@ -1426,16 +1426,16 @@
               }
             },
             "interface_nets": {
-              "s00_couplers_to_auto_pc": {
-                "interface_ports": [
-                  "S_AXI",
-                  "auto_pc/S_AXI"
-                ]
-              },
               "auto_pc_to_s00_couplers": {
                 "interface_ports": [
                   "M_AXI",
                   "auto_pc/M_AXI"
+                ]
+              },
+              "s00_couplers_to_auto_pc": {
+                "interface_ports": [
+                  "S_AXI",
+                  "auto_pc/S_AXI"
                 ]
               }
             },
@@ -1519,13 +1519,13 @@
             "value": "1"
           },
           "VBP": {
-            "value": "4"
+            "value": "23"
           },
           "VFP": {
-            "value": "4"
+            "value": "22"
           },
           "VSW": {
-            "value": "5"
+            "value": "9"
           },
           "VSYNC_POLARITY": {
             "value": "1"
@@ -1552,6 +1552,18 @@
           "processing_system7_0/FIXED_IO"
         ]
       },
+      "theremin_io_ip_0_m00_axi": {
+        "interface_ports": [
+          "theremin_io_ip_0/m00_axi",
+          "processing_system7_0/S_AXI_HP0"
+        ]
+      },
+      "ps7_0_axi_periph_M00_AXI": {
+        "interface_ports": [
+          "ps7_0_axi_periph/M00_AXI",
+          "theremin_io_ip_0/s00_axi"
+        ]
+      },
       "theremin_io_ip_0_RGBLED1": {
         "interface_ports": [
           "RGBLED1_0",
@@ -1564,10 +1576,10 @@
           "theremin_io_ip_0/AUDIO_I2S"
         ]
       },
-      "theremin_io_ip_0_ENC_MUX": {
+      "processing_system7_0_M_AXI_GP0": {
         "interface_ports": [
-          "ENC_MUX_0",
-          "theremin_io_ip_0/ENC_MUX"
+          "processing_system7_0/M_AXI_GP0",
+          "ps7_0_axi_periph/S00_AXI"
         ]
       },
       "theremin_io_ip_0_AUDIO_I2C": {
@@ -1576,22 +1588,10 @@
           "theremin_io_ip_0/AUDIO_I2C"
         ]
       },
-      "theremin_io_ip_0_m00_axi": {
+      "theremin_io_ip_0_ENC_MUX": {
         "interface_ports": [
-          "theremin_io_ip_0/m00_axi",
-          "processing_system7_0/S_AXI_HP0"
-        ]
-      },
-      "processing_system7_0_M_AXI_GP0": {
-        "interface_ports": [
-          "processing_system7_0/M_AXI_GP0",
-          "ps7_0_axi_periph/S00_AXI"
-        ]
-      },
-      "ps7_0_axi_periph_M00_AXI": {
-        "interface_ports": [
-          "ps7_0_axi_periph/M00_AXI",
-          "theremin_io_ip_0/s00_axi"
+          "ENC_MUX_0",
+          "theremin_io_ip_0/ENC_MUX"
         ]
       },
       "theremin_io_ip_0_LCD": {

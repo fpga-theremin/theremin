@@ -61,7 +61,8 @@ void lcd_init() {
 }
 
 // WARNING: update this constant if hardware VBP/VSW/VFP is changed!!!
-#define VBLANK_ROWS 11
+//#define VBLANK_ROWS 11
+#define VBLANK_ROWS 54
 // Duration of single row refresh in microseconds
 // WARNING: update if PXCLK or timings are changed!!!
 #define ROW_MICROS 27
