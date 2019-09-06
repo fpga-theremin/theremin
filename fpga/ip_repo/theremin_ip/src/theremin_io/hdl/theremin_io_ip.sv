@@ -462,7 +462,7 @@ logic DMA_FIFO_RDERR;
 logic DMA_FIFO_WRERR;
 
 logic de_in;
-assign DE = DE_POLARITY ? ~de_in : de_in;
+assign DE = DE_POLARITY ? de_in : ~de_in;
 
 lcd_controller_axi3_dma #(
     // burst size for single DMA read request: on single DMA_START request,  BURST_SIZE words will be written to FIFO via a sequence of DMA_RD_DATA_VALID

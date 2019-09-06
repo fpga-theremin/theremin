@@ -48,7 +48,7 @@
 
 
 // IP VLNV: coolreader_org:user:theremin_io_ip:1.0
-// IP Revision: 35
+// IP Revision: 38
 
 (* X_CORE_INFO = "theremin_io_ip,Vivado 2019.1.1" *)
 (* CHECK_LICENSE_TYPE = "theremin_hw_bd_theremin_io_ip_0_0,theremin_io_ip,{}" *)
@@ -349,12 +349,12 @@ input wire m00_axi_aresetn;
     .BURST_SIZE(8),
     .HPIXELS(800),
     .VPIXELS(480),
-    .HBP(2),
-    .VBP(2),
-    .HSW(10),
-    .VSW(2),
-    .HFP(2),
-    .VFP(2),
+    .HBP(5),
+    .VBP(4),
+    .HSW(20),
+    .VSW(10),
+    .HFP(5),
+    .VFP(4),
     .HSYNC_POLARITY(0),
     .VSYNC_POLARITY(0),
     .PITCH_PERIOD_BITS(16),
@@ -377,7 +377,9 @@ input wire m00_axi_aresetn;
     .DEBOUNCE_CLK_DIV_BITS(7),
     .DEBOUNCE_COUNTER_BITS(8),
     .DEBOUNCE_UPDATE_DIVIDER_BITS(8),
-    .MANUAL_ENCODERS(1)
+    .MANUAL_ENCODERS(1),
+    .DE_POLARITY(1),
+    .PXCLK_INV(0)
   ) inst (
     .CLK_SHIFT(CLK_SHIFT),
     .CLK_SHIFTB(CLK_SHIFTB),

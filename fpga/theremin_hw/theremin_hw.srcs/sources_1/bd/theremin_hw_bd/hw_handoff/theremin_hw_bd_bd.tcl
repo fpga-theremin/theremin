@@ -716,13 +716,15 @@ proc create_root_design { parentCell } {
   # Create instance: theremin_io_ip_0, and set properties
   set theremin_io_ip_0 [ create_bd_cell -type ip -vlnv coolreader_org:user:theremin_io_ip:1.0 theremin_io_ip_0 ]
   set_property -dict [ list \
-   CONFIG.HBP {2} \
-   CONFIG.HFP {2} \
-   CONFIG.HSW {10} \
+   CONFIG.BURST_SIZE {8} \
+   CONFIG.DE_POLARITY {1} \
+   CONFIG.HBP {5} \
+   CONFIG.HFP {5} \
+   CONFIG.HSW {20} \
    CONFIG.HSYNC_POLARITY {0} \
-   CONFIG.VBP {2} \
-   CONFIG.VFP {2} \
-   CONFIG.VSW {2} \
+   CONFIG.VBP {4} \
+   CONFIG.VFP {4} \
+   CONFIG.VSW {10} \
    CONFIG.VSYNC_POLARITY {0} \
  ] $theremin_io_ip_0
 
