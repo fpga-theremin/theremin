@@ -12,13 +12,15 @@
 #include <xpseudo_asm.h>
 #include <xil_mmu.h>
 
-pixel_t * SCREEN = nullptr;
-void thereminLCD_setFramebufferAddress(pixel_t * buf) {
+uint16_t * framebufferAddress = nullptr;
+
+void thereminLCD_setFramebufferAddress(uint16_t * buf) {
 	thereminIO_writeReg(THEREMIN_WR_REG_LCD_FRAMEBUFFER_ADDR, (uint32_t)buf);
-	SCREEN = buf;
+	framebufferAddress = buf;
 }
-pixel_t * thereminLCD_getFramebufferAddress() {
-	return SCREEN;
+
+uint16_t * thereminLCD_getFramebufferAddress() {
+	return framebufferAddress;
 }
 
 // Read Theremin IP register value

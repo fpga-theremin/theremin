@@ -1819,11 +1819,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Thu Sep 05 17:36:14 UTC 2019</spirit:value>
+            <spirit:value>Fri Sep 06 10:24:13 UTC 2019</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:2b56ea23</spirit:value>
+            <spirit:value>9:338bf3f1</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -1834,7 +1834,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:2b56ea23</spirit:value>
+            <spirit:value>9:338bf3f1</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -1850,11 +1850,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Thu Sep 05 18:10:41 UTC 2019</spirit:value>
+            <spirit:value>Fri Sep 06 10:43:04 UTC 2019</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:2b56ea23</spirit:value>
+            <spirit:value>9:338bf3f1</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -1869,11 +1869,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Thu Sep 05 17:36:14 UTC 2019</spirit:value>
+            <spirit:value>Fri Sep 06 10:24:13 UTC 2019</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:d03fed6c</spirit:value>
+            <spirit:value>9:fd0cfd6a</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -1889,11 +1889,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Thu Sep 05 18:10:41 UTC 2019</spirit:value>
+            <spirit:value>Fri Sep 06 10:43:04 UTC 2019</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:d03fed6c</spirit:value>
+            <spirit:value>9:fd0cfd6a</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -3343,7 +3343,7 @@
       <spirit:modelParameter spirit:dataType="integer">
         <spirit:name>HBP</spirit:name>
         <spirit:displayName>Hbp</spirit:displayName>
-        <spirit:value spirit:format="long" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.HBP">5</spirit:value>
+        <spirit:value spirit:format="long" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.HBP">46</spirit:value>
       </spirit:modelParameter>
       <spirit:modelParameter spirit:dataType="integer">
         <spirit:name>VBP</spirit:name>
@@ -3353,17 +3353,17 @@
       <spirit:modelParameter spirit:dataType="integer">
         <spirit:name>HSW</spirit:name>
         <spirit:displayName>Hsw</spirit:displayName>
-        <spirit:value spirit:format="long" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.HSW">20</spirit:value>
+        <spirit:value spirit:format="long" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.HSW">29</spirit:value>
       </spirit:modelParameter>
       <spirit:modelParameter spirit:dataType="integer">
         <spirit:name>VSW</spirit:name>
         <spirit:displayName>Vsw</spirit:displayName>
-        <spirit:value spirit:format="long" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.VSW">10</spirit:value>
+        <spirit:value spirit:format="long" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.VSW">5</spirit:value>
       </spirit:modelParameter>
       <spirit:modelParameter spirit:dataType="integer">
         <spirit:name>HFP</spirit:name>
         <spirit:displayName>Hfp</spirit:displayName>
-        <spirit:value spirit:format="long" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.HFP">5</spirit:value>
+        <spirit:value spirit:format="long" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.HFP">4</spirit:value>
       </spirit:modelParameter>
       <spirit:modelParameter spirit:dataType="integer">
         <spirit:name>VFP</spirit:name>
@@ -3373,12 +3373,12 @@
       <spirit:modelParameter spirit:dataType="integer">
         <spirit:name>HSYNC_POLARITY</spirit:name>
         <spirit:displayName>Hsync Polarity</spirit:displayName>
-        <spirit:value spirit:format="long" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.HSYNC_POLARITY">0</spirit:value>
+        <spirit:value spirit:format="long" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.HSYNC_POLARITY">1</spirit:value>
       </spirit:modelParameter>
       <spirit:modelParameter spirit:dataType="integer">
         <spirit:name>VSYNC_POLARITY</spirit:name>
         <spirit:displayName>Vsync Polarity</spirit:displayName>
-        <spirit:value spirit:format="long" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.VSYNC_POLARITY">0</spirit:value>
+        <spirit:value spirit:format="long" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.VSYNC_POLARITY">1</spirit:value>
       </spirit:modelParameter>
       <spirit:modelParameter spirit:dataType="integer">
         <spirit:name>PITCH_PERIOD_BITS</spirit:name>
@@ -3538,107 +3538,107 @@
     <spirit:fileSet>
       <spirit:name>xilinx_anylanguagesynthesis_view_fileset</spirit:name>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/audio_io/hdl/audio_clk_gen.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/audio_io/hdl/audio_clk_gen.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/lcd_controller/hdl/axi3_hp_reader.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/lcd_controller/hdl/axi3_hp_reader.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/theremin_io/hdl/axi4_lite_slave_reg.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/theremin_io/hdl/axi4_lite_slave_reg.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/encoders_board/hdl/button_state_tracker.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/encoders_board/hdl/button_state_tracker.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/encoders_board/hdl/encoder_position_tracker.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/encoders_board/hdl/encoder_position_tracker.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/encoders_board/hdl/encoders_board.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/encoders_board/hdl/encoders_board.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/encoders_board/hdl/encoders_tracker.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/encoders_board/hdl/encoders_tracker.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/audio_io/hdl/i2s_in.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/audio_io/hdl/i2s_in.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/audio_io/hdl/i2s_out.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/audio_io/hdl/i2s_out.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/theremin_sensor/hdl/iir_multistage_dblchannel.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/theremin_sensor/hdl/iir_multistage_dblchannel.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/theremin_sensor/hdl/iserdes_ddr.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/theremin_sensor/hdl/iserdes_ddr.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/lcd_controller/hdl/lcd_clk_gen.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/lcd_controller/hdl/lcd_clk_gen.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/lcd_controller/hdl/lcd_controller.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/lcd_controller/hdl/lcd_controller.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/lcd_controller/hdl/lcd_controller_axi3_dma.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/lcd_controller/hdl/lcd_controller_axi3_dma.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/lcd_controller/hdl/lcd_dma_fifo.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/lcd_controller/hdl/lcd_dma_fifo.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/encoders_board/hdl/mux_debouncer.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/encoders_board/hdl/mux_debouncer.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/theremin_sensor/hdl/oversampling_iserdes.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/theremin_sensor/hdl/oversampling_iserdes.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/theremin_sensor/hdl/oversampling_iserdes_bit_detector.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/theremin_sensor/hdl/oversampling_iserdes_bit_detector.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/theremin_sensor/hdl/oversampling_iserdes_halfperiod_measure.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/theremin_sensor/hdl/oversampling_iserdes_halfperiod_measure.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/theremin_sensor/hdl/oversampling_iserdes_period_measure.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/theremin_sensor/hdl/oversampling_iserdes_period_measure.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/theremin_sensor/hdl/oversampling_iserdes_with_detector.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/theremin_sensor/hdl/oversampling_iserdes_with_detector.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/audio_io/hdl/theremin_audio_io.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/audio_io/hdl/theremin_audio_io.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/theremin_i2c/hdl/theremin_i2c.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/theremin_i2c/hdl/theremin_i2c.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/theremin_sensor/hdl/theremin_oversampling_iserdes_period_measure.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/theremin_sensor/hdl/theremin_oversampling_iserdes_period_measure.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/theremin_pwm/hdl/theremin_pwm.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/theremin_pwm/hdl/theremin_pwm.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/theremin_io/hdl/theremin_io_ip.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/theremin_io/hdl/theremin_io_ip.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
     </spirit:fileSet>
@@ -3653,107 +3653,107 @@
     <spirit:fileSet>
       <spirit:name>xilinx_anylanguagebehavioralsimulation_view_fileset</spirit:name>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/audio_io/hdl/audio_clk_gen.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/audio_io/hdl/audio_clk_gen.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/lcd_controller/hdl/axi3_hp_reader.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/lcd_controller/hdl/axi3_hp_reader.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/theremin_io/hdl/axi4_lite_slave_reg.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/theremin_io/hdl/axi4_lite_slave_reg.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/encoders_board/hdl/button_state_tracker.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/encoders_board/hdl/button_state_tracker.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/encoders_board/hdl/encoder_position_tracker.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/encoders_board/hdl/encoder_position_tracker.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/encoders_board/hdl/encoders_board.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/encoders_board/hdl/encoders_board.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/encoders_board/hdl/encoders_tracker.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/encoders_board/hdl/encoders_tracker.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/audio_io/hdl/i2s_in.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/audio_io/hdl/i2s_in.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/audio_io/hdl/i2s_out.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/audio_io/hdl/i2s_out.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/theremin_sensor/hdl/iir_multistage_dblchannel.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/theremin_sensor/hdl/iir_multistage_dblchannel.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/theremin_sensor/hdl/iserdes_ddr.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/theremin_sensor/hdl/iserdes_ddr.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/lcd_controller/hdl/lcd_clk_gen.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/lcd_controller/hdl/lcd_clk_gen.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/lcd_controller/hdl/lcd_controller.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/lcd_controller/hdl/lcd_controller.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/lcd_controller/hdl/lcd_controller_axi3_dma.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/lcd_controller/hdl/lcd_controller_axi3_dma.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/lcd_controller/hdl/lcd_dma_fifo.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/lcd_controller/hdl/lcd_dma_fifo.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/encoders_board/hdl/mux_debouncer.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/encoders_board/hdl/mux_debouncer.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/theremin_sensor/hdl/oversampling_iserdes.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/theremin_sensor/hdl/oversampling_iserdes.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/theremin_sensor/hdl/oversampling_iserdes_bit_detector.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/theremin_sensor/hdl/oversampling_iserdes_bit_detector.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/theremin_sensor/hdl/oversampling_iserdes_halfperiod_measure.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/theremin_sensor/hdl/oversampling_iserdes_halfperiod_measure.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/theremin_sensor/hdl/oversampling_iserdes_period_measure.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/theremin_sensor/hdl/oversampling_iserdes_period_measure.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/theremin_sensor/hdl/oversampling_iserdes_with_detector.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/theremin_sensor/hdl/oversampling_iserdes_with_detector.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/audio_io/hdl/theremin_audio_io.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/audio_io/hdl/theremin_audio_io.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/theremin_i2c/hdl/theremin_i2c.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/theremin_i2c/hdl/theremin_i2c.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/theremin_sensor/hdl/theremin_oversampling_iserdes_period_measure.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/theremin_sensor/hdl/theremin_oversampling_iserdes_period_measure.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/theremin_pwm/hdl/theremin_pwm.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/theremin_pwm/hdl/theremin_pwm.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>../../ipshared/392b/src/theremin_io/hdl/theremin_io_ip.sv</spirit:name>
+        <spirit:name>../../ipshared/9b94/src/theremin_io/hdl/theremin_io_ip.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
       </spirit:file>
     </spirit:fileSet>
@@ -3786,7 +3786,7 @@
     <spirit:parameter>
       <spirit:name>HBP</spirit:name>
       <spirit:displayName>LCD HBP</spirit:displayName>
-      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.HBP">5</spirit:value>
+      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.HBP">46</spirit:value>
     </spirit:parameter>
     <spirit:parameter>
       <spirit:name>VBP</spirit:name>
@@ -3796,17 +3796,17 @@
     <spirit:parameter>
       <spirit:name>HSW</spirit:name>
       <spirit:displayName>LCD HSW</spirit:displayName>
-      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.HSW">20</spirit:value>
+      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.HSW">29</spirit:value>
     </spirit:parameter>
     <spirit:parameter>
       <spirit:name>VSW</spirit:name>
       <spirit:displayName>LCD VSW</spirit:displayName>
-      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.VSW">10</spirit:value>
+      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.VSW">5</spirit:value>
     </spirit:parameter>
     <spirit:parameter>
       <spirit:name>HFP</spirit:name>
       <spirit:displayName>LCD HFP</spirit:displayName>
-      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.HFP">5</spirit:value>
+      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.HFP">4</spirit:value>
     </spirit:parameter>
     <spirit:parameter>
       <spirit:name>VFP</spirit:name>
@@ -3816,12 +3816,12 @@
     <spirit:parameter>
       <spirit:name>HSYNC_POLARITY</spirit:name>
       <spirit:displayName>LCD HSYNC Polarity</spirit:displayName>
-      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.HSYNC_POLARITY">0</spirit:value>
+      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.HSYNC_POLARITY">1</spirit:value>
     </spirit:parameter>
     <spirit:parameter>
       <spirit:name>VSYNC_POLARITY</spirit:name>
       <spirit:displayName>LCD VSYNC Polarity</spirit:displayName>
-      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.VSYNC_POLARITY">0</spirit:value>
+      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.VSYNC_POLARITY">1</spirit:value>
     </spirit:parameter>
     <spirit:parameter>
       <spirit:name>PITCH_PERIOD_BITS</spirit:name>
@@ -3947,7 +3947,7 @@
     <xilinx:coreExtensions>
       <xilinx:displayName>theremin_io_ip_v1_0</xilinx:displayName>
       <xilinx:definitionSource>package_project</xilinx:definitionSource>
-      <xilinx:coreRevision>38</xilinx:coreRevision>
+      <xilinx:coreRevision>41</xilinx:coreRevision>
       <xilinx:tags>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@4111dbb1_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo</xilinx:tag>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@112089c3_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo</xilinx:tag>
@@ -4513,6 +4513,54 @@
         <xilinx:tag xilinx:name="ui.data.coregen.dd@6d7ddeab_ARCHIVE_LOCATION">c:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@59b81c72_ARCHIVE_LOCATION">c:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
         <xilinx:tag xilinx:name="ui.data.coregen.dd@6cad4d99_ARCHIVE_LOCATION">c:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@1822ed70_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@70f6057f_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@7d37bf6b_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@8e46a3d_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@6594eb4b_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@3c498388_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@11aa855d_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@1e04e9a1_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@176a59ca_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@7f1276ba_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@29874492_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@7e2b447_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@4e0261bd_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@1909b674_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@5f4763ac_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@476e945a_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@205a54a4_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@297951c1_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@41d8e860_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@753f9d12_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@6bbf8cf0_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@a1e4863_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@4e31d284_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@3952b888_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@3cfbd7d0_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@4d0f2a_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@290a5040_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@6878ab06_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@db1467e_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@444d2779_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@5e3e0ac1_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@162036cd_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2120de41_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@7c123ed2_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@309f2526_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@6274721a_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@17692242_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@5a6ca13a_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2170956c_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@f761ed1_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2ca16e32_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@1e74ef7d_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@5ccf6652_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@6a501ae3_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@2a7dad03_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@301875c5_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@6c96c6d5_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
+        <xilinx:tag xilinx:name="ui.data.coregen.dd@1a6b10f8_ARCHIVE_LOCATION">d:/projects/fpga/theremin-source/fpga/ip_repo/theremin_ip</xilinx:tag>
       </xilinx:tags>
       <xilinx:configElementInfos>
         <xilinx:configElementInfo xilinx:referenceId="BUSIFPARAM_VALUE.CLK_DELAY.CLK_DOMAIN" xilinx:valueSource="ip_propagated" xilinx:valuePermission="bd_and_user"/>
@@ -4600,7 +4648,7 @@
       <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="25df1059"/>
       <xilinx:checksum xilinx:scope="addressSpaces" xilinx:value="f8498d1e"/>
       <xilinx:checksum xilinx:scope="memoryMaps" xilinx:value="84ebdb9b"/>
-      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="6f3842a7"/>
+      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="68f2be76"/>
       <xilinx:checksum xilinx:scope="ports" xilinx:value="e12ebb4b"/>
       <xilinx:checksum xilinx:scope="hdlParameters" xilinx:value="e3971366"/>
       <xilinx:checksum xilinx:scope="parameters" xilinx:value="2eb1ef93"/>

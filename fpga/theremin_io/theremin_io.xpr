@@ -3,7 +3,7 @@
 <!--                                                         -->
 <!-- Copyright 1986-2019 Xilinx, Inc. All Rights Reserved.   -->
 
-<Project Version="7" Minor="40" Path="C:/projects/fpga/theremin-source/fpga/theremin_io/theremin_io.xpr">
+<Project Version="7" Minor="40" Path="D:/projects/fpga/theremin-source/fpga/theremin_io/theremin_io.xpr">
   <DefaultLaunch Dir="$PRUNDIR"/>
   <Configuration>
     <Option Name="Id" Val="13c10d7df027466591f7c3f8c27958f2"/>
@@ -34,7 +34,7 @@
     <Option Name="DSAVendor" Val="xilinx"/>
     <Option Name="DSABoardId" Val="cora-z7-10"/>
     <Option Name="DSANumComputeUnits" Val="60"/>
-    <Option Name="WTXSimLaunchSim" Val="37"/>
+    <Option Name="WTXSimLaunchSim" Val="40"/>
     <Option Name="WTModelSimLaunchSim" Val="0"/>
     <Option Name="WTQuestaLaunchSim" Val="0"/>
     <Option Name="WTIesLaunchSim" Val="0"/>
@@ -260,14 +260,14 @@
     </FileSet>
     <FileSet Name="sim_1" Type="SimulationSrcs" RelSrcDir="$PSRCDIR/sim_1">
       <Filter Type="Srcs"/>
-      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/theremin_pwm/tb/theremin_pwm_tb.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/lcd_controller/tb/lcd_clk_gen_tb.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/lcd_controller/tb/lcd_controller_axi3_dma_tb.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/theremin_pwm/tb/theremin_pwm_tb.sv">
         <FileInfo>
           <Attr Name="AutoDisabled" Val="1"/>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -275,7 +275,7 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/lcd_controller/tb/lcd_clk_gen_tb.sv">
+      <File Path="$PPRDIR/../ip_repo/theremin_ip/src/lcd_controller/tb/lcd_controller_axi3_dma_tb.sv">
         <FileInfo>
           <Attr Name="AutoDisabled" Val="1"/>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -413,7 +413,7 @@
       </File>
       <Config>
         <Option Name="DesignMode" Val="RTL"/>
-        <Option Name="TopModule" Val="theremin_pwm_tb"/>
+        <Option Name="TopModule" Val="lcd_clk_gen_tb"/>
         <Option Name="TopLib" Val="xil_defaultlib"/>
         <Option Name="TransportPathDelay" Val="0"/>
         <Option Name="TransportIntDelay" Val="0"/>

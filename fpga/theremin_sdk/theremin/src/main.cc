@@ -112,28 +112,30 @@ int main()
 	usleep(1000);
 
 	lcd_init();
+    lcd_fill_rect(0, 0, SCREEN_DX, SCREEN_DY, 0x0111);
     lcd_fill_rect(6, 5, 120, 50, 0x0f84);
     lcd_fill_rect(5, 55, 121, 100, 0x058e);
 
+    lcd_fill_rect(400, 100, 700, 150, 0x0000);
+    lcd_fill_rect(400, 200, 700, 250, 0x0f00);
+    lcd_fill_rect(400, 300, 700, 350, 0x00f0);
+    lcd_fill_rect(400, 400, 700, 450, 0x000f);
 
     for (int x = 50; x < SCREEN_DX; x+=5) {
         lcd_draw_line(5, 5, x, SCREEN_DY-1, 0x305020);
     }
 
     lcd_draw_text(BIG_FONT, 100, 50, 0xff0, "Hello world! BIG", -32768);
+    lcd_draw_text(BIG_FONT, 600, 50, 0xfff, "BIG WHITE", -32768);
     lcd_draw_text(MEDIUM_FONT, 10, 10, 0x0f0, "Hello world! MEDIUM", -32768);
     lcd_draw_text(SMALL_FONT, 10, 200, 0x0ff, "Hello world! SMALL", -32768);
 
-    lcd_draw_text(BIG_FONT, 100, 80, 0xfff, "WWWwww", -32768);
+    lcd_draw_text(MEDIUM_FONT, 460, 110, 0x000, "MEDIUM black", -32768);
+
+    lcd_draw_text(BIG_FONT, 100, 80, 0xfff, "Cora Z7 FPGA Theremin Project", -32768);
 
     lcd_draw_rect(400, 50, 500, 100, 5, CL_RED, CL_YELLOW);
     lcd_draw_rect(450, 70, 550, 120, 7, CL_BLUE, CL_TRANSPARENT);
-
-    for (int i = 0; i < SCREEN_DX; i++) {
-    	SCREEN[i] = 0xff0;
-    	SCREEN[i+SCREEN_DX] = 0xf0f;
-    	SCREEN[i+SCREEN_DX*2] = 0x0ff;
-    }
 
     lcd_flush();
 	//thereminIO_flushCache(framebuffer, SCREEN_DX*SCREEN_DX*2);
@@ -157,15 +159,25 @@ int main()
 	uint32_t prevEnc2 = thereminIO_readReg(THEREMIN_RD_REG_ENCODER_2);
 	uint32_t prevEncRaw = 0; //thereminIO_readReg(10) & 0xffff;
 
+
+	thereminIO_writeReg(0*4, 0x00000007);
+
 	int phase = 0;
-	for (;;) {
+	uint32_t counter = 0;
+	for (;;counter++) {
 		//print("readreg: ");
 		uint32_t rowIndex = thereminLCD_getCurrentRowIndex();
 //		xil_printf("Row index=%6d   irqs=%d\r\n",
 //				rowIndex, 0 //irq_counter
 //				);
 //		print("..");
-		usleep(1000000);
+		usleep(10000);
+
+		int ax = counter * 3 % 751;
+		uint16_t acolor = ((counter / 3) & 0xf) | ((counter * 5)&0x0f0) | ((counter * 31)&0xf00);
+		lcd_fill_rect(ax, 400, ax + 50, 450, acolor);
+		lcd_flush();
+
 //		print(".\r\n");
 		phase = (phase + 1)&7;
 		//setLeds(phase);
@@ -189,25 +201,29 @@ int main()
 //			prevEnc2 = newEnc2;
 //			prevEncRaw = newEncRaw;
 //		}
-		uint32_t enc = readEncodersManual();
-		xil_printf("Encoders \t%4x\r\n", enc);
+		//uint32_t enc = readEncodersManual();
+		//xil_printf("Encoders \t%4x\r\n", enc);
 		uint32_t s = thereminIO_readReg(0);
+		uint32_t p = thereminIO_readReg(10*4);
 		int x = (s>>16)&0x3ff;
 		int y = (s)&0x3ff;
 		int vsync = (s>>15)&1;
 		int hsync = (s>>14)&1;
 		int de = (s>>13)&1;
-		int expectedDE = ((x < 800) && (y < 480)) ? 1 : 0;
+		int expectedDE = ((x < 800) && (y < 480)) ? 0 : 1;
 		int expectedVSYNC = (y >= 480+2 && y < 480+2+2) ? 0 : 1;
 		int expectedHSYNC = (x >= 800+2 && x < 800+2+10) ? 0 : 1;
-		if (de != expectedDE || vsync != expectedVSYNC || hsync != expectedHSYNC)
-			xil_printf("LCD controls: VSYNC=%d (%d)\t HSYNC=%d (%d)\t DE=%d (%d)\t x=%d\t y=%d\r\n",
+		//if (de != expectedDE || vsync != expectedVSYNC || hsync != expectedHSYNC)
+		if (1)
+			xil_printf("LCD controls: VSYNC=%d (%d)\t HSYNC=%d (%d)\t DE=%d (%d)\t x=%d\t y=%d  \t px=%04x   \tmodes=%x\r\n",
 				vsync, expectedVSYNC,
 				hsync, expectedHSYNC,
 				de, expectedDE,
 				//(s>>11)&1, (s>>10)&1,
 				x,
-				y
+				y,
+				p&0xffff,
+				(p>>16)&0xf
 				);
 	}
 	return 0;

@@ -5,8 +5,10 @@
 #include "../../ip_repo/theremin_ip/drivers/theremin_ip/src/theremin_ip.h"
 #else
 #include "theremin_ip.h"
+#include <sleep.h>
 #endif
 
+#include <string.h>
 #include "lcd_screen.h"
 
 #define CHECK_RECT_ARGS() \
@@ -33,25 +35,85 @@
 
 #define ROW_BYTES (SCREEN_DX*2)
 
-static uint16_t framebuffer[SCREEN_DX*SCREEN_DY + 64] SCREEN_ALIGN ;
+pixel_t * SCREEN = nullptr;
+
+static pixel_t lcd_front_buffer[SCREEN_DX*SCREEN_DY + 64] SCREEN_ALIGN ;
+static pixel_t lcd_back_buffer[SCREEN_DX*SCREEN_DY + 64] SCREEN_ALIGN ;
+
 static uint8_t dirty_row_flag[SCREEN_DX];
 
+static void lcd_flush_front_buffer() {
+    uint16_t * prow = lcd_front_buffer;
+    for (int i = 0; i < SCREEN_DY; i++) {
+		thereminIO_flushCache(prow, ROW_BYTES);
+		dirty_row_flag[i] = 0;
+        prow += SCREEN_DX;
+    }
+}
+
 void lcd_init() {
-    for (int i = 0; i < SCREEN_DX; i++)
-        dirty_row_flag[i] = 0;
-    thereminLCD_setFramebufferAddress(framebuffer);
-    lcd_fill_rect(0, 0, SCREEN_DX, SCREEN_DY, 0x0000);
-    lcd_flush();
+	memset(dirty_row_flag, 0, SCREEN_DX);
+	memset(lcd_front_buffer, 0, SCREEN_DX*SCREEN_DY*sizeof(pixel_t));
+	memset(lcd_back_buffer, 0, SCREEN_DX*SCREEN_DY*sizeof(pixel_t));
+	lcd_flush_front_buffer();
+    thereminLCD_setFramebufferAddress(lcd_front_buffer);
+    SCREEN = lcd_back_buffer;
+}
+
+// WARNING: update this constant if hardware VBP/VSW/VFP is changed!!!
+#define VBLANK_ROWS 11
+// Duration of single row refresh in microseconds
+// WARNING: update if PXCLK or timings are changed!!!
+#define ROW_MICROS 27
+
+static int lcd_current_row() {
+    uint32_t n = thereminLCD_getCurrentRowIndex();
+    if (n > SCREEN_DY + 5) {
+    	return static_cast<int>(n - (SCREEN_DY + VBLANK_ROWS));
+    }
+	return static_cast<int>(n);
 }
 
 void lcd_flush() {
-    uint16_t * prow = SCREEN;
+    uint16_t * srcrow = lcd_back_buffer;
+    uint16_t * dstrow = lcd_front_buffer;
+    int minRow = -1;
+    int maxRow = -1;
     for (int i = 0; i < SCREEN_DY; i++) {
-        //if (dirty_row_flag[i]) {
-            thereminIO_flushCache(prow, ROW_BYTES);
+        if (dirty_row_flag[i]) {
+        	if (minRow == -1)
+        		minRow = i;
+        	maxRow = i;
+        }
+    }
+    if (minRow < 0)
+    	return; // nothing to flush
+    int currentRow = lcd_current_row();
+#ifdef THEREMIN_SIMULATOR
+    bool needSyncWait = false;
+#else
+    bool needSyncWait = (currentRow >= minRow - 3 && currentRow <= maxRow + 2);
+#endif
+    for (int i = 0; i < SCREEN_DY; i++) {
+        if (dirty_row_flag[i]) {
+#ifndef THEREMIN_SIMULATOR
+        	if (needSyncWait) {
+        		for (;;) {
+        			currentRow = lcd_current_row();
+        			if (currentRow >= i + 2)
+        				break;
+        			int diff = (i+2) - currentRow + 1;
+        			if (diff > 0)
+        				usleep(diff * ROW_MICROS);
+        		}
+        	}
+#endif
+        	memcpy(dstrow, srcrow, sizeof(pixel_t)*SCREEN_DX);
+            thereminIO_flushCache(dstrow, ROW_BYTES);
             dirty_row_flag[i] = 0;
-        //}
-        prow += SCREEN_DX;
+        }
+        srcrow += SCREEN_DX;
+        dstrow += SCREEN_DX;
     }
 }
 

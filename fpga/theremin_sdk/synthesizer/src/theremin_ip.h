@@ -5,9 +5,6 @@
 #include "xparameters.h"
 #include <stdint.h>
 
-#define SCREEN_DX 800
-#define SCREEN_DY 480
-
 #define THEREMIN_REG_AUDIO_STATUS_INTERRUPT_ENABLED_FLAG 0x80000000
 #define THEREMIN_REG_AUDIO_STATUS_INTERRUPT_PENDING_FLAG 0x40000000
 #define THEREMIN_REG_STATUS_IIR_STAGES_MASK        0x38000000
@@ -24,6 +21,7 @@ enum reg_rd_addr_t {
     THEREMIN_RD_REG_ENCODER_2 = 7*4,
     THEREMIN_RD_REG_AUDIO_I2C = 8*4,
     THEREMIN_RD_REG_TOUCH_I2C = 9*4,
+    THEREMIN_RD_REG_LCD_CONTROL = 10*4,
     THEREMIN_RD_REG_AUDIO_STATUS = 12*4
 };
 
@@ -37,6 +35,7 @@ enum reg_wr_addr_t {
     THEREMIN_WR_REG_PHONES_OUT_R = 7*4,
     THEREMIN_WR_REG_AUDIO_I2C = 8*4,
     THEREMIN_WR_REG_TOUCH_I2C = 9*4,
+    THEREMIN_WR_REG_LCD_CONTROL = 10*4,
     THEREMIN_WR_REG_AUDIO_STATUS = 12*4
 };
 
@@ -108,16 +107,11 @@ uint32_t thereminSensor_readVolumePeriodFiltered();
     LCD Controller.
 */
 
-typedef uint16_t pixel_t;
-
-// screen buffer SCREEN_DX * SCREEN_DY
-extern pixel_t * SCREEN;
-
 
 // Get LCD framebuffer start address
-pixel_t * thereminLCD_getFramebufferAddress();
+uint16_t * thereminLCD_getFramebufferAddress();
 // Set LCD framebuffer start address (0 to disable)
-void thereminLCD_setFramebufferAddress(pixel_t * address);
+void thereminLCD_setFramebufferAddress(uint16_t * address);
 
 // set brightness of LCD backlight (0..255)
 void thereminIO_setBacklightBrightness(uint32_t brightness);

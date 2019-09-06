@@ -1,8 +1,9 @@
 /** Standard fonts */
 #include "bitmap_fonts.h"
 
+//#define SCREEN_DX 800
 
-#if SCREEN_DX > 800
+#if 1 //SCREEN_DX > 1024
 /** Font: SMALL_FONT   face:Arial size:18 weight:400 italic:0 proportional length:2276 bytes*/
 ALIGN_4_PREFIX static const uint8_t SMALL_FONT_data[] ALIGN_4_ATTRIBUTE = {
     0x12, 0x04, 0x20, 0x7e, 0x0f, 0x00, 0x90, 0x01, 0x32, 0x00, 0x34, 0x00, 0x39, 0x00, 0x3c, 0x00, 

@@ -11,6 +11,12 @@
 #define SCREEN_DY 480
 #endif
 
+typedef uint16_t pixel_t;
+
+extern pixel_t * SCREEN;
+
+
+
 #ifdef _WIN32
 #define ALIGN_4_PREFIX  __declspec( align( 4 ) )
 #define ALIGN_4_ATTRIBUTE

@@ -1,18 +1,20 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineer: Vadim Lopatin 
 // 
 // Create Date: 08/06/2019 03:01:06 PM
 // Design Name: 
 // Module Name: lcd_clk_gen
-// Project Name: 
-// Target Devices: 
+// Project Name: FPGA Theremin
+// Target Devices: Xilinx Series 7 FPGA
 // Tool Versions: 
-// Description: 
-// 
+// Description:
+//      Clock generator for LCD screen. 
+//      HSYNC, VSYNC, DE are active 1; invert at upper level if needed
 // Dependencies: 
-// 
+//      none
+//
 // Revision:
 // Revision 0.01 - File Created
 // Additional Comments:
@@ -30,8 +32,6 @@ module lcd_clk_gen
     parameter integer VSW = 3,
     parameter integer HFP = 2,
     parameter integer VFP = 2,
-    parameter integer HSYNC_POLARITY = 0,
-    parameter integer VSYNC_POLARITY = 0,
     parameter integer X_BITS = ( (HPIXELS+HBP+HSW+HFP) <= 256 ? 8
                                : (HPIXELS+HBP+HSW+HFP) <= 512 ? 9
                                : (HPIXELS+HBP+HSW+HFP) <= 1024 ? 10
@@ -45,9 +45,9 @@ module lcd_clk_gen
     input logic CLK_PXCLK,
     input logic RESET,
     
-    output logic HSYNC,
-    output logic VSYNC,
-    output logic DE,
+    output logic HSYNC, // active 1
+    output logic VSYNC, // active 1
+    output logic DE, // active 1
     output logic [X_BITS-1:0] X,
     output logic [Y_BITS-1:0] Y,
     // 1 for one cycle near before next frame begin
@@ -125,19 +125,19 @@ always_ff @(posedge CLK_PXCLK)
 // hsync
 always_ff @(posedge CLK_PXCLK)
     if (RESET)
-        hsync_reg <= (HSYNC_POLARITY == 0 ? 1'b1 : 1'b0);
+        hsync_reg <= 1'b0;
     else
-        hsync_reg <= (x_is_sync_start) ? (HSYNC_POLARITY == 0 ? 1'b0 : 1'b1)
-                   : (x_is_sync_end)   ? (HSYNC_POLARITY == 0 ? 1'b1 : 1'b0)
+        hsync_reg <= (x_is_sync_start) ? (1'b1)
+                   : (x_is_sync_end)   ? (1'b0)
                    : hsync_reg;
 
 // vsync
 always_ff @(posedge CLK_PXCLK)
     if (RESET)
-        vsync_reg <= (VSYNC_POLARITY == 0 ? 1'b1 : 1'b0);
+        vsync_reg <= 1'b0;
     else
-        vsync_reg <= (y_is_sync_start & x_is_last_col) ? (VSYNC_POLARITY == 0 ? 1'b0 : 1'b1)
-                   : (y_is_sync_end & x_is_last_col)   ? (VSYNC_POLARITY == 0 ? 1'b1 : 1'b0)
+        vsync_reg <= (y_is_sync_start & x_is_last_col) ? (1'b1)
+                   : (y_is_sync_end & x_is_last_col)   ? (1'b0)
                    : vsync_reg;
 
 always_ff @(posedge CLK_PXCLK) begin
@@ -154,7 +154,7 @@ always_ff @(posedge CLK_PXCLK) begin
                  : (x_is_last_visible_pixel & y_is_last_row)           ? 1'b1
                  :                                                       vde_reg;
         // calculate DE
-        de_reg <=  (x_is_last_visible_pixel) ? 1'b0
+        de_reg  <= (x_is_last_visible_pixel) ? 1'b0
                  : (x_is_last_col)           ? (vde_reg | y_is_last_row)
                  :                             de_reg;
     end

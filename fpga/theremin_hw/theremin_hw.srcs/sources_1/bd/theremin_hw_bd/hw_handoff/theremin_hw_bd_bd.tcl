@@ -707,6 +707,7 @@ proc create_root_design { parentCell } {
   # Create instance: ps7_0_axi_periph, and set properties
   set ps7_0_axi_periph [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 ps7_0_axi_periph ]
   set_property -dict [ list \
+   CONFIG.ENABLE_ADVANCED_OPTIONS {0} \
    CONFIG.NUM_MI {1} \
  ] $ps7_0_axi_periph
 
@@ -718,14 +719,14 @@ proc create_root_design { parentCell } {
   set_property -dict [ list \
    CONFIG.BURST_SIZE {8} \
    CONFIG.DE_POLARITY {1} \
-   CONFIG.HBP {5} \
-   CONFIG.HFP {5} \
-   CONFIG.HSW {20} \
-   CONFIG.HSYNC_POLARITY {0} \
+   CONFIG.HBP {46} \
+   CONFIG.HFP {4} \
+   CONFIG.HSW {29} \
+   CONFIG.HSYNC_POLARITY {1} \
    CONFIG.VBP {4} \
    CONFIG.VFP {4} \
-   CONFIG.VSW {10} \
-   CONFIG.VSYNC_POLARITY {0} \
+   CONFIG.VSW {5} \
+   CONFIG.VSYNC_POLARITY {1} \
  ] $theremin_io_ip_0
 
   # Create interface connections

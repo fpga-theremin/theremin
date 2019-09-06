@@ -4,6 +4,7 @@
 #include <QMouseEvent>
 #include "codeutils.h"
 #include "../../theremin_sdk/common/src/noteutil.h"
+#include "../../theremin_sdk/theremin/src/lcd_screen.h"
 
 #define FRAME_OFFSET 16
 #define SENSOR_HEIGHT (SCREEN_DY / 3)

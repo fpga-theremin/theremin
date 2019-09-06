@@ -1,5 +1,6 @@
 #include "lcd_simulator.h"
 #include "simulator_impl.h"
+#include "../../theremin_sdk/theremin/src/lcd_screen.h"
 
 #include <QPainter>
 #include <QDebug>

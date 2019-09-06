@@ -48,7 +48,7 @@
 
 
 // IP VLNV: coolreader_org:user:theremin_io_ip:1.0
-// IP Revision: 38
+// IP Revision: 41
 
 `timescale 1ns/1ps
 
@@ -349,14 +349,14 @@ input wire m00_axi_aresetn;
     .BURST_SIZE(8),
     .HPIXELS(800),
     .VPIXELS(480),
-    .HBP(5),
+    .HBP(46),
     .VBP(4),
-    .HSW(20),
-    .VSW(10),
-    .HFP(5),
+    .HSW(29),
+    .VSW(5),
+    .HFP(4),
     .VFP(4),
-    .HSYNC_POLARITY(0),
-    .VSYNC_POLARITY(0),
+    .HSYNC_POLARITY(1),
+    .VSYNC_POLARITY(1),
     .PITCH_PERIOD_BITS(16),
     .VOLUME_PERIOD_BITS(16),
     .FILTER_OUT_BITS(32),

@@ -1,16 +1,17 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineer: Vadim Lopatin
 // 
 // Create Date: 08/08/2019 04:06:41 PM
 // Design Name: 
 // Module Name: lcd_controller_axi3_dma
-// Project Name: 
-// Target Devices: 
+// Project Name: FPGA Theremin
+// Target Devices: Xilinx Series 7 FPGA
 // Tool Versions: 
 // Description: 
-// 
+//      LCD Controller with AXI3 master DMA 
+//      Note: HSYNC, VSYNC, DE are active 1; invert at upper level if needed
 // Dependencies: 
 // 
 // Revision:
@@ -31,8 +32,6 @@ module lcd_controller_axi3_dma #(
     parameter integer VSW = 3,
     parameter integer HFP = 2,
     parameter integer VFP = 2,
-    parameter integer HSYNC_POLARITY = 0,
-    parameter integer VSYNC_POLARITY = 0,
     parameter integer X_BITS = ( (HPIXELS+HBP+HSW+HFP) <= 256 ? 8
                                : (HPIXELS+HBP+HSW+HFP) <= 512 ? 9
                                : (HPIXELS+HBP+HSW+HFP) <= 1024 ? 10
@@ -110,9 +109,7 @@ lcd_controller
     .HSW(HSW),
     .VSW(VSW),
     .HFP(HFP),
-    .VFP(VFP),
-    .HSYNC_POLARITY(HSYNC_POLARITY),
-    .VSYNC_POLARITY(VSYNC_POLARITY)
+    .VFP(VFP)
 )
 lcd_controller_inst
 (

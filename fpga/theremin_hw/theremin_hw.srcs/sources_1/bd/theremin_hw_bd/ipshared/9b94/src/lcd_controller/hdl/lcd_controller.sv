@@ -1,16 +1,17 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineer: Vadim Lopatin 
 // 
 // Create Date: 08/08/2019 12:36:31 PM
 // Design Name: 
 // Module Name: lcd_controller
-// Project Name: 
-// Target Devices: 
+// Project Name: FPGA Theremin
+// Target Devices: Xilinx Series 7 FPGA
 // Tool Versions: 
 // Description: 
-// 
+//      LCD Controller core 
+//      Note: HSYNC, VSYNC, DE are active 1; invert at upper level if needed
 // Dependencies: 
 // 
 // Revision:
@@ -32,10 +33,6 @@ module lcd_controller
     parameter integer VSW = 3,
     parameter integer HFP = 2,
     parameter integer VFP = 2,
-    parameter integer HSYNC_POLARITY = 0,
-    parameter integer VSYNC_POLARITY = 0,
-    parameter integer DE_POLARITY = 0,
-    parameter integer PXCLK_INV = 0,
     parameter integer X_BITS = ( (HPIXELS+HBP+HSW+HFP) <= 256 ? 8
                                : (HPIXELS+HBP+HSW+HFP) <= 512 ? 9
                                : (HPIXELS+HBP+HSW+HFP) <= 1024 ? 10
@@ -126,9 +123,7 @@ lcd_clk_gen
     .HSW(HSW),
     .VSW(VSW),
     .HFP(HFP),
-    .VFP(VFP),
-    .HSYNC_POLARITY(HSYNC_POLARITY),
-    .VSYNC_POLARITY(VSYNC_POLARITY)
+    .VFP(VFP)
 ) lcd_clk_gen_inst
 (
     .CLK_PXCLK,

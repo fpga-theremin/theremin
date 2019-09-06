@@ -2,6 +2,7 @@
 #include "simulator_impl.h"
 #include <QTime>
 #include "math.h"
+#include "../../theremin_sdk/theremin/src/lcd_screen.h"
 
 
 extern std::mutex audio_sim_mutex;
@@ -186,16 +187,16 @@ uint32_t thereminAudio_readLineInR() {
 
 
 // screen buffer SCREEN_DX * SCREEN_DY
-pixel_t * SCREEN = nullptr;
+pixel_t * frameBuffer = nullptr;
 
 
 // Get LCD framebuffer start address
 pixel_t * thereminLCD_getFramebufferAddress() {
-    return SCREEN;
+    return frameBuffer;
 }
 // Set LCD framebuffer start address (0 to disable)
 void thereminLCD_setFramebufferAddress(pixel_t * address) {
-    SCREEN = address;
+    frameBuffer = address;
 }
 
 static uint32_t screen_backlight = 255;

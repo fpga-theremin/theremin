@@ -1,11 +1,3 @@
-
-/*
-    PWM_REG[31:20] led1 r,g,b
-    PWM_REG[19:8] led0 r,g,b
-    PWM_REG[7:0] LCD backlight brightness
-*/
-
-
 module theremin_io_ip #
 (
     // Users to add parameters here
@@ -454,15 +446,28 @@ always_comb G <= lcd_pixel_data[7:4];
 always_comb B <= lcd_pixel_data[3:0];
 
 
+
+//====================================================
+// Convert SYNC polarity
+//logic hsync_pol_reg;
+//logic vsync_pol_reg;
+//logic de_pol_reg;
+//logic pxclk_pol_reg;
+
+logic hsync;
+logic vsync;
+logic de;
+always_comb HSYNC <= HSYNC_POLARITY ? hsync : ~hsync;
+always_comb VSYNC <= VSYNC_POLARITY ? vsync : ~vsync;
+always_comb DE <= DE_POLARITY ? de : ~de;
 always_comb PXCLK <= PXCLK_INV ? ~CLK_PXCLK : CLK_PXCLK;
+//====================================================
 
 // 1 for LCD side underflow - no data for pixel provided by DMA
 logic DMA_FIFO_RDERR;
 // 1 for DMA side overflow - buffer full when trying to write data to FIFO
 logic DMA_FIFO_WRERR;
 
-logic de_in;
-assign DE = DE_POLARITY ? de_in : ~de_in;
 
 lcd_controller_axi3_dma #(
     // burst size for single DMA read request: on single DMA_START request,  BURST_SIZE words will be written to FIFO via a sequence of DMA_RD_DATA_VALID
@@ -474,9 +479,7 @@ lcd_controller_axi3_dma #(
     .HSW(HSW),
     .VSW(VSW),
     .HFP(HFP),
-    .VFP(VFP),
-    .HSYNC_POLARITY(HSYNC_POLARITY),
-    .VSYNC_POLARITY(VSYNC_POLARITY)
+    .VFP(VFP)
 )
 lcd_controller_axi3_dma_inst
 (
@@ -489,11 +492,11 @@ lcd_controller_axi3_dma_inst
     // pixel clock
     .CLK_PXCLK,
     // horizontal sync
-    .HSYNC,
+    .HSYNC(hsync),
     // vertical sync
-    .VSYNC,
+    .VSYNC(vsync),
     // data enable
-    .DE(de_in),
+    .DE(de),
     // pixel value
     .PIXEL_DATA(lcd_pixel_data),
     
@@ -977,7 +980,9 @@ always_ff @(posedge m00_axi_aclk) begin
         encoders_addr <= 'b0;
     end else if (REG_WREN) begin
         case (REG_WR_ADDR)
-            WR_REG_STATUS: IIR_MAX_STAGE <= REG_WR_DATA[29:27]; // 4 stages
+            WR_REG_STATUS: begin
+                        IIR_MAX_STAGE <= REG_WR_DATA[29:27]; // 4 stages
+                    end
             WR_REG_LCD_FRAMEBUFFER_ADDR: lcd_buffer_start_address_reg <= REG_WR_DATA[C_S00_AXI_DATA_WIDTH-1:2];
             WR_REG_PWM: begin
                     lcd_backlight_brightness_reg <= REG_WR_DATA[7:0];
