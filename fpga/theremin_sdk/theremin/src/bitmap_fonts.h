@@ -6,9 +6,11 @@
 extern "C" {
 #endif
 
+extern const BitmapFont * XSMALL_FONT;
 extern const BitmapFont * SMALL_FONT;
 extern const BitmapFont * MEDIUM_FONT;
-extern const BitmapFont * BIG_FONT;
+extern const BitmapFont * LARGE_FONT;
+extern const BitmapFont * XLARGE_FONT;
 
 #ifdef __cplusplus
 }

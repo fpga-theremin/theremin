@@ -125,14 +125,18 @@ int main()
         lcd_draw_line(5, 5, x, SCREEN_DY-1, 0x305020);
     }
 
-    lcd_draw_text(BIG_FONT, 100, 50, 0xff0, "Hello world! BIG", -32768);
-    lcd_draw_text(BIG_FONT, 600, 50, 0xfff, "BIG WHITE", -32768);
-    lcd_draw_text(MEDIUM_FONT, 10, 10, 0x0f0, "Hello world! MEDIUM", -32768);
-    lcd_draw_text(SMALL_FONT, 10, 200, 0x0ff, "Hello world! SMALL", -32768);
+    lcd_draw_text(XSMALL_FONT, 10, 100, 0x0ff, "Hello world! XSMALL 0123456789", -32768);
+    lcd_draw_text(SMALL_FONT,  10, 150, 0x0ff, "Hello world! SMALL 0123456789", -32768);
+    lcd_draw_text(MEDIUM_FONT, 10, 200, 0x0ff, "Hello world! MEDIUM  0123456789", -32768);
+    lcd_draw_text(LARGE_FONT,  10, 250, 0x0ff, "Hello world! LARGE", -32768);
+    lcd_draw_text(XLARGE_FONT, 10, 300, 0x0ff, "Hello world! XLARGE", -32768);
+
+    lcd_draw_text(LARGE_FONT, 600, 50, 0xfff, "LARGE WHITE", -32768);
+    lcd_draw_text(XLARGE_FONT, 600, 150, 0xfff, "XLARGE WHITE", -32768);
 
     lcd_draw_text(MEDIUM_FONT, 460, 110, 0x000, "MEDIUM black", -32768);
 
-    lcd_draw_text(BIG_FONT, 100, 80, 0xfff, "Cora Z7 FPGA Theremin Project", -32768);
+    lcd_draw_text(LARGE_FONT, 100, 80, 0xfff, "Cora Z7 FPGA Theremin Project", -32768);
 
     lcd_draw_rect(400, 50, 500, 100, 5, CL_RED, CL_YELLOW);
     lcd_draw_rect(450, 70, 550, 120, 7, CL_BLUE, CL_TRANSPARENT);

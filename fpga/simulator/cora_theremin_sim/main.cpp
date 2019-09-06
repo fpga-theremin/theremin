@@ -20,11 +20,13 @@ int main(int argc, char *argv[])
         lcd_draw_line(5, 5, x, SCREEN_DY-1, 0x305020);
     }
 
-    lcd_draw_text(BIG_FONT, 100, 50, 0xff0, "Hello world! BIG", -32768);
+    lcd_draw_text(LARGE_FONT, 100, 50, 0xff0, "Hello world! LARGE", -32768);
     lcd_draw_text(MEDIUM_FONT, 10, 10, 0x0f0, "Hello world! MEDIUM", -32768);
-    lcd_draw_text(SMALL_FONT, 10, 200, 0x0ff, "Hello world! SMALL", -32768);
+    lcd_draw_text(SMALL_FONT, 10, 200, 0x8f4, "Hello world! SMALL 1234567890", -32768);
+    lcd_draw_text(XSMALL_FONT, 10, 250, 0x8f8, "Hello world! XSMALL 1234567890", -32768);
+    lcd_draw_text(XLARGE_FONT, 300, 350, 0x0f8, "Hello world! XLARGE", -32768);
 
-    lcd_draw_text(BIG_FONT, 100, 80, 0xfff, "WWWwww", -32768);
+    lcd_draw_text(LARGE_FONT, 100, 80, 0xfff, "WWWwww", -32768);
 
     lcd_draw_rect(400, 50, 500, 100, 5, CL_RED, CL_YELLOW);
     lcd_draw_rect(450, 70, 550, 120, 7, CL_BLUE, CL_TRANSPARENT);
