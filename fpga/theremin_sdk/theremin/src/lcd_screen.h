@@ -50,18 +50,17 @@ extern pixel_t * SCREEN;
 extern "C" {
 #endif
 
-typedef struct lcd_rect_tag {
-    int16_t x0;
-    int16_t y0;
-    int16_t x1;
-    int16_t y1;
-} lcd_rect;
-
-
 /** Initialize screen buffer, initially fill with black color */
 void lcd_init();
 /** Flush cache of changed framebuffer rows */
 void lcd_flush();
+
+// replace clip rect with new value
+void lcd_set_clip_rect(int x0, int y0, int x1, int y1);
+// combine existing clip rect with new value
+void lcd_apply_clip_rect(int x0, int y0, int x1, int y1);
+// get current clip rect value
+void lcd_get_clip_rect(int* x0, int* y0, int* x1, int* y1);
 
 /** Draw pixel with color at point (x, y) */
 void lcd_put_pixel(int x, int y, uint16_t color);
@@ -70,6 +69,7 @@ void lcd_fill_rect(int x0, int y0, int x1, int y1, uint16_t color);
 /** Draw line with specified color */
 void lcd_draw_line(int x0, int y0, int x1, int y1, uint16_t color);
 void lcd_draw_rect(int x0, int y0, int x1, int y1, int width, uint16_t color, uint16_t innerColor);
+
 
 /****************************************
   Bitmap support

@@ -74,6 +74,37 @@ static int lcd_current_row() {
 	return static_cast<int>(n);
 }
 
+static int clip_x0 = 0;
+static int clip_y0 = 0;
+static int clip_x1 = SCREEN_DX;
+static int clip_y1 = SCREEN_DY;
+
+void lcd_set_clip_rect(int x0, int y0, int x1, int y1) {
+    clip_x0 = x0;
+    clip_x1 = x1;
+    clip_y0 = y0;
+    clip_y1 = y1;
+}
+
+// combine existing clip rect with new value
+void lcd_apply_clip_rect(int x0, int y0, int x1, int y1) {
+    if (clip_x0 < x0)
+        clip_x0 = x0;
+    if (clip_x1 > x1)
+        clip_x1 = x1;
+    if (clip_y0 < y0)
+        clip_y0 = y0;
+    if (clip_y1 > y1)
+        clip_y1 = y1;
+}
+
+void lcd_get_clip_rect(int* x0, int* y0, int* x1, int* y1) {
+    *x0 = clip_x0;
+    *x1 = clip_x1;
+    *y0 = clip_y0;
+    *y1 = clip_y1;
+}
+
 void lcd_flush() {
     uint16_t * srcrow = lcd_back_buffer;
     uint16_t * dstrow = lcd_front_buffer;

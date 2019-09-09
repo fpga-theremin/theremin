@@ -33,6 +33,7 @@ SOURCES += \
     ../../theremin_sdk/synthesizer/src/synthesizer.cpp \
     ../../theremin_sdk/synthesizer/src/synth_utils.cpp \
     ../../theremin_sdk/theremin/src/synth_control_utils.cpp \
+    ../../theremin_sdk/theremin/src/ugui.cpp \
     encoder_widget.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -54,6 +55,7 @@ HEADERS += \
     ../../theremin_sdk/synthesizer/src/synthesizer.h \
     ../../theremin_sdk/synthesizer/src/synth_utils.h \
     ../../theremin_sdk/theremin/src/synth_control_utils.h \
+    ../../theremin_sdk/theremin/src/ugui.h \
     encoder_widget.h \
     mainwindow.h \
     lcd_simulator.h \
