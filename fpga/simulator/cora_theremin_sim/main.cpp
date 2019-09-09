@@ -4,14 +4,10 @@
 #include "simulator_impl.h"
 #include "../../theremin_sdk/theremin/src/lcd_screen.h"
 #include "../../theremin_sdk/theremin/src/bitmap_fonts.h"
+#include "../../theremin_sdk/theremin/src/ugui.h"
 #include "../../theremin_sdk/synthesizer/src/synthesizer.h"
 
-int main(int argc, char *argv[])
-{
-    thereminIO_init();
-
-    lcd_init();
-    lcd_fill_rect(0, 0, SCREEN_DX, SCREEN_DY, 0x0111);
+void drawTestImage() {
     lcd_fill_rect(6, 5, 120, 50, 0x0f84);
     lcd_fill_rect(5, 55, 121, 100, 0x058e);
 
@@ -21,7 +17,7 @@ int main(int argc, char *argv[])
     lcd_fill_rect(400, 400, 700, 450, 0x000f);
 
     for (int x = 50; x < SCREEN_DX; x+=5) {
-        lcd_draw_line(5, 5, x, SCREEN_DY-1, 0x305020);
+        lcd_draw_line(5, 5, x, SCREEN_DY-1, 0x352);
     }
 
     lcd_draw_text(XSMALL_FONT, 10, 100, 0x0ff, "Hello world! XSMALL 0123456789", -32768);
@@ -41,6 +37,30 @@ int main(int argc, char *argv[])
     lcd_draw_rect(450, 70, 550, 120, 7, CL_BLUE, CL_TRANSPARENT);
 
     lcd_flush();
+}
+
+const Style blueBackgroundWithBorder(0x006, CL_WHITE, MEDIUM_FONT, 5, 5, 2, 0x884);
+const Style sampleLabelStyle(0x040, CL_YELLOW, MEDIUM_FONT, 3, 5, 5, 0xccc);
+
+void drawTestGUI() {
+    UCompoundWidget * root = new UCompoundWidget(Rect(0, 0, SCREEN_DX, SCREEN_DY), &blueBackgroundWithBorder);
+    root->insertChild(new ULabel("Label1", Rect(10, 10, 200, 70)));
+    root->insertChild(new ULabel("Label2", Rect(10, 100, 200, 160), &sampleLabelStyle));
+    root->draw();
+    lcd_flush();
+    delete root;
+}
+
+int main(int argc, char *argv[])
+{
+    thereminIO_init();
+
+    //thereminLCD_setFramebufferAddress(SCREEN_BUF);
+    lcd_init();
+
+    //drawTestImage();
+    drawTestGUI();
+
 
     thereminAudio_setIrqHandler(&synth_audio_irq);
     thereminAudio_enableIrq();
