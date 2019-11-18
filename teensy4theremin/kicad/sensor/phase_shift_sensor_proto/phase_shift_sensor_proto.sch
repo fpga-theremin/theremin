@@ -1,4 +1,5 @@
 EESchema Schematic File Version 4
+LIBS:sp721
 EELAYER 26 0
 EELAYER END
 $Descr A4 11693 8268
@@ -91,7 +92,7 @@ PWM_OUT
 Text Label 1400 4100 0    50   ~ 0
 GND
 $Comp
-L teensy4theremin:sp721 U2
+L sp721:sp721 U2
 U 1 1 5D9E4310
 P 6500 3500
 F 0 "U2" H 6825 3765 50  0000 C CNN
@@ -123,17 +124,6 @@ F 3 "~" H 3600 6150 50  0001 C CNN
 	1    3600 6150
 	1    0    0    -1  
 $EndComp
-$Comp
-L Device:C C3
-U 1 1 5D9E444E
-P 4100 6150
-F 0 "C3" H 4215 6196 50  0000 L CNN
-F 1 "10uF" H 4215 6105 50  0000 L CNN
-F 2 "Capacitor_THT:C_Disc_D4.3mm_W1.9mm_P5.00mm" H 4138 6000 50  0001 C CNN
-F 3 "~" H 4100 6150 50  0001 C CNN
-	1    4100 6150
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	7400 3800 7400 4000
 Wire Wire Line
@@ -154,16 +144,11 @@ Wire Wire Line
 	7400 3500 7400 3700
 Wire Wire Line
 	2800 6700 3600 6700
-Wire Wire Line
-	4100 6700 4100 6300
 Connection ~ 2800 6700
 Wire Wire Line
 	2800 6700 2800 6800
 Wire Wire Line
 	3600 6300 3600 6700
-Connection ~ 3600 6700
-Wire Wire Line
-	3600 6700 4100 6700
 Wire Wire Line
 	3600 6000 3600 5500
 Wire Wire Line
@@ -171,11 +156,6 @@ Wire Wire Line
 Connection ~ 2800 5500
 Wire Wire Line
 	2800 5500 2800 5400
-Wire Wire Line
-	4100 6000 4100 5500
-Wire Wire Line
-	4100 5500 3600 5500
-Connection ~ 3600 5500
 $Comp
 L power:GND #PWR011
 U 1 1 5D9E9E88
@@ -203,7 +183,6 @@ Wire Wire Line
 Wire Wire Line
 	7150 3800 7400 3800
 NoConn ~ 6500 3600
-NoConn ~ 6500 3700
 NoConn ~ 6500 3900
 $Comp
 L Connector:Conn_01x02_Male J2
@@ -262,11 +241,6 @@ Wire Wire Line
 Connection ~ 8300 1650
 Connection ~ 8300 2000
 Connection ~ 8300 2100
-Wire Wire Line
-	5700 3500 6500 3500
-Wire Wire Line
-	6250 3800 6500 3800
-NoConn ~ 6500 4000
 $Comp
 L power:GND #PWR014
 U 1 1 5DA2AF11
@@ -280,7 +254,7 @@ F 3 "" H 8550 5950 50  0001 C CNN
 $EndComp
 Text Notes 7350 1400 0    79   ~ 0
 L_IN, L_OUT: air core coil, 4.27mH
-Text Notes 9000 2100 0    79   ~ 0
+Text Notes 8150 2300 0    79   ~ 0
 To theremin antenna
 Text Notes 850  750  0    79   ~ 0
 Theremin sensor with PWM output
@@ -355,39 +329,37 @@ F 3 "" H 9850 5950 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	1000 3900 2600 3900
-Wire Wire Line
-	6250 1200 6250 3800
 $Comp
 L 74xx:74HC04 U1
 U 1 1 5DD5023B
-P 2900 3900
-F 0 "U1" H 2900 4217 50  0000 C CNN
-F 1 "74HC04" H 2900 4126 50  0000 C CNN
-F 2 "Package_DIP:DIP-14_W7.62mm" H 2900 3900 50  0001 C CNN
-F 3 "http://www.nxp.com/documents/data_sheet/74HC_HCT04.pdf" H 2900 3900 50  0001 C CNN
-	1    2900 3900
-	1    0    0    -1  
-$EndComp
-$Comp
-L 74xx:74HC04 U1
-U 2 1 5DD502AE
-P 2900 2500
-F 0 "U1" H 2900 2817 50  0000 C CNN
-F 1 "74HC04" H 2900 2726 50  0000 C CNN
-F 2 "Package_DIP:DIP-14_W7.62mm" H 2900 2500 50  0001 C CNN
-F 3 "http://www.nxp.com/documents/data_sheet/74HC_HCT04.pdf" H 2900 2500 50  0001 C CNN
-	2    2900 2500
-	1    0    0    -1  
-$EndComp
-$Comp
-L 74xx:74HC04 U1
-U 3 1 5DD502FD
 P 1500 5200
 F 0 "U1" H 1500 5517 50  0000 C CNN
 F 1 "74HC04" H 1500 5426 50  0000 C CNN
 F 2 "Package_DIP:DIP-14_W7.62mm" H 1500 5200 50  0001 C CNN
 F 3 "http://www.nxp.com/documents/data_sheet/74HC_HCT04.pdf" H 1500 5200 50  0001 C CNN
-	3    1500 5200
+	1    1500 5200
+	1    0    0    -1  
+$EndComp
+$Comp
+L 74xx:74HC04 U1
+U 2 1 5DD502AE
+P 2900 3900
+F 0 "U1" H 2900 4217 50  0000 C CNN
+F 1 "74HC04" H 2900 4126 50  0000 C CNN
+F 2 "Package_DIP:DIP-14_W7.62mm" H 2900 3900 50  0001 C CNN
+F 3 "http://www.nxp.com/documents/data_sheet/74HC_HCT04.pdf" H 2900 3900 50  0001 C CNN
+	2    2900 3900
+	1    0    0    -1  
+$EndComp
+$Comp
+L 74xx:74HC04 U1
+U 3 1 5DD502FD
+P 2900 2500
+F 0 "U1" H 2900 2817 50  0000 C CNN
+F 1 "74HC04" H 2900 2726 50  0000 C CNN
+F 2 "Package_DIP:DIP-14_W7.62mm" H 2900 2500 50  0001 C CNN
+F 3 "http://www.nxp.com/documents/data_sheet/74HC_HCT04.pdf" H 2900 2500 50  0001 C CNN
+	3    2900 2500
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -611,10 +583,7 @@ Wire Wire Line
 	4800 4200 4800 4300
 Wire Wire Line
 	5700 4200 6250 4200
-Wire Wire Line
-	6250 4200 6250 3800
 Connection ~ 5700 4200
-Connection ~ 6250 3800
 $Comp
 L power:+3.3V #PWR08
 U 1 1 5DD8F806
@@ -707,12 +676,10 @@ Wire Wire Line
 Wire Wire Line
 	5700 1300 5700 2100
 Wire Wire Line
-	6800 2100 7700 2100
+	6800 2100 7100 2100
 Wire Wire Line
 	6500 2100 5700 2100
 Connection ~ 5700 2100
-Wire Wire Line
-	5700 2100 5700 3500
 Wire Wire Line
 	2000 1300 2000 2500
 $Comp
@@ -785,4 +752,48 @@ $EndComp
 Wire Wire Line
 	8300 5250 8550 5250
 Connection ~ 8550 5250
+Wire Wire Line
+	5700 2100 5700 3700
+NoConn ~ 6500 3500
+NoConn ~ 6500 3800
+$Comp
+L Device:C C3
+U 1 1 5DD627FE
+P 7100 2500
+F 0 "C3" H 7215 2546 50  0000 L CNN
+F 1 "0.1pF" H 7215 2455 50  0000 L CNN
+F 2 "Capacitor_THT:C_Disc_D4.3mm_W1.9mm_P5.00mm" H 7138 2350 50  0001 C CNN
+F 3 "~" H 7100 2500 50  0001 C CNN
+	1    7100 2500
+	1    0    0    1   
+$EndComp
+Wire Wire Line
+	7100 2350 7100 2100
+Connection ~ 7100 2100
+Wire Wire Line
+	7100 2100 7700 2100
+Wire Wire Line
+	7100 2650 7100 2700
+$Comp
+L power:GND #PWR018
+U 1 1 5DD680E3
+P 7100 2700
+F 0 "#PWR018" H 7100 2450 50  0001 C CNN
+F 1 "GND" H 7105 2527 50  0000 C CNN
+F 2 "" H 7100 2700 50  0001 C CNN
+F 3 "" H 7100 2700 50  0001 C CNN
+	1    7100 2700
+	1    0    0    -1  
+$EndComp
+Text Notes 7200 2650 0    50   ~ 0
+unused
+Wire Wire Line
+	6250 1200 6250 4000
+Wire Wire Line
+	6500 4000 6250 4000
+Connection ~ 6250 4000
+Wire Wire Line
+	6250 4000 6250 4200
+Wire Wire Line
+	6500 3700 5700 3700
 $EndSCHEMATC
