@@ -4,9 +4,12 @@
 #include <Arduino.h>
 
 class PhaseShift {
+    int8_t _refFreqPin;
+    int8_t _shiftedSignalPin;
 public:
-	void begin(void);
-	void end(void);
+    PhaseShift(int8_t refFreqPin, int8_t shiftedSignalPin);
+    void begin();
+    void end(void);
 };
 
 

@@ -30,6 +30,10 @@
 #error("Only Teensy4 with IMXRT1062 is supported for now")
 #endif
 
+PhaseShift::PhaseShift(int8_t refFreqPin, int8_t shiftedSignalPin) : _refFreqPin(refFreqPin), _shiftedSignalPin(shiftedSignalPin) {
+
+}
+
 void PhaseShift::begin(void)
 {
      // TODO
