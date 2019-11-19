@@ -42,6 +42,7 @@ SOURCES += \
 
 HEADERS += \
     arduino/Arduino.h \
+    arduino/pins_arduino.h \
     encoder_widget.h \
     mainwindow.h \
     lcd_simulator.h \

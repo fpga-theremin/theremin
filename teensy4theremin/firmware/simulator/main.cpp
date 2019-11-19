@@ -2,6 +2,10 @@
 #include <QApplication>
 
 #include "simulator_impl.h"
+
+#include <arduino/Arduino.h>
+
+
 //#include "../../theremin_sdk/theremin/src/lcd_screen.h"
 //#include "../../theremin_sdk/theremin/src/bitmap_fonts.h"
 //#include "../../theremin_sdk/theremin/src/ugui.h"
