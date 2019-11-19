@@ -11,7 +11,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = teensy4_theremin_sim
 TEMPLATE = app
 
-DEFINES += THEREMIN_SIMULATOR
+DEFINES += THEREMIN_SIMULATOR __IMXRT1062__
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which has been marked as deprecated (the exact warnings
@@ -27,13 +27,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
-    ../../theremin_sdk/theremin/src/lcd_screen.cpp \
-    ../../theremin_sdk/theremin/src/bitmap_fonts.cpp \
-    ../../theremin_sdk/common/src/noteutil.cpp \
-    ../../theremin_sdk/synthesizer/src/synthesizer.cpp \
-    ../../theremin_sdk/synthesizer/src/synth_utils.cpp \
-    ../../theremin_sdk/theremin/src/synth_control_utils.cpp \
-    ../../theremin_sdk/theremin/src/ugui.cpp \
     encoder_widget.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -48,14 +41,7 @@ SOURCES += \
     theremin_sensor_simulator.cpp
 
 HEADERS += \
-    ../../theremin_sdk/theremin/src/lcd_screen.h \
-    ../../theremin_sdk/theremin/src/bitmap_fonts.h \
-    ../../theremin_sdk/common/src/noteutil.h \
-    ../../theremin_sdk/common/src/synth_control.h \
-    ../../theremin_sdk/synthesizer/src/synthesizer.h \
-    ../../theremin_sdk/synthesizer/src/synth_utils.h \
-    ../../theremin_sdk/theremin/src/synth_control_utils.h \
-    ../../theremin_sdk/theremin/src/ugui.h \
+    arduino/Arduino.h \
     encoder_widget.h \
     mainwindow.h \
     lcd_simulator.h \

@@ -1,5 +1,5 @@
 #include "audiogen.h"
-#include "../../theremin_sdk/synthesizer/src/synthesizer.h"
+//#include "../../theremin_sdk/synthesizer/src/synthesizer.h"
 #include "simulator_impl.h"
 
 static int sine_wave[1024];
@@ -22,8 +22,8 @@ AudioGen::AudioGen(QObject *parent)
 {
     //_prevPitchLinear = 0;
     //_prevVolumeLinear = 0;
-    _prevPitchPeriod = DEF_PITCH_MAX_PERIOD;
-    _prevVolumePeriod = DEF_VOLUME_MAX_PERIOD;
+    _prevPitchPeriod = 0; //DEF_PITCH_MAX_PERIOD;
+    _prevVolumePeriod = 0; //DEF_VOLUME_MAX_PERIOD;
 
 //    _phase = 0;
 
@@ -92,8 +92,8 @@ int AudioGen::generate(int * data, int maxlen) {
         return 0;
     }
 
-    uint32_t dstPitchPeriod = sensorSim_getPitchSensorTarget();
-    uint32_t dstVolumePeriod = sensorSim_getVolumeSensorTarget();
+    uint32_t dstPitchPeriod = 0; //sensorSim_getPitchSensorTarget();
+    uint32_t dstVolumePeriod = 0; //sensorSim_getVolumeSensorTarget();
     //float dstPitchLinear = pitchConv.periodToLinear(dstPitchPeriod);
     //float dstVolumeLinear = volumeConv.periodToLinear(dstVolumePeriod);
     //float diffPitchLinear = (dstPitchLinear - _prevPitchLinear) / maxlen;
@@ -108,13 +108,11 @@ int AudioGen::generate(int * data, int maxlen) {
     for (int i = 0; i < maxlen; i++) {
         pitch += diffPitch;
         volume += diffVolume;
-        //pitchLinear += diffPitchLinear;
-        //volumeLinear += diffVolumeLinear;
-        //uint32_t pitch = pitchConv.linearToPeriod(pitchLinear);
-        //uint32_t volume = volumeConv.linearToPeriod(volumeLinear);
-        audioSim_simulateAudioInterrupt(pitch, volume);
-        audio_sample_t s = audioSim_getLineOut();
-        int32_t sample = s.left;
+
+        //audioSim_simulateAudioInterrupt(pitch, volume);
+        //audio_sample_t s = audioSim_getLineOut();
+
+        int32_t sample = 0; //s.left;
         if (sample < -0x7fffff)
             sample = -0x7fffff;
         else if (sample > 0x7fffff)

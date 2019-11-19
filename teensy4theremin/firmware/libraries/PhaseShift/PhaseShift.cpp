@@ -26,6 +26,10 @@
 
 #include "PhaseShift.h"
 
+#if !defined(__IMXRT1062__)
+#error("Only Teensy4 with IMXRT1062 is supported for now")
+#endif
+
 void PhaseShift::begin(void)
 {
      // TODO

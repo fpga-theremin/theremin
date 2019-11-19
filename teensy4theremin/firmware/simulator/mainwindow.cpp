@@ -96,16 +96,16 @@ MainWindow::MainWindow(QWidget *parent)
     }
     rightLayout->addStretch(1);
     int ri = 0;
-    regWidgets[ri++] = new RegValueWidget(QString("TPIT"), THEREMIN_RD_REG_PITCH_PERIOD, this);
-    regWidgets[ri++] = new RegValueWidget(QString("TVOL"), THEREMIN_RD_REG_VOLUME_PERIOD, this);
-    regWidgets[ri++] = new RegValueWidget(QString("ENC0"), THEREMIN_RD_REG_ENCODER_0, this);
-    regWidgets[ri++] = new RegValueWidget(QString("ENC1"), THEREMIN_RD_REG_ENCODER_1, this);
-    regWidgets[ri++] = new RegValueWidget(QString("ENC2"), THEREMIN_RD_REG_ENCODER_2, this);
-    regWidgets[ri++] = new RegValueWidget(QString("PED0"), THEREMIN_RD_REG_PEDALS_0, this);
-    regWidgets[ri++] = new RegValueWidget(QString("PED1"), THEREMIN_RD_REG_PEDALS_1, this);
-    regWidgets[ri++] = new RegValueWidget(QString("PED2"), THEREMIN_RD_REG_PEDALS_2, this);
-    for (int i = 0; i < MAX_DISPLAY_REGS; i++)
-        rightLayout->addWidget(regWidgets[i], 0, Qt::AlignCenter);
+//    regWidgets[ri++] = new RegValueWidget(QString("TPIT"), THEREMIN_RD_REG_PITCH_PERIOD, this);
+//    regWidgets[ri++] = new RegValueWidget(QString("TVOL"), THEREMIN_RD_REG_VOLUME_PERIOD, this);
+//    regWidgets[ri++] = new RegValueWidget(QString("ENC0"), THEREMIN_RD_REG_ENCODER_0, this);
+//    regWidgets[ri++] = new RegValueWidget(QString("ENC1"), THEREMIN_RD_REG_ENCODER_1, this);
+//    regWidgets[ri++] = new RegValueWidget(QString("ENC2"), THEREMIN_RD_REG_ENCODER_2, this);
+//    regWidgets[ri++] = new RegValueWidget(QString("PED0"), THEREMIN_RD_REG_PEDALS_0, this);
+//    regWidgets[ri++] = new RegValueWidget(QString("PED1"), THEREMIN_RD_REG_PEDALS_1, this);
+//    regWidgets[ri++] = new RegValueWidget(QString("PED2"), THEREMIN_RD_REG_PEDALS_2, this);
+//    for (int i = 0; i < MAX_DISPLAY_REGS; i++)
+//        rightLayout->addWidget(regWidgets[i], 0, Qt::AlignCenter);
     rightLayout->addStretch(5);
 
 
@@ -157,8 +157,8 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::onPeriodicTimer() {
-    for (int i = 0; i < MAX_DISPLAY_REGS; i++)
-        regWidgets[i]->updateValue();
+    //for (int i = 0; i < MAX_DISPLAY_REGS; i++)
+    //    regWidgets[i]->updateValue();
 }
 
 void MainWindow::onPlay() {

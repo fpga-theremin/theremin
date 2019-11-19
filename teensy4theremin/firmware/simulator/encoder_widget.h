@@ -30,6 +30,7 @@ public:
             return;
         }
         angle = (angle + delta + 2*ENCODER_TICKS) % ENCODER_TICKS;
+        // TODO
         encodersSim_setEncoderState(index, pressed, delta);
         update();
     }

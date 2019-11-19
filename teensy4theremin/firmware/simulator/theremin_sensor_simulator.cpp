@@ -3,8 +3,11 @@
 #include <QPainter>
 #include <QMouseEvent>
 #include "codeutils.h"
-#include "../../theremin_sdk/common/src/noteutil.h"
-#include "../../theremin_sdk/theremin/src/lcd_screen.h"
+//#include "../../theremin_sdk/common/src/noteutil.h"
+//#include "../../theremin_sdk/theremin/src/lcd_screen.h"
+
+#define SCREEN_DX 320
+#define SCREEN_DY 240
 
 #define FRAME_OFFSET 16
 #define SENSOR_HEIGHT (SCREEN_DY / 3)
@@ -22,6 +25,7 @@ ThereminSensorSimulator::ThereminSensorSimulator(QWidget *parent) : QWidget(pare
     setMaximumHeight(SENSOR_HEIGHT);
     setMark(SCREEN_DX / 2, SENSOR_HEIGHT / 3);
 
+    /*
     for (int i = 0; i <= 10; i++) {
         float k = i / 10.0f;
         uint32_t n = pitchConv.linearToPeriod(k);
@@ -71,6 +75,7 @@ ThereminSensorSimulator::ThereminSensorSimulator(QWidget *parent) : QWidget(pare
     }
 
     generateNoteTables();
+    */
 }
 
 
@@ -103,15 +108,15 @@ void ThereminSensorSimulator::setMark(int x, int y) {
     markY = y;
     float xx = (markX - FRAME_OFFSET) / static_cast<float>(SCREEN_DX - FRAME_OFFSET*2);
     float yy = (markY - FRAME_OFFSET) / static_cast<float>(SENSOR_HEIGHT - FRAME_OFFSET*2);
-    pitchSensorValue = pitchConv.linearToPeriod(xx);
-    volumeSensorValue = volumeConv.linearToPeriod(yy);
+    //pitchSensorValue = pitchConv.linearToPeriod(xx);
+    //volumeSensorValue = volumeConv.linearToPeriod(yy);
     //sensorSim_setPitchSensor(pitchSensorValue);
-    sensorSim_setPitchSensorTarget(pitchSensorValue);
+    //sensorSim_setPitchSensorTarget(pitchSensorValue);
     //sensorSim_setVolumeSensor(volumeSensorValue);
-    sensorSim_setVolumeSensorTarget(volumeSensorValue);
-    float linPitch = pitchConv.periodToLinear(pitchSensorValue);
-    float linVolume = volumeConv.periodToLinear(volumeSensorValue);
-    qDebug("Pitch: %7.6f %08x  Volume: %7.6f %08x", linPitch, pitchSensorValue, linVolume, volumeSensorValue);
+    //sensorSim_setVolumeSensorTarget(volumeSensorValue);
+    //float linPitch = pitchConv.periodToLinear(pitchSensorValue);
+    //float linVolume = volumeConv.periodToLinear(volumeSensorValue);
+    //qDebug("Pitch: %7.6f %08x  Volume: %7.6f %08x", linPitch, pitchSensorValue, linVolume, volumeSensorValue);
     update();
 }
 

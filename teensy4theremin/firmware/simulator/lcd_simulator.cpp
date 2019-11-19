@@ -1,6 +1,10 @@
 #include "lcd_simulator.h"
 #include "simulator_impl.h"
-#include "../../theremin_sdk/theremin/src/lcd_screen.h"
+//#include "../../theremin_sdk/theremin/src/lcd_screen.h"
+
+#define SCREEN_DX 320
+#define SCREEN_DY 240
+
 
 #include <QPainter>
 #include <QDebug>
@@ -19,9 +23,9 @@ LCDSimulator::LCDSimulator(QWidget *parent) : QWidget(parent)
 static uint16_t buf[SCREEN_DX*SCREEN_DY];
 
 void LCDSimulator::updateImage() {
-    if (SCREEN)
-        memcpy(buf, SCREEN, SCREEN_DX*SCREEN_DY*2);
-    else
+//    if (SCREEN)
+//        memcpy(buf, SCREEN, SCREEN_DX*SCREEN_DY*2);
+//    else
         memset(buf, 0, SCREEN_DX*SCREEN_DY*2);
     // todo: convert special values
     screenImage = QImage(reinterpret_cast<const unsigned char *>(buf),

@@ -2,7 +2,7 @@
 #include "simulator_impl.h"
 #include <QTime>
 #include "math.h"
-#include "../../theremin_sdk/theremin/src/lcd_screen.h"
+//#include "../../theremin_sdk/theremin/src/lcd_screen.h"
 
 
 extern std::mutex audio_sim_mutex;
@@ -14,13 +14,14 @@ std::mutex audio_sim_mutex;
     std::lock_guard<std::mutex> lock(audio_sim_mutex)
 
 
-SensorConvertor pitchConv(DEF_PITCH_MIN_PERIOD, DEF_PITCH_MAX_PERIOD, 4.5f);
-SensorConvertor volumeConv(DEF_VOLUME_MIN_PERIOD, DEF_VOLUME_MAX_PERIOD, 3.9f);
+//SensorConvertor pitchConv(DEF_PITCH_MIN_PERIOD, DEF_PITCH_MAX_PERIOD, 4.5f);
+//SensorConvertor volumeConv(DEF_VOLUME_MIN_PERIOD, DEF_VOLUME_MAX_PERIOD, 3.9f);
 
 
-static volatile uint32_t pitchSensorTarget = DEF_PITCH_MAX_PERIOD;
-static volatile uint32_t volumeSensorTarget = DEF_VOLUME_MAX_PERIOD;
+//static volatile uint32_t pitchSensorTarget = DEF_PITCH_MAX_PERIOD;
+//static volatile uint32_t volumeSensorTarget = DEF_VOLUME_MAX_PERIOD;
 
+#if 0
 void sensorSim_setPitchSensorTarget(uint32_t value) {
     pitchSensorTarget = value;
 }
@@ -305,18 +306,6 @@ void encodersSim_setButtonState(int index, bool pressed) {
     tactButtonState.setPressed(pressed);
 }
 
-static uint16_t pedalValues[6] = {0,0,0,0,0,0};
-
-void pedalSim_setPedalValue(int index, float value) {
-    if (index < 0 || index >= 6)
-        return;
-    int val = static_cast<int>(value * 65535);
-    if (val < 0)
-        val = 0;
-    else if (val > 65535)
-        val = 65535;
-    pedalValues[index] = static_cast<uint16_t>(val);
-}
 
 
 // Read Theremin IP register value
@@ -342,4 +331,54 @@ uint32_t thereminIO_readReg(uint32_t offset) {
 }
 
 
+#endif
 
+void encodersSim_setEncoderState(int index, bool pressed, int delta) {
+    if (index < 0 || index >= 5)
+        return;
+//    encoderStates[index].setPressed(pressed);
+//    encoderStates[index].updateAngle(delta);
+//    int reg = 0;
+//    int shift = 0;
+//    switch(index) {
+//    case 0:
+//        reg = THEREMIN_RD_REG_ENCODER_0;
+//        shift = 0;
+//    break;
+//    case 1:
+//        reg = THEREMIN_RD_REG_ENCODER_0;
+//        shift = 1;
+//    break;
+//    case 2:
+//        reg = THEREMIN_RD_REG_ENCODER_1;
+//        shift = 0;
+//    break;
+//    case 3:
+//        reg = THEREMIN_RD_REG_ENCODER_1;
+//        shift = 1;
+//    break;
+//    case 4:
+//        reg = THEREMIN_RD_REG_ENCODER_2;
+//        shift = 0;
+//    break;
+//    }
+}
+
+void encodersSim_setButtonState(int index, bool pressed) {
+    if (index != 0)
+        return;
+//    tactButtonState.setPressed(pressed);
+}
+
+static uint16_t pedalValues[6] = {0,0,0,0,0,0};
+
+void pedalSim_setPedalValue(int index, float value) {
+    if (index < 0 || index >= 6)
+        return;
+    int val = static_cast<int>(value * 65535);
+    if (val < 0)
+        val = 0;
+    else if (val > 65535)
+        val = 65535;
+    pedalValues[index] = static_cast<uint16_t>(val);
+}
