@@ -125,6 +125,24 @@ void PhaseShift::setPeriod(uint16_t period, uint16_t phase)
 	}
 	pwm->MCTRL |= FLEXPWM_MCTRL_LDOK(mask);
 	*(portConfigRegister(_refFreqPin)) = cfg.muxval;
+	
+	
+	uint16_t capt = 0;
+	uint16_t capt_watermark = 0; // 9-8 CFBWM Capture B FIFOs Water Mark
+	capt |= capt_watermark << 8;
+	// 7 Edge Counter B Enable, 0b - Edge counter disabled and held in reset
+	// 6 Input Select B, 0b - Raw PWM_B input signal selected as source.
+	// 5-4 Edge B 1: 10b - Capture falling edges
+	capt |= 0b10 << 4;
+	// 3-2 Edge B 0: 01b - Capture rising edges
+	capt |= 0b01 << 2;
+	// 1 One Shot Mode B: 0b - Free running mode is selected
+	// 0 Arm B: 1b - Input capture operation as specified by CAPTCTRLB[EDGBx] is enabled.
+	capt |= 1;
+	pwm->SM[cfg.submodule].CAPTCTRLB = capt;
+	
+	//uint16_t octrl = 0;
+	//pwm->SM[cfg.submodule].OCTRL = octrl;
 }
 
 int PhaseShift::begin(uint16_t refFreqPeriod, uint16_t refFreqPhase, uint16_t averagingBufferSize)
@@ -142,6 +160,8 @@ int PhaseShift::begin(uint16_t refFreqPeriod, uint16_t refFreqPhase, uint16_t av
     // setup frequency
 	setPeriod(refFreqPeriod, refFreqPhase);
 
+	
+
     _averagingBufferSize = averagingBufferSize;
 	
 
@@ -150,17 +170,12 @@ int PhaseShift::begin(uint16_t refFreqPeriod, uint16_t refFreqPhase, uint16_t av
 }
 
 uint16_t PhaseShift::readStatusReg() {
-    IMXRT_FLEXPWM_t *pwm = nullptr;
-    int submodule = 0;
-    if (_refFreqPin == 2) {
-        // {1, M(4, 2), 1, 1},  // FlexPWM4_2_A   2  // EMC_04
-        // {1, M(4, 2), 2, 1},  // FlexPWM4_2_B   3  // EMC_05
-        pwm = &IMXRT_FLEXPWM4;
-        submodule = 2;
-    }
-    if (!pwm)
-        return 0;
-    return pwm->SM[submodule].STS;
+	PhaseShiftChannelConfig cfg;
+	if (!getChannelForPins(_refFreqPin, _shiftedSignalPin, cfg))
+		return 0;
+    IMXRT_FLEXPWM_t *pwm = cfg.pwm;
+    //return pwm->SM[cfg.submodule].OCTRL; //pwm->SM[submodule].STS;
+    return pwm->SM[cfg.submodule].CVAL0; //pwm->SM[submodule].STS;
 }
 
 void PhaseShift::end(void)
