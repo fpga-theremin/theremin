@@ -15,7 +15,7 @@ public:
     int begin(uint16_t refFreqPeriod, uint16_t refFreqPhase, uint16_t averagingBufferSize);
     void end(void);
     static uint16_t frequencyToPeriod(float frequencyHertz);
-    uint16_t readStatusReg();
+    void readRegs(uint16_t * values);
 	uint16_t getPeriod();
 	uint16_t getPhase();
 	void setPeriod(uint16_t period, uint16_t phase);

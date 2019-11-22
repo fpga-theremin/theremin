@@ -123,9 +123,11 @@ void PhaseShift::setPeriod(uint16_t period, uint16_t phase)
 			pwm->OUTEN |= FLEXPWM_OUTEN_PWMB_EN(mask);
 		    break;
 	}
-	pwm->MCTRL |= FLEXPWM_MCTRL_LDOK(mask);
-	*(portConfigRegister(_refFreqPin)) = cfg.muxval;
 	
+
+        //1b - PWM_A and PWM_B outputs are independent PWMs.
+	pwm->SM[cfg.submodule].CTRL2 |= 1 << 13;
+	pwm->MCTRL |= FLEXPWM_MCTRL_LDOK(mask);
 	
 	uint16_t capt = 0;
 	uint16_t capt_watermark = 0; // 9-8 CFBWM Capture B FIFOs Water Mark
@@ -140,8 +142,11 @@ void PhaseShift::setPeriod(uint16_t period, uint16_t phase)
 	// 0 Arm B: 1b - Input capture operation as specified by CAPTCTRLB[EDGBx] is enabled.
 	capt |= 1;
 	pwm->SM[cfg.submodule].CAPTCTRLB = capt;
+
+	*(portConfigRegister(_refFreqPin)) = cfg.muxval;
 	
 	//uint16_t octrl = 0;
+	*(portConfigRegister(_shiftedSignalPin)) = cfg.muxval;
 	//pwm->SM[cfg.submodule].OCTRL = octrl;
 }
 
@@ -149,16 +154,16 @@ int PhaseShift::begin(uint16_t refFreqPeriod, uint16_t refFreqPhase, uint16_t av
 {
     if (refFreqPeriod < 50 || refFreqPeriod > 3000)
         return 0;
-	PhaseShiftChannelConfig cfg;
-	if (!getChannelForPins(_refFreqPin, _shiftedSignalPin, cfg))
-		return 0;
+    PhaseShiftChannelConfig cfg;
+    if (!getChannelForPins(_refFreqPin, _shiftedSignalPin, cfg))
+        return 0;
 
     // setup pin modes
     pinMode(_refFreqPin, OUTPUT);
     pinMode(_shiftedSignalPin, INPUT);
 
     // setup frequency
-	setPeriod(refFreqPeriod, refFreqPhase);
+    setPeriod(refFreqPeriod, refFreqPhase);
 
 	
 
@@ -169,13 +174,19 @@ int PhaseShift::begin(uint16_t refFreqPeriod, uint16_t refFreqPhase, uint16_t av
     return 1;
 }
 
-uint16_t PhaseShift::readStatusReg() {
-	PhaseShiftChannelConfig cfg;
-	if (!getChannelForPins(_refFreqPin, _shiftedSignalPin, cfg))
-		return 0;
+void PhaseShift::readRegs(uint16_t * values) {
+    PhaseShiftChannelConfig cfg;
+    if (!getChannelForPins(_refFreqPin, _shiftedSignalPin, cfg))
+        return 0;
     IMXRT_FLEXPWM_t *pwm = cfg.pwm;
+    values[0] = pwm->SM[cfg.submodule].OCTRL;
+    values[1] = pwm->SM[cfg.submodule].STS;
+    values[2] = pwm->SM[cfg.submodule].CVAL4;
+    values[3] = pwm->SM[cfg.submodule].CVAL5;
+    // clear capture status of B
+    pwm->SM[cfg.submodule].STS &= ~(0x300);
     //return pwm->SM[cfg.submodule].OCTRL; //pwm->SM[submodule].STS;
-    return pwm->SM[cfg.submodule].CVAL0; //pwm->SM[submodule].STS;
+    //return pwm->SM[cfg.submodule].CVAL0; //pwm->SM[submodule].STS;
 }
 
 void PhaseShift::end(void)

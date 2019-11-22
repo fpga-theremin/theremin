@@ -27,18 +27,18 @@ void setup() {
 //  Serial.print("Must be 1: ");
 //  Serial.println(digitalRead(3));
 //
-//  analogWriteFrequency(2, 650000.0f);
-//  analogWrite(2, 128);
-//  Serial.println("reading pwm");
-//  for (int i = 0; i < 20; i++) {
-//     delay(100);
-//     Serial.print(digitalRead(3));
-//  }
-//  Serial.println("done");
+  //  analogWriteFrequency(2, 650000.0f);
+  //  analogWrite(2, 128);
+  //  Serial.println("reading pwm");
+  //for (int i = 0; i < 20; i++) {
+  //   delay(100);
+  //   Serial.print(digitalRead(3));
+ // }
+  //Serial.println("done");
 //  
-//  Serial.println("Init sensor");
+  Serial.println("Init sensor");
   uint16_t pitchPeriod = PhaseShift::frequencyToPeriod(PITCH_SENSOR_FREQUENCY);
-  pitchSensor.begin(pitchPeriod, 50, PITCH_SENSOR_AVERAGING);
+  pitchSensor.begin(pitchPeriod, 0, PITCH_SENSOR_AVERAGING);
   //analogWriteFrequency(2, PITCH_SENSOR_FREQUENCY);
   //analogWrite(2, 128);
   Serial.print("Pitch sensor reference freq period, F_BUS cycles: ");
@@ -46,14 +46,23 @@ void setup() {
 }
 
 void loop() {
-  delay(1000);
+  delay(500);
   Serial.print("Status: ");
-  Serial.print(pitchSensor.readStatusReg());
-  Serial.print(" digitalRead: ");
-  Serial.println(digitalRead(3));
-  for (int i = 0; i < 70; i++) {
-     delay(30);
-     Serial.print(digitalRead(3));
-  }
+  uint16_t regvalues[10]  = {0, 0, 0};
+  pitchSensor.readRegs(regvalues);
+  Serial.print(regvalues[0]);
+  Serial.print(" ");
+  Serial.print(regvalues[1]);
+  Serial.print(" ");
+  Serial.print(regvalues[2]);
+  Serial.print(" ");
+  Serial.print(regvalues[3]);
+  Serial.print(" ");
+  //Serial.print(" digitalRead: ");
+  //Serial.println(digitalRead(3));
+  //for (int i = 0; i < 70; i++) {
+  //   delay(30);
+  //   Serial.print(digitalRead(3));
+  //}
   Serial.println("...");
 }
