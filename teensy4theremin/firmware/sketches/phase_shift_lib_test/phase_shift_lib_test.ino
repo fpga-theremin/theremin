@@ -11,6 +11,8 @@
 #define PITCH_SENSOR_AVERAGING 1024
 PhaseShift pitchSensor(PITCH_SENSOR_FREF_PIN, PITCH_SENSOR_PHASE_SHIFT_PIN);
 
+void testCapturePolling();
+
 void setup() {
   //Serial.begin(9600);
   Serial.begin(115200);
@@ -43,6 +45,23 @@ void setup() {
   //analogWrite(2, 128);
   Serial.print("Pitch sensor reference freq period, F_BUS cycles: ");
   Serial.println(pitchPeriod);
+  delay(2);
+  testCapturePolling();
+}
+
+void testCapturePolling() {
+  Serial.println("Polling 1000 measures");
+  Edges data[1000];
+  for (int i = 0; i < 1000; i++) {
+    data[i] = pitchSensor.poll();
+  }
+  Serial.println("Dumping measures");
+  for (int i = 0; i < 1000; i++) {
+      Serial.print(data[i].raising);
+      Serial.print("\t");
+      Serial.print(data[i].falling);
+      Serial.println("");
+  }
 }
 
 void loop() {
