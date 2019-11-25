@@ -14,7 +14,7 @@ SYMATTR Prefix X
 SYMATTR SpiceModel VCC 0
 SYMATTR Description 2-input EXCLUSIVE-OR gate
 SYMATTR SpiceLine VCC=5  SPEED=1.0  TRIPDT=1e-9
-SYMATTR ModelFile ../sym/EXTRA/74HC/74HC.lib
+SYMATTR ModelFile 74HC.lib
 PIN -48 48 NONE 0
 PINATTR PinName A
 PINATTR SpiceOrder 1
