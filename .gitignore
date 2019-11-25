@@ -56,3 +56,7 @@ RemoteSystemsTempFiles
 *.raw
 *.plt
 *.fft
+*.net
+#KiCAD
+*.bak
+*.kicad_pcb-bak
