@@ -51,3 +51,7 @@ RemoteSystemsTempFiles
 *.exe
 *.out
 *.app
+
+#LTSpice
+*.raw
+*.plt

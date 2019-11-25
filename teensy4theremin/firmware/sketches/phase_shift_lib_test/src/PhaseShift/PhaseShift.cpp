@@ -189,6 +189,24 @@ void PhaseShift::readRegs(uint16_t * values) {
     //return pwm->SM[cfg.submodule].CVAL0; //pwm->SM[submodule].STS;
 }
 
+// wait for next captured value and return it
+Edges PhaseShift::poll()
+{
+    PhaseShiftChannelConfig cfg;
+    if (!getChannelForPins(_refFreqPin, _shiftedSignalPin, cfg))
+        return Edges(0,0);
+    IMXRT_FLEXPWM_t *pwm = cfg.pwm;
+    // clear capture status of B
+    while (!pwm->SM[cfg.submodule].STS & (0x100)) {
+        // wait until capture flag is set
+    }
+    Edges res = Edges(pwm->SM[cfg.submodule].CVAL4, pwm->SM[cfg.submodule].CVAL5);
+    // clear capture status of B
+    pwm->SM[cfg.submodule].STS &= ~(0x300);
+    return res;
+}
+    
+
 void PhaseShift::end(void)
 {
      // TODO
