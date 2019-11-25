@@ -258,7 +258,7 @@ L_IN, L_OUT: air core coil, 4.27mH
 Text Notes 8150 2300 0    79   ~ 0
 To theremin antenna
 Text Notes 850  750  0    79   ~ 0
-Theremin sensor with PWM output
+Theremin phase shift sensor
 $Comp
 L Regulator_Linear:MCP1700-3302E_TO92 U3
 U 1 1 5DD2AFDF
