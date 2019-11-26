@@ -553,12 +553,12 @@ Wire Wire Line
 $Comp
 L Device:R R5
 U 1 1 5DDC4CBD
-P 6900 2100
-F 0 "R5" V 6693 2100 50  0000 C CNN
-F 1 "100" V 6784 2100 50  0000 C CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 6830 2100 50  0001 C CNN
-F 3 "~" H 6900 2100 50  0001 C CNN
-	1    6900 2100
+P 6800 2100
+F 0 "R5" V 6593 2100 50  0000 C CNN
+F 1 "100" V 6684 2100 50  0000 C CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 6730 2100 50  0001 C CNN
+F 3 "~" H 6800 2100 50  0001 C CNN
+	1    6800 2100
 	0    -1   -1   0   
 $EndComp
 $Comp
@@ -628,12 +628,12 @@ F 3 "~" H 7700 2100 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 Wire Wire Line
-	6750 2100 5700 2100
+	6650 2100 5700 2100
 Connection ~ 5700 2100
 Wire Wire Line
 	5700 2100 5700 3700
 Wire Wire Line
-	7050 2100 7550 2100
+	6950 2100 7250 2100
 Wire Wire Line
 	7850 2100 7950 2100
 Text Notes 6500 800  0    50   ~ 0
@@ -735,4 +735,35 @@ Wire Wire Line
 Connection ~ 8500 5900
 Wire Wire Line
 	8500 5900 8500 6000
+$Comp
+L Device:C C8
+U 1 1 5DDE5626
+P 7250 2500
+F 0 "C8" H 7365 2546 50  0000 L CNN
+F 1 "6.8pF" H 7365 2455 50  0000 L CNN
+F 2 "Capacitor_THT:C_Disc_D4.3mm_W1.9mm_P5.00mm" H 7288 2350 50  0001 C CNN
+F 3 "~" H 7250 2500 50  0001 C CNN
+	1    7250 2500
+	1    0    0    -1  
+$EndComp
+Text Notes 6950 2650 0    50   ~ 0
+unused
+Wire Wire Line
+	7250 2650 7250 2700
+$Comp
+L power:GND #PWR02
+U 1 1 5DDE9A6B
+P 7250 2700
+F 0 "#PWR02" H 7250 2450 50  0001 C CNN
+F 1 "GND" H 7255 2527 50  0000 C CNN
+F 2 "" H 7250 2700 50  0001 C CNN
+F 3 "" H 7250 2700 50  0001 C CNN
+	1    7250 2700
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7250 2100 7250 2350
+Connection ~ 7250 2100
+Wire Wire Line
+	7250 2100 7550 2100
 $EndSCHEMATC
