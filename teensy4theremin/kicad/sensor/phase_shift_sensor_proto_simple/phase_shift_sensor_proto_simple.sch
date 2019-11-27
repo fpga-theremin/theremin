@@ -52,45 +52,34 @@ F 3 "~" H 8050 1900 50  0001 C CNN
 	1    8050 1900
 	0    1    1    0   
 $EndComp
-$Comp
-L Connector:Conn_01x04_Male J4
-U 1 1 5D9E12F4
-P 800 4000
-F 0 "J4" H 906 4278 50  0000 C CNN
-F 1 "SENSOR" H 906 4187 50  0000 C CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical" H 800 4000 50  0001 C CNN
-F 3 "~" H 800 4000 50  0001 C CNN
-	1    800  4000
-	1    0    0    1   
-$EndComp
 Wire Wire Line
-	1000 4000 2200 4000
+	1100 4000 2200 4000
 Wire Wire Line
-	1000 3800 1700 3800
+	1100 3700 1700 3700
 Wire Wire Line
-	1700 3800 1700 3500
+	1700 3700 1700 3500
 Wire Wire Line
-	1000 4100 1700 4100
+	1100 4100 1400 4100
 Wire Wire Line
-	1700 4100 1700 4300
+	1400 4100 1400 4300
 $Comp
 L power:GND #PWR06
 U 1 1 5D9E3311
-P 1700 4300
-F 0 "#PWR06" H 1700 4050 50  0001 C CNN
-F 1 "GND" H 1705 4127 50  0000 C CNN
-F 2 "" H 1700 4300 50  0001 C CNN
-F 3 "" H 1700 4300 50  0001 C CNN
-	1    1700 4300
+P 1400 4300
+F 0 "#PWR06" H 1400 4050 50  0001 C CNN
+F 1 "GND" H 1405 4127 50  0000 C CNN
+F 2 "" H 1400 4300 50  0001 C CNN
+F 3 "" H 1400 4300 50  0001 C CNN
+	1    1400 4300
 	1    0    0    -1  
 $EndComp
-Text Label 1400 3800 0    50   ~ 0
+Text Label 1150 3700 0    50   ~ 0
 VCC_5V
-Text Label 1400 3900 0    50   ~ 0
+Text Label 1150 3800 0    50   ~ 0
 REF_CLK
-Text Label 1400 4000 0    50   ~ 0
+Text Label 1150 4000 0    50   ~ 0
 OUT
-Text Label 1400 4100 0    50   ~ 0
+Text Label 1150 4100 0    50   ~ 0
 GND
 $Comp
 L sp721:sp721 U2
@@ -326,7 +315,7 @@ F 3 "" H 9800 6000 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	1000 3900 2000 3900
+	1100 3800 2000 3800
 $Comp
 L 74xx:74HC04 U1
 U 1 1 5DD5023B
@@ -622,8 +611,7 @@ Wire Wire Line
 	1800 2500 2000 2500
 Connection ~ 2000 2500
 Wire Wire Line
-	2000 3700 2000 3900
-Connection ~ 2000 3900
+	2000 3700 2000 3800
 Wire Wire Line
 	2000 3900 2600 3900
 Wire Wire Line
@@ -706,4 +694,28 @@ Wire Wire Line
 Wire Wire Line
 	6250 800  6750 800 
 Connection ~ 6250 3900
+$Comp
+L Connector:Conn_01x05_Male J4
+U 1 1 5DE043CD
+P 900 3900
+F 0 "J4" H 1000 3550 50  0000 R CNN
+F 1 "SENSOR" V 800 4050 50  0000 R CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x05_P2.54mm_Vertical" H 900 3900 50  0001 C CNN
+F 3 "~" H 900 3900 50  0001 C CNN
+	1    900  3900
+	1    0    0    1   
+$EndComp
+Connection ~ 1700 3500
+Wire Wire Line
+	1700 3500 1700 3400
+Connection ~ 2000 3800
+Wire Wire Line
+	2000 3800 2000 3900
+Text Label 1150 3900 0    50   ~ 0
+GND
+Wire Wire Line
+	1100 3900 1400 3900
+Wire Wire Line
+	1400 3900 1400 4100
+Connection ~ 1400 4100
 $EndSCHEMATC
