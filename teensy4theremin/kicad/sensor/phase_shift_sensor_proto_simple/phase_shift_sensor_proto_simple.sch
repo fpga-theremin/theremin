@@ -8,7 +8,7 @@ encoding utf-8
 Sheet 1 1
 Title "Theremin Phase Shift Sensor"
 Date "2019-10-09"
-Rev "v0.1"
+Rev "v0.2"
 Comp ""
 Comment1 "Teensy 4 Theremin Project"
 Comment2 "(c) Vadim Lopatin 2019"
@@ -44,12 +44,12 @@ $EndComp
 $Comp
 L Device:C C1
 U 1 1 5D9DEE40
-P 8100 2100
-F 0 "C1" H 8215 2146 50  0000 L CNN
-F 1 "2.2pF" H 8215 2055 50  0000 L CNN
-F 2 "Capacitor_THT:C_Disc_D4.3mm_W1.9mm_P5.00mm" H 8138 1950 50  0001 C CNN
-F 3 "~" H 8100 2100 50  0001 C CNN
-	1    8100 2100
+P 8050 1900
+F 0 "C1" H 8165 1946 50  0000 L CNN
+F 1 "2.2pF" H 8165 1855 50  0000 L CNN
+F 2 "Capacitor_THT:C_Disc_D4.3mm_W1.9mm_P5.00mm" H 8088 1750 50  0001 C CNN
+F 3 "~" H 8050 1900 50  0001 C CNN
+	1    8050 1900
 	0    1    1    0   
 $EndComp
 $Comp
@@ -188,12 +188,12 @@ NoConn ~ 6500 3900
 $Comp
 L Connector:Conn_01x02_Male J1
 U 1 1 5D9FD8BA
-P 9700 900
-F 0 "J1" H 9672 780 50  0000 R CNN
-F 1 "INDUCTOR_IN" H 9672 871 50  0000 R CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 9700 900 50  0001 C CNN
-F 3 "~" H 9700 900 50  0001 C CNN
-	1    9700 900 
+P 9700 800
+F 0 "J1" H 9672 680 50  0000 R CNN
+F 1 "INDUCTOR_IN" H 9672 771 50  0000 R CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 9700 800 50  0001 C CNN
+F 3 "~" H 9700 800 50  0001 C CNN
+	1    9700 800 
 	-1   0    0    1   
 $EndComp
 $Comp
@@ -210,20 +210,20 @@ $EndComp
 $Comp
 L Connector:Conn_01x02_Male J3
 U 1 1 5D9FD990
-P 9700 2100
-F 0 "J3" H 9672 1980 50  0000 R CNN
-F 1 "ANTENNA" H 9672 2071 50  0000 R CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 9700 2100 50  0001 C CNN
-F 3 "~" H 9700 2100 50  0001 C CNN
-	1    9700 2100
+P 9700 1900
+F 0 "J3" H 9672 1780 50  0000 R CNN
+F 1 "ANTENNA" H 9672 1871 50  0000 R CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 9700 1900 50  0001 C CNN
+F 3 "~" H 9700 1900 50  0001 C CNN
+	1    9700 1900
 	-1   0    0    1   
 $EndComp
 Wire Wire Line
-	9300 900  9300 800 
+	9300 800  9300 700 
+Wire Wire Line
+	9300 700  9500 700 
 Wire Wire Line
 	9300 800  9500 800 
-Wire Wire Line
-	9300 900  9500 900 
 Wire Wire Line
 	9300 1350 9500 1350
 Wire Wire Line
@@ -231,16 +231,14 @@ Wire Wire Line
 Wire Wire Line
 	9300 1250 9300 1350
 Wire Wire Line
-	9500 2000 9300 2000
+	9500 1800 9300 1800
 Wire Wire Line
-	9300 2000 9300 2100
+	9300 1800 9300 1900
 Wire Wire Line
-	9300 2100 9500 2100
-Wire Wire Line
-	9300 1350 9300 2000
+	9300 1900 9500 1900
 Connection ~ 9300 1350
-Connection ~ 9300 2000
-Connection ~ 9300 2100
+Connection ~ 9300 1800
+Connection ~ 9300 1900
 $Comp
 L power:GND #PWR011
 U 1 1 5DA2AF11
@@ -252,9 +250,9 @@ F 3 "" H 8500 6000 50  0001 C CNN
 	1    8500 6000
 	1    0    0    -1  
 $EndComp
-Text Notes 7750 1150 0    79   ~ 0
-INDUCTOR_IN, INDUCTOR_OUT: air core coil, 4.27mH
-Text Notes 9650 2250 0    79   ~ 0
+Text Notes 7800 1250 0    79   ~ 0
+INDUCTOR_IN, INDUCTOR_OUT: air core coil, 1.2mH\n0.2mm copper wire, 32mm frame diameter, \n75mm winding length
+Text Notes 9100 2100 0    79   ~ 0
 To theremin antenna
 Text Notes 850  750  0    79   ~ 0
 Theremin phase shift sensor
@@ -451,8 +449,6 @@ Wire Wire Line
 Wire Wire Line
 	2000 1300 5700 1300
 Wire Wire Line
-	8250 2100 8450 2100
-Wire Wire Line
 	2000 1300 2000 2500
 $Comp
 L power:+3.3V #PWR09
@@ -495,72 +491,25 @@ Wire Wire Line
 Connection ~ 8500 5200
 NoConn ~ 6500 3500
 NoConn ~ 6500 3800
-$Comp
-L Device:C C2
-U 1 1 5DD627FE
-P 8450 2500
-F 0 "C2" H 8565 2546 50  0000 L CNN
-F 1 "0.1pF" H 8565 2455 50  0000 L CNN
-F 2 "Capacitor_THT:C_Disc_D4.3mm_W1.9mm_P5.00mm" H 8488 2350 50  0001 C CNN
-F 3 "~" H 8450 2500 50  0001 C CNN
-	1    8450 2500
-	1    0    0    1   
-$EndComp
-Wire Wire Line
-	8450 2350 8450 2100
-Connection ~ 8450 2100
-Wire Wire Line
-	8450 2650 8450 2700
-$Comp
-L power:GND #PWR01
-U 1 1 5DD680E3
-P 8450 2700
-F 0 "#PWR01" H 8450 2450 50  0001 C CNN
-F 1 "GND" H 8455 2527 50  0000 C CNN
-F 2 "" H 8450 2700 50  0001 C CNN
-F 3 "" H 8450 2700 50  0001 C CNN
-	1    8450 2700
-	1    0    0    -1  
-$EndComp
-Text Notes 8150 2650 0    50   ~ 0
-unused
-Wire Wire Line
-	6250 900  6250 3900
 Wire Wire Line
 	6500 4000 6250 4000
-Wire Wire Line
-	6500 3700 5700 3700
 Wire Wire Line
 	2000 2500 2400 2500
 $Comp
 L Device:R R2
 U 1 1 5DDC8BA9
-P 6900 900
-F 0 "R2" V 6693 900 50  0000 C CNN
-F 1 "10" V 6784 900 50  0000 C CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 6830 900 50  0001 C CNN
-F 3 "~" H 6900 900 50  0001 C CNN
-	1    6900 900 
+P 6900 800
+F 0 "R2" V 6693 800 50  0000 C CNN
+F 1 "22" V 6784 800 50  0000 C CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 6830 800 50  0001 C CNN
+F 3 "~" H 6900 800 50  0001 C CNN
+	1    6900 800 
 	0    -1   -1   0   
 $EndComp
-Connection ~ 6250 3900
 Wire Wire Line
 	6250 3900 6250 4000
 Text Notes 5600 4300 0    50   ~ 0
 ESD protection is mandatory!\nThere is 200V voltage swing on antenna!!!
-Wire Wire Line
-	5700 1300 5700 2100
-$Comp
-L Device:R R5
-U 1 1 5DDC4CBD
-P 6800 2100
-F 0 "R5" V 6593 2100 50  0000 C CNN
-F 1 "100" V 6684 2100 50  0000 C CNN
-F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 6730 2100 50  0001 C CNN
-F 3 "~" H 6800 2100 50  0001 C CNN
-	1    6800 2100
-	0    -1   -1   0   
-$EndComp
 $Comp
 L Device:R R3
 U 1 1 5DDC4F30
@@ -619,34 +568,23 @@ Wire Wire Line
 $Comp
 L Device:C C7
 U 1 1 5DDCCEBE
-P 7700 2100
-F 0 "C7" H 7815 2146 50  0000 L CNN
-F 1 "2.2pF" H 7815 2055 50  0000 L CNN
-F 2 "Capacitor_THT:C_Disc_D4.3mm_W1.9mm_P5.00mm" H 7738 1950 50  0001 C CNN
-F 3 "~" H 7700 2100 50  0001 C CNN
-	1    7700 2100
+P 7550 1900
+F 0 "C7" H 7665 1946 50  0000 L CNN
+F 1 "2.2pF" H 7665 1855 50  0000 L CNN
+F 2 "Capacitor_THT:C_Disc_D4.3mm_W1.9mm_P5.00mm" H 7588 1750 50  0001 C CNN
+F 3 "~" H 7550 1900 50  0001 C CNN
+	1    7550 1900
 	0    1    1    0   
 $EndComp
 Wire Wire Line
-	6650 2100 5700 2100
-Connection ~ 5700 2100
-Wire Wire Line
-	5700 2100 5700 3700
-Wire Wire Line
-	6950 2100 7250 2100
-Wire Wire Line
-	7850 2100 7950 2100
-Text Notes 6500 800  0    50   ~ 0
-Q damping R: 10..100 Ohm
-Wire Wire Line
-	8450 2100 9300 2100
+	7700 1900 7900 1900
+Text Notes 6500 700  0    50   ~ 0
+Q damping R: 10..68 Ohm
 Wire Wire Line
 	3200 3900 6250 3900
+Connection ~ 9300 800 
 Wire Wire Line
-	6250 900  6750 900 
-Connection ~ 9300 900 
-Wire Wire Line
-	7050 900  9300 900 
+	7050 800  9300 800 
 $Comp
 L Connector:TestPoint TP3
 U 1 1 5DDD03BA
@@ -735,35 +673,37 @@ Wire Wire Line
 Connection ~ 8500 5900
 Wire Wire Line
 	8500 5900 8500 6000
-$Comp
-L Device:C C8
-U 1 1 5DDE5626
-P 7250 2500
-F 0 "C8" H 7365 2546 50  0000 L CNN
-F 1 "6.8pF" H 7365 2455 50  0000 L CNN
-F 2 "Capacitor_THT:C_Disc_D4.3mm_W1.9mm_P5.00mm" H 7288 2350 50  0001 C CNN
-F 3 "~" H 7250 2500 50  0001 C CNN
-	1    7250 2500
-	1    0    0    -1  
-$EndComp
-Text Notes 6950 2650 0    50   ~ 0
-unused
 Wire Wire Line
-	7250 2650 7250 2700
+	5700 1300 5700 1900
+Wire Wire Line
+	9300 1350 9300 1800
+Wire Wire Line
+	5700 1900 5700 3700
+Connection ~ 5700 1900
+Wire Wire Line
+	8200 1900 9300 1900
 $Comp
-L power:GND #PWR02
-U 1 1 5DDE9A6B
-P 7250 2700
-F 0 "#PWR02" H 7250 2450 50  0001 C CNN
-F 1 "GND" H 7255 2527 50  0000 C CNN
-F 2 "" H 7250 2700 50  0001 C CNN
-F 3 "" H 7250 2700 50  0001 C CNN
-	1    7250 2700
-	1    0    0    -1  
+L Device:C C2
+U 1 1 5DDF2A40
+P 7050 1900
+F 0 "C2" H 7165 1946 50  0000 L CNN
+F 1 "2.2pF" H 7165 1855 50  0000 L CNN
+F 2 "Capacitor_THT:C_Disc_D4.3mm_W1.9mm_P5.00mm" H 7088 1750 50  0001 C CNN
+F 3 "~" H 7050 1900 50  0001 C CNN
+	1    7050 1900
+	0    1    1    0   
 $EndComp
 Wire Wire Line
-	7250 2100 7250 2350
-Connection ~ 7250 2100
+	5700 1900 6900 1900
 Wire Wire Line
-	7250 2100 7550 2100
+	7200 1900 7400 1900
+Text Notes 6850 1700 0    50   ~ 0
+3 caps in series - to increase voltage
+Wire Wire Line
+	5700 3700 6500 3700
+Wire Wire Line
+	6250 3900 6250 800 
+Wire Wire Line
+	6250 800  6750 800 
+Connection ~ 6250 3900
 $EndSCHEMATC
