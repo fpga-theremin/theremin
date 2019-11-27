@@ -195,9 +195,9 @@ Edges PhaseShift::poll()
     PhaseShiftChannelConfig cfg;
     if (!getChannelForPins(_refFreqPin, _shiftedSignalPin, cfg))
         return Edges(0,0);
+
     IMXRT_FLEXPWM_t *pwm = cfg.pwm;
-    // clear capture status of B
-    while (!pwm->SM[cfg.submodule].STS & (0x100)) {
+    while ((pwm->SM[cfg.submodule].STS & (0x300)) != 0x300) {
         // wait until capture flag is set
     }
     Edges res = Edges(pwm->SM[cfg.submodule].CVAL4, pwm->SM[cfg.submodule].CVAL5);
