@@ -17,10 +17,13 @@ class PhaseShift {
     uint16_t _refFreqPeriod;
     uint16_t _refFreqPhase;
     uint16_t _averagingBufferSize;
+    volatile Edges * _dmabuf;
+    uint8_t _bufSizeLog2;
 public:
     PhaseShift(int8_t refFreqPin, int8_t shiftedSignalPin);
     // returns 1 if successfully initialized
     int begin(uint16_t refFreqPeriod, uint16_t refFreqPhase, uint16_t averagingBufferSize);
+    int setupDMA(volatile Edges * bufptr, uint8_t sizeLog2);
     void end(void);
     static uint16_t frequencyToPeriod(float frequencyHertz);
     void readRegs(uint16_t * values);

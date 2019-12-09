@@ -29,10 +29,39 @@
 #if defined(__IMXRT1062__)
 
 #include <imxrt.h>
+#include <DMAChannel.h>
+
+typedef DMABaseClass::TCD_t tcd_t;
+
+// extern uint16_t dma_channel_allocated_mask;
+
+class PhaseShiftDMASetting : public DMASetting {
+public:
+	void sourceTwoValuesWithStep(volatile const unsigned short p[], uint16_t step) {
+		TCD->SADDR = p;
+		TCD->SOFF = step; //2;
+		TCD->ATTR_SRC = 1;
+		TCD->NBYTES = 2;
+		TCD->SLAST = 0; //-len;
+		TCD->BITER = 1; //len / 2;
+		TCD->CITER = 1; //len / 2;
+	}
+
+};
+
+// DMA channel able to fetch source data with step
+class PhaseShiftDMA : public DMAChannel {
+protected:
+    uint8_t channel;
+public:
+
+};
 
 PhaseShift::PhaseShift(int8_t refFreqPin, int8_t shiftedSignalPin) 
 : _refFreqPin(refFreqPin), _shiftedSignalPin(shiftedSignalPin) 
 , _refFreqPeriod(0), _refFreqPhase(0), _averagingBufferSize(0)
+, _dmabuf(nullptr)
+, _bufSizeLog2(0)
 {
 
 }
@@ -188,6 +217,21 @@ void PhaseShift::readRegs(uint16_t * values) {
     //return pwm->SM[cfg.submodule].OCTRL; //pwm->SM[submodule].STS;
     //return pwm->SM[cfg.submodule].CVAL0; //pwm->SM[submodule].STS;
 }
+
+int PhaseShift::setupDMA(volatile Edges * bufptr, uint8_t sizeLog2) {
+    PhaseShiftChannelConfig cfg;
+    if (!getChannelForPins(_refFreqPin, _shiftedSignalPin, cfg))
+        return 0;
+    IMXRT_FLEXPWM_t *pwm = cfg.pwm;
+    if (sizeLog2 > 12)
+        sizeLog2 = 12; // *4096
+    else if (sizeLog2 < 4)
+        sizeLog2 = 4; // *16
+    _dmabuf = bufptr;
+    _bufSizeLog2 = sizeLog2;
+    return 1;
+}
+
 
 // wait for next captured value and return it
 Edges PhaseShift::poll()

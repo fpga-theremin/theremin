@@ -13,6 +13,15 @@ PhaseShift pitchSensor(PITCH_SENSOR_FREF_PIN, PITCH_SENSOR_PHASE_SHIFT_PIN);
 
 void testCapturePolling(int count);
 
+#define DMA_RING_BUFFER_LOG2 12
+#define DMA_RING_BUFFER_SIZE (1<<DMA_RING_BUFFER_LOG2)
+
+static DMAMEM __attribute((aligned(DMA_RING_BUFFER_SIZE))) Edges phaseShiftSensorBuf[DMA_RING_BUFFER_SIZE];
+
+//static DMASetting dmasettingPitch;
+//static DMAChannel dmachannelPitch;
+
+
 void setup() {
   //Serial.begin(9600);
   Serial.begin(115200);
@@ -47,6 +56,10 @@ void setup() {
   Serial.println(pitchPeriod);
   delay(2);
   testCapturePolling(100);
+
+  //dmasettingPitch.
+  
+  pitchSensor.setupDMA(phaseShiftSensorBuf, DMA_RING_BUFFER_LOG2);
 }
 
 void testCapturePolling(int count) {
