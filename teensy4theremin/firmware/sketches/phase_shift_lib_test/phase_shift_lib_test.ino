@@ -11,7 +11,7 @@
 #define PITCH_SENSOR_AVERAGING 1024
 PhaseShift pitchSensor(PITCH_SENSOR_FREF_PIN, PITCH_SENSOR_PHASE_SHIFT_PIN);
 
-void testCapturePolling();
+void testCapturePolling(int count);
 
 void setup() {
   //Serial.begin(9600);
@@ -46,17 +46,16 @@ void setup() {
   Serial.print("Pitch sensor reference freq period, F_BUS cycles: ");
   Serial.println(pitchPeriod);
   delay(2);
-  testCapturePolling();
+  testCapturePolling(100);
 }
 
-void testCapturePolling() {
-  Serial.println("Polling 1000 measures");
+void testCapturePolling(int count) {
   Edges data[1000];
-  for (int i = 0; i < 1000; i++) {
+  for (int i = 0; i < count; i++) {
     data[i] = pitchSensor.poll();
   }
   Serial.println("Dumping measures");
-  for (int i = 0; i < 1000; i++) {
+  for (int i = 0; i < count; i++) {
       Serial.print(data[i].raising);
       Serial.print("\t");
       Serial.print(data[i].falling);
@@ -66,22 +65,23 @@ void testCapturePolling() {
 
 void loop() {
   delay(500);
-  Serial.print("Status: ");
-  uint16_t regvalues[10]  = {0, 0, 0};
-  pitchSensor.readRegs(regvalues);
-  Serial.print(regvalues[0]);
-  Serial.print(" ");
-  Serial.print(regvalues[1]);
-  Serial.print(" ");
-  Serial.print(regvalues[2]);
-  Serial.print(" ");
-  Serial.print(regvalues[3]);
-  Serial.print(" ");
-  //Serial.print(" digitalRead: ");
-  //Serial.println(digitalRead(3));
-  //for (int i = 0; i < 70; i++) {
-  //   delay(30);
-  //   Serial.print(digitalRead(3));
-  //}
-  Serial.println("...");
+  testCapturePolling(10);
+//  Serial.print("Status: ");
+//  uint16_t regvalues[10]  = {0, 0, 0};
+//  pitchSensor.readRegs(regvalues);
+//  Serial.print(regvalues[0]);
+//  Serial.print(" ");
+//  Serial.print(regvalues[1]);
+//  Serial.print(" ");
+//  Serial.print(regvalues[2]);
+//  Serial.print(" ");
+//  Serial.print(regvalues[3]);
+//  Serial.print(" ");
+//  //Serial.print(" digitalRead: ");
+//  //Serial.println(digitalRead(3));
+//  //for (int i = 0; i < 70; i++) {
+//  //   delay(30);
+//  //   Serial.print(digitalRead(3));
+//  //}
+//  Serial.println("...");
 }
