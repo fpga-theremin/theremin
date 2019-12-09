@@ -7,8 +7,8 @@ $Descr A4 11693 8268
 encoding utf-8
 Sheet 1 1
 Title "Theremin Phase Shift Sensor"
-Date "2019-10-09"
-Rev "v0.2"
+Date "2019-12-09"
+Rev "v0.3"
 Comp ""
 Comment1 "Teensy 4 Theremin Project"
 Comment2 "(c) Vadim Lopatin 2019"
@@ -20,7 +20,7 @@ L Device:C C1
 U 1 1 5D9DEE40
 P 8250 3700
 F 0 "C1" H 8365 3746 50  0000 L CNN
-F 1 "2.2pF" H 8365 3655 50  0000 L CNN
+F 1 "3.3pF" H 8365 3655 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 8288 3550 50  0001 C CNN
 F 3 "~" H 8250 3700 50  0001 C CNN
 	1    8250 3700
@@ -217,7 +217,7 @@ L Device:R R2
 U 1 1 5DDC4F30
 P 2050 4250
 F 0 "R2" V 1843 4250 50  0000 C CNN
-F 1 "470K" V 1934 4250 50  0000 C CNN
+F 1 "330K" V 1934 4250 50  0000 C CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 1980 4250 50  0001 C CNN
 F 3 "~" H 2050 4250 50  0001 C CNN
 	1    2050 4250
@@ -228,7 +228,7 @@ L Device:R R3
 U 1 1 5DDC4FB9
 P 2050 4750
 F 0 "R3" V 1843 4750 50  0000 C CNN
-F 1 "470K" V 1934 4750 50  0000 C CNN
+F 1 "330K" V 1934 4750 50  0000 C CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 1980 4750 50  0001 C CNN
 F 3 "~" H 2050 4750 50  0001 C CNN
 	1    2050 4750
@@ -270,7 +270,7 @@ L Device:C C2
 U 1 1 5DDCCEBE
 P 7750 3700
 F 0 "C2" H 7865 3746 50  0000 L CNN
-F 1 "2.2pF" H 7865 3655 50  0000 L CNN
+F 1 "3.3pF" H 7865 3655 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 7788 3550 50  0001 C CNN
 F 3 "~" H 7750 3700 50  0001 C CNN
 	1    7750 3700
@@ -278,8 +278,8 @@ F 3 "~" H 7750 3700 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	7900 3700 8100 3700
-Text Notes 7200 1550 0    50   ~ 0
-(optional)
+Text Notes 6650 1550 0    50   ~ 0
+(optional: C 1..100nF or R0..100 Ohm)
 $Comp
 L Connector:TestPoint TP1
 U 1 1 5DDD0440
@@ -327,7 +327,7 @@ L Device:C C3
 U 1 1 5DDF2A40
 P 7250 3700
 F 0 "C3" H 7365 3746 50  0000 L CNN
-F 1 "2.2pF" H 7365 3655 50  0000 L CNN
+F 1 "3.3pF" H 7365 3655 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 7288 3550 50  0001 C CNN
 F 3 "~" H 7250 3700 50  0001 C CNN
 	1    7250 3700
@@ -358,7 +358,7 @@ Connection ~ 1300 2000
 Wire Wire Line
 	7500 1700 9700 1700
 Text Notes 8000 2700 0    79   ~ 0
-INDUCTOR_IN, INDUCTOR_OUT: air core coil, 1.2mH\n0.2mm copper wire, 32mm frame diameter, \n75mm winding length
+INDUCTOR_IN, INDUCTOR_OUT: air core coil, 2-3mH\n0.1mm copper wire, 32mm frame diameter, \n40..50mm winding length
 Wire Wire Line
 	9500 3200 9500 3700
 $Comp
@@ -397,16 +397,6 @@ $EndComp
 Wire Wire Line
 	3500 2400 3400 2400
 Wire Wire Line
-	3400 2400 3400 1700
-Wire Wire Line
-	3400 1700 3500 1700
-Wire Wire Line
-	4050 2400 4300 2400
-Wire Wire Line
-	4300 2400 4300 2300
-Wire Wire Line
-	4300 1700 4050 1700
-Wire Wire Line
 	3000 2200 3000 2100
 Wire Wire Line
 	3000 2100 3800 2100
@@ -415,7 +405,7 @@ Wire Wire Line
 Wire Wire Line
 	3800 2500 3800 2700
 Wire Wire Line
-	3800 2700 3000 2700
+	3800 2700 3400 2700
 Wire Wire Line
 	3000 2700 3000 2500
 $Comp
@@ -446,15 +436,12 @@ Connection ~ 3000 2100
 Wire Wire Line
 	3000 2700 3000 2800
 Connection ~ 3000 2700
-Wire Wire Line
-	1000 1700 3400 1700
-Connection ~ 3400 1700
 $Comp
 L Device:C C10
 U 1 1 5DEC729F
 P 6400 2750
 F 0 "C10" H 6515 2796 50  0000 L CNN
-F 1 "0.1uF" H 6515 2705 50  0000 L CNN
+F 1 "0.22uF" H 6515 2705 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 6438 2600 50  0001 C CNN
 F 3 "~" H 6400 2750 50  0001 C CNN
 	1    6400 2750
@@ -507,7 +494,7 @@ Wire Wire Line
 Wire Wire Line
 	4700 2500 4900 2500
 NoConn ~ 4900 2700
-NoConn ~ 5650 2700
+NoConn ~ 4900 2300
 $Comp
 L 74LVC2G04:74LVC2G04 U1
 U 2 1 5DEE13DE
@@ -585,7 +572,7 @@ L Device:C C8
 U 1 1 5DF1ED56
 P 4900 6750
 F 0 "C8" H 5015 6796 50  0000 L CNN
-F 1 "0.1uF" H 5015 6705 50  0000 L CNN
+F 1 "0.22uF" H 5015 6705 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 4938 6600 50  0001 C CNN
 F 3 "~" H 4900 6750 50  0001 C CNN
 	1    4900 6750
@@ -676,15 +663,12 @@ Wire Wire Line
 	1000 2000 1300 2000
 Wire Wire Line
 	1000 1900 1600 1900
-Wire Wire Line
-	4300 1700 7200 1700
-Connection ~ 4300 1700
 $Comp
 L Device:C C4
 U 1 1 5DF6FB14
 P 8250 4300
 F 0 "C4" H 8365 4346 50  0000 L CNN
-F 1 "2.2pF" H 8365 4255 50  0000 L CNN
+F 1 "10pF" H 8365 4255 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 8288 4150 50  0001 C CNN
 F 3 "~" H 8250 4300 50  0001 C CNN
 	1    8250 4300
@@ -695,7 +679,7 @@ L Device:C C5
 U 1 1 5DF6FB1A
 P 7750 4300
 F 0 "C5" H 7865 4346 50  0000 L CNN
-F 1 "2.2pF" H 7865 4255 50  0000 L CNN
+F 1 "10pF" H 7865 4255 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 7788 4150 50  0001 C CNN
 F 3 "~" H 7750 4300 50  0001 C CNN
 	1    7750 4300
@@ -710,7 +694,7 @@ L Device:C C6
 U 1 1 5DF6FB22
 P 7250 4300
 F 0 "C6" H 7365 4346 50  0000 L CNN
-F 1 "2.2pF" H 7365 4255 50  0000 L CNN
+F 1 "10pF" H 7365 4255 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 7288 4150 50  0001 C CNN
 F 3 "~" H 7250 4300 50  0001 C CNN
 	1    7250 4300
@@ -771,13 +755,8 @@ F 3 "" H 2950 4050 50  0001 C CNN
 	1    2950 4050
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	4900 2300 4300 2300
-Connection ~ 4300 2300
-Wire Wire Line
-	4300 2300 4300 1700
 Text Notes 7200 4950 0    50   ~ 0
-(optional, to decrease sensitivity)
+(optional, to decrease sensitivity and F_ref)
 Text Notes 2900 900  0    50   ~ 0
 Two gates in parallel to increase output current
 Wire Wire Line
@@ -812,4 +791,21 @@ Wire Wire Line
 Wire Wire Line
 	4100 2700 3800 2700
 Connection ~ 3800 2700
+Wire Wire Line
+	1000 1700 3500 1700
+Wire Wire Line
+	3400 2400 3400 2700
+Connection ~ 3400 2700
+Wire Wire Line
+	3400 2700 3000 2700
+Wire Wire Line
+	5650 2700 5800 2700
+Wire Wire Line
+	5800 2700 5800 1700
+Connection ~ 5800 1700
+Wire Wire Line
+	5800 1700 7200 1700
+Wire Wire Line
+	4050 1700 5800 1700
+NoConn ~ 4050 2400
 $EndSCHEMATC
