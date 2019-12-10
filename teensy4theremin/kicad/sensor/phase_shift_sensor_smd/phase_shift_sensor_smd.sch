@@ -105,17 +105,6 @@ To theremin antenna
 Text Notes 850  750  0    79   ~ 0
 Theremin phase shift sensor
 $Comp
-L Regulator_Linear:MCP1700-3302E_TO92 U3
-U 1 1 5DD2AFDF
-P 9800 5150
-F 0 "U3" H 9800 4908 50  0000 C CNN
-F 1 "REG_3V3" H 9800 4999 50  0000 C CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 9800 4950 50  0001 C CIN
-F 3 "http://ww1.microchip.com/downloads/en/DeviceDoc/20001826C.pdf" H 9800 5150 50  0001 C CNN
-	1    9800 5150
-	1    0    0    1   
-$EndComp
-$Comp
 L Device:C C12
 U 1 1 5DD2E1A1
 P 10400 5600
@@ -808,4 +797,15 @@ Wire Wire Line
 Wire Wire Line
 	4050 1700 5800 1700
 NoConn ~ 4050 2400
+$Comp
+L Regulator_Linear:MCP1700-3302E_SOT23 U3
+U 1 1 5DEFB48C
+P 9800 5150
+F 0 "U3" H 9800 5392 50  0000 C CNN
+F 1 "MCP1700-3302E_SOT23" H 9800 5301 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 9800 5375 50  0001 C CNN
+F 3 "http://ww1.microchip.com/downloads/en/DeviceDoc/20001826C.pdf" H 9800 5150 50  0001 C CNN
+	1    9800 5150
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC
