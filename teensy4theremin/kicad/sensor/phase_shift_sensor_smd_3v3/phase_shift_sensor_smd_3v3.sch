@@ -198,45 +198,45 @@ Connection ~ 8750 5400
 $Comp
 L Device:R R2
 U 1 1 5DDC4F30
-P 2050 4250
-F 0 "R2" V 1843 4250 50  0000 C CNN
-F 1 "100K" V 1934 4250 50  0000 C CNN
-F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 1980 4250 50  0001 C CNN
-F 3 "~" H 2050 4250 50  0001 C CNN
-	1    2050 4250
+P 1900 4250
+F 0 "R2" V 1693 4250 50  0000 C CNN
+F 1 "100K" V 1784 4250 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 1830 4250 50  0001 C CNN
+F 3 "~" H 1900 4250 50  0001 C CNN
+	1    1900 4250
 	1    0    0    -1  
 $EndComp
 $Comp
 L Device:R R3
 U 1 1 5DDC4FB9
-P 2050 4750
-F 0 "R3" V 1843 4750 50  0000 C CNN
-F 1 "100K" V 1934 4750 50  0000 C CNN
-F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 1980 4750 50  0001 C CNN
-F 3 "~" H 2050 4750 50  0001 C CNN
-	1    2050 4750
+P 1900 4750
+F 0 "R3" V 1693 4750 50  0000 C CNN
+F 1 "100K" V 1784 4750 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 1830 4750 50  0001 C CNN
+F 3 "~" H 1900 4750 50  0001 C CNN
+	1    1900 4750
 	1    0    0    -1  
 $EndComp
 $Comp
 L power:GND #PWR02
 U 1 1 5DDC50A6
-P 2050 5000
-F 0 "#PWR02" H 2050 4750 50  0001 C CNN
-F 1 "GND" H 2055 4827 50  0000 C CNN
-F 2 "" H 2050 5000 50  0001 C CNN
-F 3 "" H 2050 5000 50  0001 C CNN
-	1    2050 5000
+P 1900 5000
+F 0 "#PWR02" H 1900 4750 50  0001 C CNN
+F 1 "GND" H 1905 4827 50  0000 C CNN
+F 2 "" H 1900 5000 50  0001 C CNN
+F 3 "" H 1900 5000 50  0001 C CNN
+	1    1900 5000
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	2050 4000 2050 4100
+	1900 4000 1900 4100
 Wire Wire Line
-	2050 4400 2050 4500
-Connection ~ 2050 4500
+	1900 4400 1900 4500
+Connection ~ 1900 4500
 Wire Wire Line
-	2050 4500 2050 4600
+	1900 4500 1900 4600
 Wire Wire Line
-	2050 4900 2050 5000
+	1900 4900 1900 5000
 $Comp
 L Device:C C2
 U 1 1 5DDCCEBE
@@ -255,12 +255,12 @@ Text Notes 6650 1550 0    50   ~ 0
 $Comp
 L Connector:TestPoint TP1
 U 1 1 5DDD0440
-P 1450 4500
-F 0 "TP1" V 1645 4574 50  0000 C CNN
-F 1 "OUT_NOBUF" V 1554 4574 50  0000 C CNN
-F 2 "TestPoint:TestPoint_THTPad_1.0x1.0mm_Drill0.5mm" H 1650 4500 50  0001 C CNN
-F 3 "~" H 1650 4500 50  0001 C CNN
-	1    1450 4500
+P 850 4500
+F 0 "TP1" V 1045 4574 50  0000 C CNN
+F 1 "OUT_NOBUF" V 954 4574 50  0000 C CNN
+F 2 "TestPoint:TestPoint_THTPad_1.0x1.0mm_Drill0.5mm" H 1050 4500 50  0001 C CNN
+F 3 "~" H 1050 4500 50  0001 C CNN
+	1    850  4500
 	0    -1   -1   0   
 $EndComp
 $Comp
@@ -308,7 +308,7 @@ $EndComp
 Wire Wire Line
 	7400 3700 7600 3700
 Text Notes 7050 3500 0    50   ~ 0
-3 caps in series - to increase voltage
+1pF..3.3pF, 3 caps in series - to increase voltage
 $Comp
 L Connector:Conn_01x06_Male J1
 U 1 1 5DE043CD
@@ -461,22 +461,22 @@ Wire Wire Line
 NoConn ~ 4900 2700
 NoConn ~ 4900 2300
 $Comp
-L 74xGxx:74LVC2G14 U1
+L 74LVC2G04:74LVC2G04 U1
 U 2 1 5DEE13DE
 P 3750 4500
 F 0 "U1" H 3725 4767 50  0000 C CNN
-F 1 "LVC2G14" H 3725 4676 50  0000 C CNN
+F 1 "LVC2G04" H 3725 4676 50  0000 C CNN
 F 2 "Package_TO_SOT_SMD:SOT-23-6" H 3750 4500 50  0001 C CNN
 F 3 "http://www.ti.com/lit/sg/scyt129e/scyt129e.pdf" H 3750 4500 50  0001 C CNN
 	2    3750 4500
 	1    0    0    -1  
 $EndComp
 $Comp
-L 74xGxx:74LVC2G14 U1
+L 74LVC2G04:74LVC2G04 U1
 U 1 1 5DEE13E4
 P 3750 5200
 F 0 "U1" H 3725 5467 50  0000 C CNN
-F 1 "LVC2G14" H 3725 5376 50  0000 C CNN
+F 1 "LVC2G04" H 3725 5376 50  0000 C CNN
 F 2 "Package_TO_SOT_SMD:SOT-23-6" H 3750 5200 50  0001 C CNN
 F 3 "http://www.ti.com/lit/sg/scyt129e/scyt129e.pdf" H 3750 5200 50  0001 C CNN
 	1    3750 5200
@@ -523,7 +523,7 @@ Wire Wire Line
 	2950 5500 2950 5600
 Connection ~ 2950 5500
 Wire Wire Line
-	2050 4500 2500 4500
+	1900 4500 2500 4500
 Wire Wire Line
 	3350 5200 3350 5500
 Connection ~ 3350 5500
@@ -595,13 +595,13 @@ F 3 "" H 6200 2300 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	1450 4500 2050 4500
+	850  4500 1150 4500
 Wire Wire Line
-	1800 2000 1800 3400
+	1800 2000 1800 3100
 Wire Wire Line
-	1800 3400 4200 3400
+	1800 3100 4200 3100
 Wire Wire Line
-	4200 3400 4200 4500
+	4200 3100 4200 4500
 Wire Wire Line
 	4200 4500 4000 4500
 NoConn ~ 5650 2300
@@ -835,17 +835,16 @@ Wire Wire Line
 Wire Wire Line
 	6500 5400 6500 4400
 Wire Wire Line
-	6500 4000 4400 4000
+	6500 4400 4400 4400
 Wire Wire Line
 	6200 5400 6500 5400
 Wire Wire Line
 	2950 4000 2950 4250
 Connection ~ 2950 4000
 Wire Wire Line
-	2950 4000 2050 4000
+	2950 4000 1900 4000
 Wire Wire Line
-	4400 4000 4400 6500
-Connection ~ 4400 4000
+	4400 4000 4400 4400
 Wire Wire Line
 	4400 4000 2950 4000
 Connection ~ 1450 2100
@@ -855,9 +854,6 @@ Wire Wire Line
 	1450 1900 1450 2100
 Text Label 1050 1600 0    50   ~ 0
 GND
-Wire Wire Line
-	1800 3400 1800 3450
-Connection ~ 1800 3400
 Wire Wire Line
 	1000 1700 3400 1700
 Connection ~ 3400 1700
@@ -891,8 +887,6 @@ $EndComp
 Wire Wire Line
 	9200 4400 6500 4400
 Connection ~ 6500 4400
-Wire Wire Line
-	6500 4400 6500 4000
 Text Notes 7400 4300 0    59   ~ 0
 Short JP1 if only one regulator is soldered\nor no on board regulators at all
 $Comp
@@ -922,4 +916,60 @@ Wire Wire Line
 	9200 5000 8750 5000
 Wire Wire Line
 	8750 5000 8750 5400
+$Comp
+L Device:C C15
+U 1 1 5E58EBF3
+P 1150 4750
+F 0 "C15" H 1265 4796 50  0000 L CNN
+F 1 "3.3pF" H 1265 4705 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 1188 4600 50  0001 C CNN
+F 3 "~" H 1150 4750 50  0001 C CNN
+	1    1150 4750
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1150 4900 1150 5000
+Wire Wire Line
+	1150 4500 1150 4600
+$Comp
+L power:GND #PWR07
+U 1 1 5E58EBFB
+P 1150 5000
+F 0 "#PWR07" H 1150 4750 50  0001 C CNN
+F 1 "GND" H 1155 4827 50  0000 C CNN
+F 2 "" H 1150 5000 50  0001 C CNN
+F 3 "" H 1150 5000 50  0001 C CNN
+	1    1150 5000
+	1    0    0    -1  
+$EndComp
+Connection ~ 1150 4500
+Wire Wire Line
+	1150 4500 1900 4500
+Connection ~ 4400 4400
+Wire Wire Line
+	4400 4400 4400 6500
+Text Notes 550  5800 0    50   ~ 0
+Optional C - additional\nvoltage divider on buffer input
+Text Notes 1500 5350 0    50   ~ 0
+Input centering resistors
+Text Notes 7550 2750 0    50   ~ 0
+Optional: to decrease sensitivity if needed
+$Comp
+L Device:C C16
+U 1 1 5E5BC251
+P 1150 4200
+F 0 "C16" H 1265 4246 50  0000 L CNN
+F 1 "3.3pF" H 1265 4155 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 1188 4050 50  0001 C CNN
+F 3 "~" H 1150 4200 50  0001 C CNN
+	1    1150 4200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1150 4050 1150 4000
+Wire Wire Line
+	1150 4000 1900 4000
+Connection ~ 1900 4000
+Wire Wire Line
+	1150 4350 1150 4500
 $EndSCHEMATC
