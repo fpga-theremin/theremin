@@ -1,0 +1,5 @@
+(sym_lib_table
+  (lib (name NC7WZ04)(type Legacy)(uri D:/projects/fpga/theremin-source/teensy4theremin/kicad/libraries/NC7WZ04.lib)(options "")(descr ""))
+  (lib (name IP4220CZ6)(type Legacy)(uri D:/projects/fpga/theremin-source/teensy4theremin/kicad/libraries/IP4220CZ6.lib)(options "")(descr ""))
+  (lib (name 74LVC2G04)(type Legacy)(uri D:/projects/fpga/theremin-source/teensy4theremin/kicad/libraries/74LVC2G04.lib)(options "")(descr ""))
+)
