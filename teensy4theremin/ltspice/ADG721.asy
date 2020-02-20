@@ -34,7 +34,7 @@ TEXT 102 -144 Left 2 VDD
 TEXT -23 -146 Left 2 ADG721
 SYMATTR Value ADG721
 SYMATTR Prefix X
-SYMATTR SpiceModel ..\sym\EXTRA\ADG721\adg721.cir
+SYMATTR SpiceModel adg721.cir
 SYMATTR Value2 ADG721
 SYMATTR Description ADG721 dual analog switch
 PIN -64 -32 NONE 8
