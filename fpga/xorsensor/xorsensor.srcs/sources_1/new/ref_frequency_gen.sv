@@ -23,13 +23,15 @@
 module ref_frequency_gen
 #(
     // power of two of output size (3 for 8, 4 for 16, 5 for 32) 
-    parameter OVERSAMPLING = 3,
+    parameter OVERSAMPLING = 5,
     // oversampling bits
     parameter OVERSAMPLING_BITS = (1<<OVERSAMPLING),
     // base counter size - w/o oversampling bits, e.g. 8 for min frequency 600KHz with 150MHz bus and x8 oversampling 
     parameter BASE_COUNTER_BITS = 8,
     // full counter size, for 300KHz min frequency, should be 12 for OVERSAMPLING=3, 13 for OVERSAMPLING=4, 14 for OVERSAMPLING=5
-    parameter COUNTER_BITS = BASE_COUNTER_BITS + OVERSAMPLING  
+    parameter COUNTER_BITS = BASE_COUNTER_BITS + OVERSAMPLING,
+    // 1 for single phase, 2 for both 0 and PI/2 phases (
+    parameter PHASES_COUNT = 1  
 )
 (
     // 150MHz 
@@ -56,7 +58,6 @@ module ref_frequency_gen
 );
 
 logic [COUNTER_BITS-1:0] period_reg;
-logic [COUNTER_BITS-1:0] period_reg_34;
 
 logic [COUNTER_BITS-1:0] counter;
 
@@ -70,18 +71,16 @@ logic end_of_phase_0; // starting phase 1
 logic end_of_phase_1; // starting phase 2
 logic end_of_phase_2; // starting phase 3
 logic end_of_phase_3; // starting phase 0
-always_comb end_of_phase_0 <= (counter[COUNTER_BITS-1:OVERSAMPLING] == phase_1[COUNTER_BITS-1:OVERSAMPLING]);
+always_comb end_of_phase_0 <= PHASES_COUNT > 1 ? (counter[COUNTER_BITS-1:OVERSAMPLING] == phase_1[COUNTER_BITS-1:OVERSAMPLING]) : 0;
 always_comb end_of_phase_1 <= (counter[COUNTER_BITS-1:OVERSAMPLING] == phase_2[COUNTER_BITS-1:OVERSAMPLING]);
-always_comb end_of_phase_2 <= (counter[COUNTER_BITS-1:OVERSAMPLING] == phase_3[COUNTER_BITS-1:OVERSAMPLING]);
+always_comb end_of_phase_2 <= PHASES_COUNT > 1 ? (counter[COUNTER_BITS-1:OVERSAMPLING] == phase_3[COUNTER_BITS-1:OVERSAMPLING]) : 0;
 always_comb end_of_phase_3 <= ( |counter[COUNTER_BITS-1:OVERSAMPLING] == 1'b0 );
 
 always_ff @(posedge CLK) begin
     if (RESET) begin
         period_reg <= {4'b0100, {COUNTER_BITS-4{1'b0}}};
-        period_reg_34 <= {4'b0011, {COUNTER_BITS-4{1'b0}}};
     end else if (WR_PERIOD) begin
         period_reg <= PERIOD_VALUE;
-        period_reg_34 <= (PERIOD_VALUE >> 1) + (PERIOD_VALUE >> 2);
     end
 end
 
@@ -109,16 +108,16 @@ always_comb next_counter_load = period_reg + ({1'b1, {OVERSAMPLING{1'b0}} } - co
 always_ff @(posedge CLK) begin
     if (RESET) begin
         counter <= {4'b0100, {COUNTER_BITS-4{1'b0}}};
-        phase_1 <= {4'b0011, {COUNTER_BITS-4{1'b0}}};
+        phase_1 <= PHASES_COUNT > 1 ? {4'b0011, {COUNTER_BITS-4{1'b0}}} : 0;
         phase_2 <= {4'b0010, {COUNTER_BITS-4{1'b0}}};
-        phase_3 <= {4'b0001, {COUNTER_BITS-4{1'b0}}};
+        phase_3 <= PHASES_COUNT > 1 ? {4'b0001, {COUNTER_BITS-4{1'b0}}} : 0;
     end else begin
         if ( end_of_phase_3 ) begin
             // last cycle
             counter = next_counter_load;
-            phase_1 <= next_counter_load - (period_reg >> 2);
+            phase_1 <= PHASES_COUNT > 1 ? next_counter_load - (period_reg >> 2) : 0;
             phase_2 <= next_counter_load - (period_reg >> 1);
-            phase_3 <= next_counter_load - period_reg_34;
+            phase_3 <= PHASES_COUNT > 1 ? next_counter_load - (period_reg >> 1) - (period_reg >> 2) : 0;
         end else begin
             counter[COUNTER_BITS-1:OVERSAMPLING] <= counter[COUNTER_BITS-1:OVERSAMPLING] - 1;
         end
@@ -159,7 +158,7 @@ always_ff @(posedge CLK) begin
     if (RESET) begin
         state1 <= 1'b1;
         out_reg1 <= 'b0;
-    end else begin
+    end else if (PHASES_COUNT > 1) begin
         if ( end_of_phase_0 ) begin
             // last cycle
             out_reg1 <= oversampledBitChange10(phase_1[OVERSAMPLING-1:0]);
