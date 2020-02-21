@@ -25,11 +25,13 @@ module ref_frequency_gen_tb(
     );
 
 // power of two of output size (3 for 8, 4 for 16, 5 for 32) 
-localparam OVERSAMPLING = 3;
+localparam OVERSAMPLING = 5;
 // oversampling bits
 localparam OVERSAMPLING_BITS = (1<<OVERSAMPLING);
-// counter size, for 300KHz min frequency, should be 12 for OVERSAMPLING=3, 13 for OVERSAMPLING=4, 14 for OVERSAMPLING=5
-localparam COUNTER_BITS = 9 + OVERSAMPLING;
+// base counter size - w/o oversampling bits, e.g. 8 for min frequency 600KHz with 150MHz bus and x8 oversampling 
+localparam BASE_COUNTER_BITS = 8;
+// full counter size, for 300KHz min frequency, should be 12 for OVERSAMPLING=3, 13 for OVERSAMPLING=4, 14 for OVERSAMPLING=5
+localparam COUNTER_BITS = BASE_COUNTER_BITS + OVERSAMPLING;
 
 // 150MHz 
 logic CLK;
@@ -44,19 +46,16 @@ logic WR_PERIOD;
 logic [COUNTER_BITS-1:0] PERIOD_VALUE;
 // parallel output
 logic [OVERSAMPLING_BITS-1:0] OUT;
-// parallel output - phase 1: PI/2
-logic [OVERSAMPLING_BITS-1:0] OUT1;
 
-logic debug_end_of_phase_0;
-logic debug_end_of_phase_1;
-logic debug_end_of_phase_2;
-logic debug_end_of_phase_3;
+logic debug_phase_index;
+logic debug_phase_end;
 logic [COUNTER_BITS-1:0] debug_counter;
 
 ref_frequency_gen
 #(
     .OVERSAMPLING(OVERSAMPLING),
     .OVERSAMPLING_BITS(OVERSAMPLING_BITS),
+    .BASE_COUNTER_BITS(BASE_COUNTER_BITS),
     .COUNTER_BITS(COUNTER_BITS)  
 ) ref_frequency_gen_inst
 (
@@ -70,9 +69,14 @@ initial begin
     #33 RESET = 1;
     #150 RESET = 0;
     #30
-    @(posedge CLK) #1 PERIOD_VALUE = 'd131;
+    @(posedge CLK) #1 PERIOD_VALUE = 'd129;
     @(posedge CLK) #1 WR_PERIOD = 1;
     @(posedge CLK) #1 WR_PERIOD = 0;
+    #1000
+    @(posedge CLK) #1 PERIOD_VALUE = 'd235;
+    @(posedge CLK) #1 WR_PERIOD = 1;
+    @(posedge CLK) #1 WR_PERIOD = 0;
+    
 end
 
 always begin
