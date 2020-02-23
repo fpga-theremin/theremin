@@ -59,6 +59,14 @@ public class SensorSim {
 		return samples;
 	}
 
+	/**
+	 * Measure signal period using averaging.
+	 * @param samples is array of timer counter values captured on each oscillator signal edge
+	 * @param pos is index of origin point (averaging done to the past from this point)
+	 * @param diff is difference in captured items to the past (step)
+	 * @param width is number of pairs to average
+	 * @return measured period value * diff * width
+	 */
 	public static long measureAt(long[] samples, int pos, int diff, int width) {
 		long sum1 = 0;
 		long sum2 = 0;
@@ -91,7 +99,8 @@ public class SensorSim {
 				maxPeriod = period;
 			double periodFloat = (1/timerFreq) * (period / (double)diff / (double)width) * 2;
 			double freq = 1.0 / periodFloat;
-			System.out.println("pos\t" + pos + "\tvalue\t" + period + "\tbin\t" + Long.toBinaryString(period) + "\tfreq=\t" + freq);
+			double freqDiff = freq - signalFreq;
+			System.out.println("pos\t" + pos + "\tvalue\t" + period + "\tbin\t" + Long.toBinaryString(period) + "\tfreq=\t" + freq  + "\tfreqDiff\t" + freqDiff);
 			pos += 137;
 		}
 		System.out.println("period min=" + minPeriod + " max=" + maxPeriod + " diff=" + (maxPeriod-minPeriod));
@@ -101,7 +110,12 @@ public class SensorSim {
 		testMeasure(1000567.890123456, 240000000.0, 2048, 2048);
 		testMeasure(1234567.890123456, 240000000.0, 2048, 2048);
 		testMeasure(1065444.123465456, 240000000.0, 2048, 2048);
-
+		testMeasure(987654.321456775456, 240000000.0, 2048, 2048);
+		testMeasure(987654.321456775456, 240000000.0, 2048, 1024);
+		testMeasure(987654.321456775456, 240000000.0, 2048, 3000);
+		testMeasure(1345654.321456775456, 240000000.0, 2048, 2048);
+		testMeasure(1001234.9876554, 240000000.0, 2048, 2048);
+		testMeasure(1001234.9876554, 240000000.0, 2048, 1024);
 	}
 
 }
