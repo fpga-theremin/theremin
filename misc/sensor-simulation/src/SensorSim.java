@@ -56,9 +56,9 @@ public class SensorSim {
 	}
 	
 	
-	public static final int TIMER_COUNTER_BITS = 20; 
+	public static final int TIMER_COUNTER_BITS = 24; 
 	public static final int TIMER_COUNTER_MASK = (1<<TIMER_COUNTER_BITS) - 1; 
-	public static final double SENSOR_NOISE_LEVEL = 0.0001;
+	public static final double SENSOR_NOISE_LEVEL = 0.00001;
 
 	public static final int SIMULATION_SAMPLES_TO_COLLECT = 30000; 
 
@@ -195,14 +195,14 @@ public class SensorSim {
 				);
 	}
 
-	public static void testMeasure(double signalFreq, double timerFreq, int diff, int width) {
+	public static double testMeasure(double signalFreq, double timerFreq, int diff, int width) {
 		if (MAX_MEASUREMENTS_TO_DUMP > 0 || MAX_CAPTURED_VALUES_TO_DUMP > 0)
 			log("Testing measure of signal freq=" + signalFreq + " timerFreq=" + timerFreq + " diff=" + diff + " width=" + width);
 		int[] samples = genSamples(signalFreq, timerFreq, SIMULATION_SAMPLES_TO_COLLECT);
 		dumpCapturedData(samples, MAX_CAPTURED_VALUES_TO_DUMP);
 		long minPeriod = -1;
 		long maxPeriod = -1;
-		int maxMeasurementsToTest = 100;
+		int maxMeasurementsToTest = 30;
 		double periodSum = 0;
 	    double [] periods = new double[maxMeasurementsToTest];
 		Random rnd = new Random();
@@ -249,6 +249,7 @@ public class SensorSim {
 				+ "\t" + String.format("%.3f", exactS)
 				//+ "\t" + String.format("%.6f", diff * timerFreq / signalFreq)
 				);
+		return exactS;
  	}
 
 	public static void testFreqMeasures() {
@@ -288,18 +289,53 @@ public class SensorSim {
 
 		int diffLoop = 1;
 		int widthLoop = 1;
+		//int baseDiff = 1031 * 2;
+		int baseDiff = 1024 * 2;
 		
 		double sensorFreq = 990000.0;
+		int totalCount = 0;
+		int goodCount1 = 0;
+		int goodCount2 = 0;
+		int goodCount3 = 0;
+		int badCount1 = 0;
+		int badCount2 = 0;
+		int badCount3 = 0;
+		double s_threshold1 = 8;
+		double s_threshold2 = 4;
+		double s_threshold3 = 2;
+		double bad_threshold1 = 30;
+		double bad_threshold2 = 100;
+		double bad_threshold3 = 200;
 		for (int i = 0; i < 30000; i++) {
 			for (int j = 0; j < diffLoop; j++) {
-				int diff = 2048 >> j;
+				int diff = baseDiff >> j;
 				for (int k = 0; k < widthLoop; k++) {
 					int width = diff >> k;
-					testMeasure(sensorFreq, 240000000.0, diff, width);
+					double S = testMeasure(sensorFreq, 240000000.0, diff, width);
+					if (S < s_threshold1)
+						goodCount1++;
+					if (S < s_threshold2)
+						goodCount2++;
+					if (S < s_threshold3)
+						goodCount3++;
+					if (S > bad_threshold1)
+						badCount1++;
+					if (S > bad_threshold2)
+						badCount2++;
+					if (S > bad_threshold3)
+						badCount3++;
+					totalCount++;
 				}
 			}
 			sensorFreq += Math.PI / 7;
 		}
+		log("Finished.");
+		log(goodCount1 + " of " + totalCount + " (" + String.format("%.3f", goodCount1 * 100.0 / totalCount) + "%) cases with standard deviation < " + s_threshold1);
+		log(goodCount2 + " of " + totalCount + " (" + String.format("%.3f", goodCount2 * 100.0 / totalCount) + "%) cases with standard deviation < " + s_threshold2);
+		log(goodCount3 + " of " + totalCount + " (" + String.format("%.3f", goodCount3 * 100.0 / totalCount) + "%) cases with standard deviation < " + s_threshold3);
+		log(badCount1 + " of " + totalCount + " (" + String.format("%.3f", badCount1 * 100.0 / totalCount) + "%) cases with standard deviation > " + bad_threshold1);
+		log(badCount2 + " of " + totalCount + " (" + String.format("%.3f", badCount2 * 100.0 / totalCount) + "%) cases with standard deviation > " + bad_threshold2);
+		log(badCount3 + " of " + totalCount + " (" + String.format("%.3f", badCount3 * 100.0 / totalCount) + "%) cases with standard deviation > " + bad_threshold3);
 	}
 
 	public static void main(String[] args) {
