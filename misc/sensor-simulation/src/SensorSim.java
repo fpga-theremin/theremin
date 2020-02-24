@@ -4,6 +4,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 public class SensorSim {
@@ -56,9 +58,10 @@ public class SensorSim {
 	}
 	
 	
-	public static final int TIMER_COUNTER_BITS = 24; 
+	public static final int TIMER_COUNTER_BITS = 20; 
 	public static final int TIMER_COUNTER_MASK = (1<<TIMER_COUNTER_BITS) - 1; 
-	public static final double SENSOR_NOISE_LEVEL = 0.00001;
+	public static final double SENSOR_NOISE_LEVEL = 0.001;
+	public static final double XTAL_NOISE_LEVEL = 0; //0.000001;
 
 	public static final int SIMULATION_SAMPLES_TO_COLLECT = 30000; 
 
@@ -117,12 +120,12 @@ public class SensorSim {
 			if (state) {
 				// falling
 				time += halfPeriod;
-				noise = makeNoise(period, noiseLevel, 3);
+				noise = makeNoise(period, noiseLevel, 7);
 				cycleCount = (cycleCount + 1) & TIMER_COUNTER_MASK;
 			} else {
 				// raising
 				time += (period - halfPeriod);
-				noise = makeNoise(period, noiseLevel, 3);
+				noise = makeNoise(period, noiseLevel, 7);
 			}
 			state = !state;
 			return time;
@@ -136,8 +139,8 @@ public class SensorSim {
 	
 	
 	public static int[] genSamples(double signalFreq, double timerFreq, int count) {
-		Oscillator sensor = new Oscillator(signalFreq, 0.5, SENSOR_NOISE_LEVEL);
-		Oscillator timer = new Oscillator(timerFreq, 0.5, 0.0);
+		Oscillator sensor = new Oscillator(signalFreq, 0.48761, SENSOR_NOISE_LEVEL);
+		Oscillator timer = new Oscillator(timerFreq, 0.5, XTAL_NOISE_LEVEL);
 		int[] samples = new int[count];
 		for (int i = 0; i < samples.length; i++) {
 			while ( sensor.getTime() > timer.getTime() ) {
@@ -165,6 +168,47 @@ public class SensorSim {
 			acc += delta;
 		}
 		return acc;
+	}
+
+	private static Map<Integer, double[]> windowMap = new HashMap<>();
+	public static double[] makeLinearWindow(int width) {
+		double[] window = new double[width];
+		double sum = 0;
+		for (int i = 0; i < width; i++) {
+			window[i] = (1.0 - (width-i-1) / width);
+			sum += window[i];
+		}
+		log("window sum=" + sum);
+		return window;
+	}
+	public static double[] getWindow(int width) {
+		double[] window = windowMap.get(width);
+		if (window == null) {
+			window = makeLinearWindow(width);
+			windowMap.put(width, window);
+		}
+		return window;
+	}
+	/**
+	 * Measure signal period using averaging.
+	 * @param samples is array of timer counter values captured on each oscillator signal edge
+	 * @param pos is index of origin point (averaging done to the past from this point)
+	 * @param diff is difference in captured items to the past (step)
+	 * @param width is number of pairs to average
+	 * @return measured period value * diff * width
+	 */
+	public static long measureWithFIRFilter(int[] samples, int pos, int diff, int width) {
+		double[] window = getWindow(width);
+		double acc = 0;
+		for (int i = 0; i < width; i++) {
+			// to fix timer overflows, calculate difference module timer counter width
+			int delta = (samples[pos - i] - samples[pos - i - diff]) & TIMER_COUNTER_MASK;
+			acc += delta * window[i];
+			//log("delta=" + delta + " acc=" + (int)acc);
+		}
+		int res = (int)acc;
+		//log("acc/width=" + (res/width));
+		return res;
 	}
 	
 	public static void dumpCapturedData(int[] samples, int length) {
@@ -209,7 +253,8 @@ public class SensorSim {
 		int minposition = diff + width;
 		for (int i = 0; i < maxMeasurementsToTest; i++) {
 			int pos = rnd.nextInt(SIMULATION_SAMPLES_TO_COLLECT-minposition) + minposition;
-			long period = measureAt(samples, pos, diff, width);
+			//long period = measureAt(samples, pos, diff, width);
+			long period = measureWithFIRFilter(samples, pos, diff, width);
 			if (minPeriod < 0 || minPeriod > period)
 				minPeriod = period;
 			if (maxPeriod < 0 || maxPeriod < period)
@@ -292,7 +337,10 @@ public class SensorSim {
 		//int baseDiff = 1031 * 2;
 		int baseDiff = 1024 * 2;
 		
-		double sensorFreq = 990000.0;
+		//990098.8173689365	2048	2048	508349644	382	508349770.97	143.882
+		double sensorFreq = 990098.8173689365;
+		//double sensorFreq = 990000.0;
+		//double sensorFreq = 999996;
 		int totalCount = 0;
 		int goodCount1 = 0;
 		int goodCount2 = 0;
@@ -306,9 +354,9 @@ public class SensorSim {
 		double bad_threshold1 = 30;
 		double bad_threshold2 = 100;
 		double bad_threshold3 = 200;
-		for (int i = 0; i < 30000; i++) {
+		for (int i = 0; i < 50000; i++) {
 			for (int j = 0; j < diffLoop; j++) {
-				int diff = baseDiff >> j;
+				int diff = baseDiff - j; // >> j;
 				for (int k = 0; k < widthLoop; k++) {
 					int width = diff >> k;
 					double S = testMeasure(sensorFreq, 240000000.0, diff, width);
@@ -327,7 +375,7 @@ public class SensorSim {
 					totalCount++;
 				}
 			}
-			sensorFreq += Math.PI / 7;
+			sensorFreq += Math.PI / 11; // / 7;
 		}
 		log("Finished.");
 		log(goodCount1 + " of " + totalCount + " (" + String.format("%.3f", goodCount1 * 100.0 / totalCount) + "%) cases with standard deviation < " + s_threshold1);
