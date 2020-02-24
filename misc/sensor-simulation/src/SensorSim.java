@@ -1,15 +1,102 @@
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Random;
 
 public class SensorSim {
 
+	// logging support
+	private static BufferedWriter logWriter;
+	
+	public static final boolean LOG_TIMESTAMPS = false;
+	public static void setLogFile(String fname, boolean appendTimestamp) {
+		String ts = "_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(
+		        Calendar.getInstance().getTime());
+		String timeLog = appendTimestamp ? ts : "";
+		BufferedWriter writer;
+		try {
+			File logFile = new File(fname + timeLog + ".log");
+			writer = new BufferedWriter(new FileWriter(logFile));
+			logWriter = writer;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void closeLogFile() {
+		if (logWriter != null) {
+			try {
+				logWriter.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			logWriter = null;
+		}
+	}
+	
+	public static void log(String msg) {
+		if (logWriter != null) {
+			String timeLog = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss ").format(
+			        Calendar.getInstance().getTime());
+			if (!LOG_TIMESTAMPS)
+				timeLog = "";
+			try {
+				logWriter.write(timeLog + msg + "\n");
+				logWriter.flush();
+			} catch (IOException e) {
+				// ignore
+				e.printStackTrace();
+				closeLogFile();
+			}
+		}
+		System.out.println(msg);
+	}
+	
+	
+	public static final int TIMER_COUNTER_BITS = 20; 
+	public static final int TIMER_COUNTER_MASK = (1<<TIMER_COUNTER_BITS) - 1; 
+	public static final double SENSOR_NOISE_LEVEL = 0.0001;
+
+	public static final int SIMULATION_SAMPLES_TO_COLLECT = 30000; 
+
+	
+	private static final Random noisernd = new Random();
+	
+	public static double makeNoise(double base, double level, int normalizationCount) {
+		if (level < 0.00000000000001)
+			return 0.0;
+		double sum = 0;
+		for (int i = 0; i < normalizationCount; i++) {
+			sum += noisernd.nextDouble() - 0.5;
+		}
+		sum = sum / normalizationCount;
+		return sum * base * level;
+	}
+	
 	public static class Oscillator {
+		// false: getTime() returns raising edge, true: getTime() returns falling edge
 		private boolean state;
+		// time of next edge
 		private double time;
+		// oscillator frequency
 		private double frequency;
+		// full period
 		private double period;
-		// from falling to raising
+		// part of period from falling to raising (differs from period/2 if duty cycle != 0.5)
 		private double halfPeriod;
-		private long cycleCount;
-		public Oscillator(double freq, double dutyCycle) {
+		// cycle counter
+		private int cycleCount;
+		
+		// noise as fraction of signal period
+		private double noiseLevel;
+		private double noise;
+		
+		public Oscillator(double freq, double dutyCycle, double noiseLevel) {
+			this.noiseLevel = noiseLevel;
+			this.noise = 0;
 			frequency = freq;
 			period = 1.0 / freq;
 			halfPeriod = period - period * dutyCycle;
@@ -19,10 +106,10 @@ public class SensorSim {
 
 		// returns time of new event
 		public double getTime() {
-			return time;
+			return time + noise;
 		}
 		
-		public long getCycleCount() {
+		public int getCycleCount() {
 			return cycleCount;
 		}
 		
@@ -30,10 +117,12 @@ public class SensorSim {
 			if (state) {
 				// falling
 				time += halfPeriod;
-				cycleCount++;
+				noise = makeNoise(period, noiseLevel, 3);
+				cycleCount = (cycleCount + 1) & TIMER_COUNTER_MASK;
 			} else {
 				// raising
 				time += (period - halfPeriod);
+				noise = makeNoise(period, noiseLevel, 3);
 			}
 			state = !state;
 			return time;
@@ -45,10 +134,11 @@ public class SensorSim {
 		}
 	}
 	
-	public static long[] genSamples(double signalFreq, double timerFreq, int count) {
-		Oscillator sensor = new Oscillator(signalFreq, 0.5);
-		Oscillator timer = new Oscillator(timerFreq, 0.5);
-		long[] samples = new long[count];
+	
+	public static int[] genSamples(double signalFreq, double timerFreq, int count) {
+		Oscillator sensor = new Oscillator(signalFreq, 0.5, SENSOR_NOISE_LEVEL);
+		Oscillator timer = new Oscillator(timerFreq, 0.5, 0.0);
+		int[] samples = new int[count];
 		for (int i = 0; i < samples.length; i++) {
 			while ( sensor.getTime() > timer.getTime() ) {
 				timer.stepCycle();
@@ -67,55 +157,158 @@ public class SensorSim {
 	 * @param width is number of pairs to average
 	 * @return measured period value * diff * width
 	 */
-	public static long measureAt(long[] samples, int pos, int diff, int width) {
-		long sum1 = 0;
-		long sum2 = 0;
+	public static long measureAt(int[] samples, int pos, int diff, int width) {
+		int acc = 0;
 		for (int i = 0; i < width; i++) {
-			// older part
-			sum1 += samples[pos - diff - i];
-			// recent part
-			sum2 += samples[pos - i];
+			// to fix timer overflows, calculate difference module timer counter width
+			int delta = (samples[pos - i] - samples[pos - i - diff]) & TIMER_COUNTER_MASK;
+			acc += delta;
 		}
-		long measuredValue = sum2 - sum1;
-		return measuredValue;
+		return acc;
 	}
 	
-	public static void testMeasure(double signalFreq, double timerFreq, int diff, int width) {
-		System.out.println("Testing measure of signal freq=" + signalFreq + " timerFreq=" + timerFreq + " diff=" + diff + " width=" + width);
-		long[] samples = genSamples(signalFreq, timerFreq, 100000);
-		System.out.println("Captured data:");
+	public static void dumpCapturedData(int[] samples, int length) {
+		if (length < 1)
+			return;
+		log("Captured data:");
 		for (int i = 2; i < 30; i++) {
-			System.out.println("[" + i + "]\t" + samples[i] + "\tdiff\t" + (samples[i] - samples[i-1]));
+			log("[" + i + "]\t" + samples[i] + "\tdiff\t" + (samples[i] - samples[i-1]));
 		}
-		
-		int pos = 10000;
+	}
+
+	public final static int MAX_CAPTURED_VALUES_TO_DUMP = 0;
+	public final static int MAX_MEASUREMENTS_TO_DUMP = 0;
+	
+	public static void testMeasureHeader() {
+		log(
+				"freq" //+ signalFreq 
+				//+ "\ttimerFreq=\t" + timerFreq 
+				+ "\tdiff"// + diff 
+				+ "\twidth"// + width
+				+ "\tperiod min"// + minPeriod 
+				//+ "\t max=\t" + maxPeriod 
+				+ "\tmax-min" //+ (maxPeriod-minPeriod) 
+				+ "\tavg" //+ periodAvg 
+				//+ "\t S=\t" + S 
+				+ "\texactS" //+ exactS
+				//+ "\tftimer/fosc" //+ exactS
+				);
+	}
+
+	public static void testMeasure(double signalFreq, double timerFreq, int diff, int width) {
+		if (MAX_MEASUREMENTS_TO_DUMP > 0 || MAX_CAPTURED_VALUES_TO_DUMP > 0)
+			log("Testing measure of signal freq=" + signalFreq + " timerFreq=" + timerFreq + " diff=" + diff + " width=" + width);
+		int[] samples = genSamples(signalFreq, timerFreq, SIMULATION_SAMPLES_TO_COLLECT);
+		dumpCapturedData(samples, MAX_CAPTURED_VALUES_TO_DUMP);
 		long minPeriod = -1;
 		long maxPeriod = -1;
-		for (int i = 0; i < 50; i++) {
+		int maxMeasurementsToTest = 100;
+		double periodSum = 0;
+	    double [] periods = new double[maxMeasurementsToTest];
+		Random rnd = new Random();
+		int minposition = diff + width;
+		for (int i = 0; i < maxMeasurementsToTest; i++) {
+			int pos = rnd.nextInt(SIMULATION_SAMPLES_TO_COLLECT-minposition) + minposition;
 			long period = measureAt(samples, pos, diff, width);
 			if (minPeriod < 0 || minPeriod > period)
 				minPeriod = period;
 			if (maxPeriod < 0 || maxPeriod < period)
 				maxPeriod = period;
-			double periodFloat = (1/timerFreq) * (period / (double)diff / (double)width) * 2;
+			double periodFloat = (timerFreq/signalFreq) * (period / (double)diff / (double)width) * 2;
 			double freq = 1.0 / periodFloat;
 			double freqDiff = freq - signalFreq;
-			System.out.println("pos\t" + pos + "\tvalue\t" + period + "\tbin\t" + Long.toBinaryString(period) + "\tfreq=\t" + freq  + "\tfreqDiff\t" + freqDiff);
+			if (i < MAX_MEASUREMENTS_TO_DUMP)
+				log("pos\t" + pos + "\tvalue\t" + period + "\tbin\t" + Long.toBinaryString(period) + "\tfreq=\t" + freq  + "\tfreqDiff\t" + freqDiff);
 			pos += 137;
+			periodSum += period;
+			periods[i] = period;
 		}
-		System.out.println("period min=" + minPeriod + " max=" + maxPeriod + " diff=" + (maxPeriod-minPeriod));
+		double exactPeriod = (timerFreq/signalFreq) * width * diff / 2;
+		double periodAvg = periodSum / maxMeasurementsToTest;
+		double squareDiffSum = 0;
+		double squareExactDiffSum = 0;
+		for (int i = 0; i < maxMeasurementsToTest; i++) {
+			squareDiffSum += (periods[i]-periodAvg)*(periods[i]-periodAvg);
+			squareExactDiffSum += (periods[i]-exactPeriod)*(periods[i]-exactPeriod);
+		}
+		// standard deviation
+		double S = Math.sqrt(squareDiffSum / (maxMeasurementsToTest - 0));
+		double exactS = Math.sqrt(squareExactDiffSum / (maxMeasurementsToTest - 0));
+
+		//System.out.println("exact period:\t" + exactPeriod);
+		log(
+				"" + signalFreq 
+				//+ "\ttimerFreq=\t" + timerFreq 
+				+ "\t" + diff 
+				+ "\t" + width
+				+ "\t" + minPeriod 
+				//+ "\t max=\t" + maxPeriod 
+				+ "\t" + (maxPeriod-minPeriod) 
+				+ "\t" + String.format("%.2f", periodAvg)
+				//+ "\t S=\t" + S 
+				+ "\t" + String.format("%.3f", exactS)
+				//+ "\t" + String.format("%.6f", diff * timerFreq / signalFreq)
+				);
  	}
-	
+
+	public static void testFreqMeasures() {
+		testMeasureHeader();
+		
+//		testMeasure(1000567.890123456, 240000000.0, 2048, 2048);
+//		testMeasure(1234567.890123456, 240000000.0, 2048, 2048);
+//		testMeasure(1065444.123465456, 240000000.0, 2048, 2048);
+//		testMeasure(987654.321456775456, 240000000.0, 2048, 2048);
+//		testMeasure(987654.321456775456, 240000000.0, 2048, 1024);
+//		testMeasure(987654.321456775456, 240000000.0, 2048, 3000);
+//		testMeasure(1345654.321456775456, 240000000.0, 2048, 2048);
+//		testMeasure(1001234.9876554, 240000000.0, 2048, 2048);
+//		testMeasure(1001234.9876554, 240000000.0, 2048, 1024);
+//		
+//		testMeasure(993153.321456775456, 240000000.0, 2048, 2048);
+//
+//		testMeasure(993153.321456775456, 240000000.0, 2048-2, 2048);
+//		testMeasure(993153.321456775456, 240000000.0, 2048-4, 2048);
+//		testMeasure(993153.321456775456, 240000000.0, 2048-6, 2048);
+//		testMeasure(993153.321456775456, 240000000.0, 2048, 1024);
+//		testMeasure(993153.321456775456, 240000000.0, 2048, 512);
+//		testMeasure(993153.321456775456, 240000000.0, 2048, 256);
+//		testMeasure(993153.321456775456, 240000000.0, 2048, 128);
+//		testMeasure(993153.321456775456, 240000000.0, 2048, 64);
+//		testMeasure(993153.321456775456, 240000000.0, 2048, 32);
+//		testMeasure(993153.321456775456, 240000000.0, 2048, 16);
+//
+//		testMeasure(993153.321456775456, 240000000.0, 2048, 2048);
+//		testMeasure(993153.321456775456, 240000000.0, 1024, 2048);
+//		testMeasure(993153.321456775456, 240000000.0, 512, 2048);
+//		testMeasure(993153.321456775456, 240000000.0, 256, 2048);
+//		testMeasure(993153.321456775456, 240000000.0, 128, 2048);
+//		testMeasure(993153.321456775456, 240000000.0, 64, 2048);
+//		testMeasure(993153.321456775456, 240000000.0, 32, 2048);
+//		testMeasure(993153.321456775456, 240000000.0, 16, 2048);
+
+		int diffLoop = 1;
+		int widthLoop = 1;
+		
+		double sensorFreq = 990000.0;
+		for (int i = 0; i < 30000; i++) {
+			for (int j = 0; j < diffLoop; j++) {
+				int diff = 2048 >> j;
+				for (int k = 0; k < widthLoop; k++) {
+					int width = diff >> k;
+					testMeasure(sensorFreq, 240000000.0, diff, width);
+				}
+			}
+			sensorFreq += Math.PI / 7;
+		}
+	}
+
 	public static void main(String[] args) {
-		testMeasure(1000567.890123456, 240000000.0, 2048, 2048);
-		testMeasure(1234567.890123456, 240000000.0, 2048, 2048);
-		testMeasure(1065444.123465456, 240000000.0, 2048, 2048);
-		testMeasure(987654.321456775456, 240000000.0, 2048, 2048);
-		testMeasure(987654.321456775456, 240000000.0, 2048, 1024);
-		testMeasure(987654.321456775456, 240000000.0, 2048, 3000);
-		testMeasure(1345654.321456775456, 240000000.0, 2048, 2048);
-		testMeasure(1001234.9876554, 240000000.0, 2048, 2048);
-		testMeasure(1001234.9876554, 240000000.0, 2048, 1024);
+		setLogFile("sensor_sim", false);
+		try {
+			testFreqMeasures();
+		} finally {
+			closeLogFile();
+		}
 	}
 
 }
