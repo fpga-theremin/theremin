@@ -3,8 +3,11 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -13,58 +16,31 @@ public class SensorSim {
 	// logging support
 	private static BufferedWriter logWriter;
 	
-	public static final boolean LOG_TIMESTAMPS = false;
-	public static void setLogFile(String fname, boolean appendTimestamp) {
-		String ts = "_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(
-		        Calendar.getInstance().getTime());
-		String timeLog = appendTimestamp ? ts : "";
-		BufferedWriter writer;
-		try {
-			File logFile = new File(fname + timeLog + ".log");
-			writer = new BufferedWriter(new FileWriter(logFile));
-			logWriter = writer;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
 	
-	public static void closeLogFile() {
-		if (logWriter != null) {
-			try {
-				logWriter.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			logWriter = null;
-		}
-	}
-	
-	public static void log(String msg) {
-		if (logWriter != null) {
-			String timeLog = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss ").format(
-			        Calendar.getInstance().getTime());
-			if (!LOG_TIMESTAMPS)
-				timeLog = "";
-			try {
-				logWriter.write(timeLog + msg + "\n");
-				logWriter.flush();
-			} catch (IOException e) {
-				// ignore
-				e.printStackTrace();
-				closeLogFile();
-			}
-		}
-		System.out.println(msg);
-	}
-	
-	
-	public static final int TIMER_COUNTER_BITS = 20; 
+	public static final int TIMER_COUNTER_BITS = 24; 
 	public static final int TIMER_COUNTER_MASK = (1<<TIMER_COUNTER_BITS) - 1; 
-	public static final double SENSOR_NOISE_LEVEL = 0; //0.001;
 	public static final double XTAL_NOISE_LEVEL = 0; //0.000001;
 
-	public static final int SIMULATION_SAMPLES_TO_COLLECT = 30000; 
+	// number of captured edges to collect
+	public static final int SIMULATION_SAMPLES_TO_COLLECT = 15000;
+	// number of random points to measure period in collected data
+	public static final int SIMULATION_RANDOM_TEST_POSITION_COUNT = 10;
 
+	//public static final double TIMER_FREQUENCY = 1_200_000_000.0;
+	public static final double TIMER_FREQUENCY = 240_000_000.0;
+	//public static final double TIMER_FREQUENCY = 150_000_000.0;
+	
+	public static final double SENSOR_NOISE_LEVEL = 0.001; //0.001; //0.00001; //0.001;
+	public static final double SENSOR_DUTY_CYCLE = 0.5123;
+	public static final int SENSOR_DITHER_INTERVAL = 1; //512;
+	public static final double SENSOR_DITHER_AMOUNT = 0; //0.0001; //5000.1 / 2048.0 / 2048.0;
+	
+	public static final double OSCILLATOR_START_FREQUENCY = 870_000.0;
+	public static final double SENSOR_MAX_TEST_FREQ = 915_000.0;
+	//public static final double SENSOR_MAX_TEST_FREQ = 1_050_000.0;
+	public final static double OSCILLATOR_FREQ_TEST_STEP = Math.PI / 3; //11; // / 7;
+	public static final int FILTER_DISTANCE = 1024;
+	public static final int FILTER_DISTANCE_OFFSET = 7*2;
 	
 	private static final Random noisernd = new Random();
 	
@@ -92,14 +68,20 @@ public class SensorSim {
 		private double halfPeriod;
 		// cycle counter
 		private int cycleCount;
+		private int ditherInterval;
+		private double ditherAmount;
 		
 		// noise as fraction of signal period
 		private double noiseLevel;
 		private double noise;
+		private double dither;
 		
-		public Oscillator(double freq, double dutyCycle, double noiseLevel) {
+		public Oscillator(double freq, double dutyCycle, double noiseLevel, int ditherInterval, double ditherAmount) {
 			this.noiseLevel = noiseLevel;
 			this.noise = 0;
+			this.ditherInterval = ditherInterval;
+			this.ditherAmount = ditherAmount;
+			this.dither = 0;
 			frequency = freq;
 			period = 1.0 / freq;
 			halfPeriod = period - period * dutyCycle;
@@ -109,7 +91,7 @@ public class SensorSim {
 
 		// returns time of new event
 		public double getTime() {
-			return time + noise;
+			return time + noise + dither;
 		}
 		
 		public int getCycleCount() {
@@ -120,15 +102,40 @@ public class SensorSim {
 			if (state) {
 				// falling
 				time += halfPeriod;
-				noise = makeNoise(period, noiseLevel, 7);
+				noise = makeNoise(period, noiseLevel, 3);
 				cycleCount = (cycleCount + 1) & TIMER_COUNTER_MASK;
+				if (ditherInterval > 1 && ditherAmount > 0) {
+					int ditherIndex = cycleCount % ditherInterval;
+					int ditherQuarterLength = (ditherInterval/4);
+					int ditherQuarter = ditherIndex / ditherQuarterLength;
+					int ditherQuarterPart = ditherIndex % ditherQuarterLength;
+					double d = 0;
+					switch (ditherQuarter) {
+					default:
+					case 0:
+						d = ditherQuarterPart * 0.5 / ditherQuarterLength;
+						break;
+					case 1:
+						d = 0.5 - ditherQuarterPart * 0.5 / ditherQuarterLength;
+						break;
+					case 2:
+						d = - ditherQuarterPart * 0.5 / ditherQuarterLength;
+						break;
+					case 3:
+						d = -0.5 + ditherQuarterPart * 0.5 / ditherQuarterLength;
+						break;
+					}
+					//log("dither phase\t" + d);
+					dither = period * ditherAmount * d;
+					//log("dither =\t" + dither + "\tperiod=" + period);
+				}
 			} else {
 				// raising
 				time += (period - halfPeriod);
-				noise = makeNoise(period, noiseLevel, 7);
+				noise = makeNoise(period, noiseLevel, 3);
 			}
 			state = !state;
-			return time;
+			return time + noise + dither;
 		}
 		
 		public double stepCycle() {
@@ -137,10 +144,84 @@ public class SensorSim {
 		}
 	}
 	
+	public static class GoodArea implements Comparable<GoodArea> {
+		double areaStart;
+		double areaEnd;
+		double threshold;
+		public GoodArea(double areaStart, double areaEnd, double threshold) {
+			this.areaStart = areaStart;
+			this.areaEnd = areaEnd;
+			this.threshold = threshold;
+		}
+		@Override
+		public String toString() {
+			return "area " + String.format("\t%.5f\t%.5f\t(f_max-f_min)\t%.5f\t(f_max-f_min)/f_min\t%.5f\tthreshold\t%.2f",
+					areaStart, areaEnd, (areaEnd - areaStart), (areaEnd - areaStart) / areaStart, threshold);
+		}
+		public double relativeSize() {
+			return (areaEnd-areaStart) / areaStart;
+		}
+		@Override
+		public int compareTo(GoodArea v) {
+			double s1 = relativeSize();
+			double s2 = v.relativeSize();
+			// ordering desc by relative size
+			if (s1 < s2)
+				return 1;
+			if (s1 > s2)
+				return -1;
+			return 0;
+		}
+	}
+	public static class GoodAreaTracker {
+		double areaStart = -1;
+		double areaEnd = -1;
+		double minInterval;
+		double threshold;
+		List<GoodArea> list = new ArrayList<>();
+		public GoodAreaTracker(double minInterval, double threshold) {
+			this.minInterval = minInterval;
+			this.threshold = threshold;
+		}
+		public void tick(double freq, double errorRate) {
+			if (errorRate < threshold) {
+				if (areaStart < 0)
+					areaStart = freq;
+				areaEnd = freq;
+			} else {
+				areaFinished();
+			}
+		}
+		private void areaFinished() {
+			if (areaStart > 0) {
+				double size = (areaEnd-areaStart) / areaStart;
+				//log(String.format("area %.5f .. %.5f size %.9f   threshold %.2f", areaStart, areaEnd, size, threshold));
+				if ( size > minInterval) {
+					// new interval found
+					GoodArea newItem = new GoodArea(areaStart, areaEnd, threshold);
+					//log("adding " + newItem);
+					list.add(newItem);
+				}
+			}
+			areaStart = -1;
+			areaEnd = -1;
+		}
+		public void dump() {
+			areaFinished();
+			log(String.format("Good Area detector with minInterval=%.5f threshold=%.2f areas found: %d", minInterval,
+					threshold, list.size()));
+			for (GoodArea item : list) {
+				log("    " + item);
+			}
+		}
+		public void sort() {
+			Collections.sort(list);
+		}
+	}
 	
 	public static int[] genSamples(double signalFreq, double timerFreq, int count) {
-		Oscillator sensor = new Oscillator(signalFreq, 0.48761, SENSOR_NOISE_LEVEL);
-		Oscillator timer = new Oscillator(timerFreq, 0.5, XTAL_NOISE_LEVEL);
+		Oscillator sensor = new Oscillator(signalFreq, SENSOR_DUTY_CYCLE, SENSOR_NOISE_LEVEL, SENSOR_DITHER_INTERVAL, SENSOR_DITHER_AMOUNT);
+		Oscillator timer = new Oscillator(timerFreq, 0.5, XTAL_NOISE_LEVEL, 1, 0);
 		int[] samples = new int[count];
 		for (int i = 0; i < samples.length; i++) {
 			while ( sensor.getTime() > timer.getTime() ) {
@@ -161,7 +242,7 @@ public class SensorSim {
 	 * @return measured period value * diff * width
 	 */
 	public static long measureAt(int[] samples, int pos, int diff, int width) {
-		int acc = 0;
+		long acc = 0;
 		for (int i = 0; i < width; i++) {
 			// to fix timer overflows, calculate difference module timer counter width
 			int delta = (samples[pos - i] - samples[pos - i - diff]) & TIMER_COUNTER_MASK;
@@ -170,8 +251,53 @@ public class SensorSim {
 		return acc;
 	}
 
+	/**
+	 * Measure signal period using averaging.
+	 * @param samples is array of timer counter values captured on each oscillator signal edge
+	 * @param pos is index of origin point (averaging done to the past from this point)
+	 * @param diff is difference in captured items to the past (step)
+	 * @param width is number of pairs to average
+	 * @return measured period value * diff * width
+	 */
+	public static long measureAt2(int[] samples, int pos, int diff, int width) {
+		long acc = 0;
+		for (int i = 0; i < width; i++) {
+			// to fix timer overflows, calculate difference module timer counter width
+			int delta1 = (samples[pos - i] - samples[pos - i - diff - 2]) & TIMER_COUNTER_MASK;
+			int delta2 = (samples[pos - i] - samples[pos - i - diff + 2]) & TIMER_COUNTER_MASK;
+			int delta3 = (samples[pos - i] - samples[pos - i - diff - 1]) & TIMER_COUNTER_MASK;
+			int delta4 = (samples[pos - i] - samples[pos - i - diff + 1]) & TIMER_COUNTER_MASK;
+			acc += delta1 + delta2 + delta3 + delta4;
+		}
+		return acc / 4;
+	}
+
+	/**
+	 * Measure signal period using averaging.
+	 * @param samples is array of timer counter values captured on each oscillator signal edge
+	 * @param pos is index of origin point (averaging done to the past from this point)
+	 * @param diff is difference in captured items to the past (step)
+	 * @param width is number of pairs to average
+	 * @return measured period value * diff * width
+	 */
+	public static long measureAt3(int[] samples, int pos, int diff, int width) {
+		long acc = 0;
+		int sumDiff = 0;
+		for (int i = 64; i < diff+width+1; i += 1) {
+			// to fix timer overflows, calculate difference module timer counter width
+			sumDiff += i;
+			int delta1 = (samples[pos] - samples[pos - i]) & TIMER_COUNTER_MASK;
+			//sumDiff += i;
+			//int delta2 = (samples[pos - 1] - samples[pos - i - 1]) & TIMER_COUNTER_MASK;
+			acc += delta1; //delta1 + delta2;
+		}
+		sumDiff /= 2;
+		int expectedSumDiff = diff*width;
+		return acc / 2; // / 2;
+	}
+
 	public static long dumpDiffPatternAt(int[] samples, int pos, int diff, int width) {
-		int acc = 0;
+		long acc = 0;
 		StringBuilder buf = new StringBuilder();
 		buf.append("    ");
 		for (int i = 0; i < width; i++) {
@@ -251,8 +377,11 @@ public class SensorSim {
 				+ "\tmax-min" //+ (maxPeriod-minPeriod) 
 				+ "\tavg" //+ periodAvg 
 				//+ "\t S=\t" + S 
-				+ "\texactS" //+ exactS
+				+ "\tS" //+ exactS
 				//+ "\tftimer/fosc" //+ exactS
+				+ "\tavgp error" //+ exactS
+				+ "\tminp error" //+ exactS
+				+ "\tmaxp error" //+ exactS
 				);
 	}
 
@@ -263,14 +392,16 @@ public class SensorSim {
 		dumpCapturedData(samples, MAX_CAPTURED_VALUES_TO_DUMP);
 		long minPeriod = -1;
 		long maxPeriod = -1;
-		int maxMeasurementsToTest = 30;
+		int maxMeasurementsToTest = SIMULATION_RANDOM_TEST_POSITION_COUNT;
 		double periodSum = 0;
 	    double [] periods = new double[maxMeasurementsToTest];
 		Random rnd = new Random();
-		int minposition = diff + width;
+		int minposition = diff + width + 2;
 		for (int i = 0; i < maxMeasurementsToTest; i++) {
 			int pos = rnd.nextInt(SIMULATION_SAMPLES_TO_COLLECT-minposition) + minposition;
 			long period = measureAt(samples, pos, diff, width);
+			//long period = measureAt2(samples, pos, diff, width);
+			//long period = measureAt3(samples, pos, diff, width);
 			//long period = measureWithFIRFilter(samples, pos, diff, width);
 			if (minPeriod < 0 || minPeriod > period)
 				minPeriod = period;
@@ -310,29 +441,22 @@ public class SensorSim {
 				//+ "\t S=\t" + S 
 				+ "\t" + String.format("%.3f", exactS)
 				//+ "\t" + String.format("%.6f", diff * timerFreq / signalFreq)
+				+ "\t" + String.format("%.3f", periodAvg - exactPeriod)
+				+ "\t" + String.format("%.3f", minPeriod - exactPeriod)
+				+ "\t" + String.format("%.3f", maxPeriod - exactPeriod)
 				);
 		
-		if (exactS > 20) {
-			log("    near " + (diff));
-			for (int i = -28; i <= 28; i += 1 ) {
-				dumpDiffPatternAt(samples, 10000, diff + i, 256);
+		if (exactS > 10000) {
+			int p = 10000;
+			log("    near diff " + (diff) + " pos " + p);
+			for (int i = -10; i <= 10; i += 2 ) {
+				dumpDiffPatternAt(samples, p, diff + i, 128);
 			}
-			log("    near " + (diff/2));
-			for (int i = -8; i <= 8; i += 1 ) {
-				dumpDiffPatternAt(samples, 10000, diff/2 + i, 256);
+			p+=12345;
+			log("    near diff " + (diff) + " pos " + p);
+			for (int i = -10; i <= 10; i += 2 ) {
+				dumpDiffPatternAt(samples, p, diff + i, 128);
 			}
-			log("    near " + (diff/3));
-			for (int i = -8; i <= 8; i += 1 ) {
-				dumpDiffPatternAt(samples, 10000, diff/3 + i, 256);
-			}
-//			dumpDiffPatternAt(samples, 10000, diff-6, width);
-//			dumpDiffPatternAt(samples, 10000, diff-4, width);
-//			dumpDiffPatternAt(samples, 10000, diff-2, width);
-//			dumpDiffPatternAt(samples, 10000, diff, width);
-//			dumpDiffPatternAt(samples, 10000, diff+2, width);
-//			dumpDiffPatternAt(samples, 10000, diff+4, width);
-//			dumpDiffPatternAt(samples, 10000, diff+6, width);
-//			dumpDiffPatternAt(samples, 10000, diff+8, width);
 		}
 		return exactS;
  	}
@@ -375,11 +499,11 @@ public class SensorSim {
 		int diffLoop = 1;
 		int widthLoop = 1;
 		//int baseDiff = 1031 * 2;
-		int baseDiff = 1024 * 2;
+		int baseDiff = FILTER_DISTANCE * 2;
 		
 		//990098.8173689365	2048	2048	508349644	382	508349770.97	143.882
-		double sensorFreq = 990098.8173689365;
-		//double sensorFreq = 990000.0;
+		double sensorFreq = OSCILLATOR_START_FREQUENCY;
+		//double sensorFreq = 990098.8173689365;
 		//double sensorFreq = 999996;
 		int totalCount = 0;
 		int goodCount1 = 0;
@@ -394,12 +518,18 @@ public class SensorSim {
 		double bad_threshold1 = 30;
 		double bad_threshold2 = 100;
 		double bad_threshold3 = 200;
-		for (int i = 0; i < 50000; i++) {
+		GoodAreaTracker [] trackers = new GoodAreaTracker[25];
+		for (int i = 0; i < trackers.length; i++) {
+			trackers[i] = new GoodAreaTracker(0.0005, 20 + 5*i);
+		}
+		for (int i = 0; i < 1_000_000 && sensorFreq < SENSOR_MAX_TEST_FREQ; i++) {
 			for (int j = 0; j < diffLoop; j++) {
 				int diff = baseDiff - j; // >> j;
 				for (int k = 0; k < widthLoop; k++) {
 					int width = diff >> k;
-					double S = testMeasure(sensorFreq, 240000000.0, diff, width);
+					double S = testMeasure(sensorFreq, TIMER_FREQUENCY, diff + FILTER_DISTANCE_OFFSET, width);
+					for (GoodAreaTracker tracker : trackers)
+						tracker.tick(sensorFreq, S);
 					if (S < s_threshold1)
 						goodCount1++;
 					if (S < s_threshold2)
@@ -415,7 +545,7 @@ public class SensorSim {
 					totalCount++;
 				}
 			}
-			sensorFreq += Math.PI / 11; // / 7;
+			sensorFreq += OSCILLATOR_FREQ_TEST_STEP;
 		}
 		log("Finished.");
 		log(goodCount1 + " of " + totalCount + " (" + String.format("%.3f", goodCount1 * 100.0 / totalCount) + "%) cases with standard deviation < " + s_threshold1);
@@ -424,6 +554,18 @@ public class SensorSim {
 		log(badCount1 + " of " + totalCount + " (" + String.format("%.3f", badCount1 * 100.0 / totalCount) + "%) cases with standard deviation > " + bad_threshold1);
 		log(badCount2 + " of " + totalCount + " (" + String.format("%.3f", badCount2 * 100.0 / totalCount) + "%) cases with standard deviation > " + bad_threshold2);
 		log(badCount3 + " of " + totalCount + " (" + String.format("%.3f", badCount3 * 100.0 / totalCount) + "%) cases with standard deviation > " + bad_threshold3);
+
+		log("Found good areas in sorted by frequency:");
+		for (GoodAreaTracker tracker : trackers)
+			tracker.dump();
+
+		for (GoodAreaTracker tracker : trackers)
+			tracker.sort();
+		
+		log("Found good areas in sorted by size:");
+		for (GoodAreaTracker tracker : trackers)
+			tracker.dump();
+
 	}
 
 	public static void main(String[] args) {
@@ -434,5 +576,50 @@ public class SensorSim {
 			closeLogFile();
 		}
 	}
+
+	public static final boolean LOG_TIMESTAMPS = false;
+	public static void setLogFile(String fname, boolean appendTimestamp) {
+		String ts = "_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(
+		        Calendar.getInstance().getTime());
+		String timeLog = appendTimestamp ? ts : "";
+		BufferedWriter writer;
+		try {
+			File logFile = new File(fname + timeLog + ".log");
+			writer = new BufferedWriter(new FileWriter(logFile));
+			logWriter = writer;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void closeLogFile() {
+		if (logWriter != null) {
+			try {
+				logWriter.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			logWriter = null;
+		}
+	}
+	
+	public static void log(String msg) {
+		if (logWriter != null) {
+			String timeLog = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss ").format(
+			        Calendar.getInstance().getTime());
+			if (!LOG_TIMESTAMPS)
+				timeLog = "";
+			try {
+				logWriter.write(timeLog + msg + "\n");
+				logWriter.flush();
+			} catch (IOException e) {
+				// ignore
+				e.printStackTrace();
+				closeLogFile();
+			}
+		}
+		System.out.println(msg);
+	}
+	
 
 }
