@@ -24,23 +24,24 @@ public class SensorSim {
 	// number of captured edges to collect
 	public static final int SIMULATION_SAMPLES_TO_COLLECT = 15000;
 	// number of random points to measure period in collected data
-	public static final int SIMULATION_RANDOM_TEST_POSITION_COUNT = 10;
+	public static final int SIMULATION_RANDOM_TEST_POSITION_COUNT = 30;
 
 	//public static final double TIMER_FREQUENCY = 1_200_000_000.0;
-	public static final double TIMER_FREQUENCY = 240_000_000.0;
+	//public static final double TIMER_FREQUENCY = 240_000_000.0;
+	public static final double TIMER_FREQUENCY = 120_000_000.0;
 	//public static final double TIMER_FREQUENCY = 150_000_000.0;
 	
-	public static final double SENSOR_NOISE_LEVEL = 0.001; //0.001; //0.00001; //0.001;
-	public static final double SENSOR_DUTY_CYCLE = 0.5123;
+	public static final double SENSOR_NOISE_LEVEL = 0.0001; //0.001; //0.00001; //0.001;
+	public static final double SENSOR_DUTY_CYCLE = 0.5;
 	public static final int SENSOR_DITHER_INTERVAL = 1; //512;
 	public static final double SENSOR_DITHER_AMOUNT = 0; //0.0001; //5000.1 / 2048.0 / 2048.0;
 	
 	public static final double OSCILLATOR_START_FREQUENCY = 870_000.0;
 	public static final double SENSOR_MAX_TEST_FREQ = 915_000.0;
 	//public static final double SENSOR_MAX_TEST_FREQ = 1_050_000.0;
-	public final static double OSCILLATOR_FREQ_TEST_STEP = Math.PI / 3; //11; // / 7;
+	public final static double OSCILLATOR_FREQ_TEST_STEP = Math.PI / 5; //11; // / 7;
 	public static final int FILTER_DISTANCE = 1024;
-	public static final int FILTER_DISTANCE_OFFSET = 7*2;
+	public static final int FILTER_DISTANCE_OFFSET = 0; //7*2;
 	
 	private static final Random noisernd = new Random();
 	
@@ -272,29 +273,6 @@ public class SensorSim {
 		return acc / 4;
 	}
 
-	/**
-	 * Measure signal period using averaging.
-	 * @param samples is array of timer counter values captured on each oscillator signal edge
-	 * @param pos is index of origin point (averaging done to the past from this point)
-	 * @param diff is difference in captured items to the past (step)
-	 * @param width is number of pairs to average
-	 * @return measured period value * diff * width
-	 */
-	public static long measureAt3(int[] samples, int pos, int diff, int width) {
-		long acc = 0;
-		int sumDiff = 0;
-		for (int i = 64; i < diff+width+1; i += 1) {
-			// to fix timer overflows, calculate difference module timer counter width
-			sumDiff += i;
-			int delta1 = (samples[pos] - samples[pos - i]) & TIMER_COUNTER_MASK;
-			//sumDiff += i;
-			//int delta2 = (samples[pos - 1] - samples[pos - i - 1]) & TIMER_COUNTER_MASK;
-			acc += delta1; //delta1 + delta2;
-		}
-		sumDiff /= 2;
-		int expectedSumDiff = diff*width;
-		return acc / 2; // / 2;
-	}
 
 	public static long dumpDiffPatternAt(int[] samples, int pos, int diff, int width) {
 		long acc = 0;
@@ -401,18 +379,19 @@ public class SensorSim {
 			int pos = rnd.nextInt(SIMULATION_SAMPLES_TO_COLLECT-minposition) + minposition;
 			long period = measureAt(samples, pos, diff, width);
 			//long period = measureAt2(samples, pos, diff, width);
-			//long period = measureAt3(samples, pos, diff, width);
+			//long period = measureAt2(samples, pos, diff, width);
 			//long period = measureWithFIRFilter(samples, pos, diff, width);
-			if (minPeriod < 0 || minPeriod > period)
+			if (minPeriod < 0 || minPeriod > period) {
 				minPeriod = period;
-			if (maxPeriod < 0 || maxPeriod < period)
+			}
+			if (maxPeriod < 0 || maxPeriod < period) {
 				maxPeriod = period;
+			}
 			double periodFloat = (timerFreq/signalFreq) * (period / (double)diff / (double)width) * 2;
 			double freq = 1.0 / periodFloat;
 			double freqDiff = freq - signalFreq;
 			if (i < MAX_MEASUREMENTS_TO_DUMP)
 				log("pos\t" + pos + "\tvalue\t" + period + "\tbin\t" + Long.toBinaryString(period) + "\tfreq=\t" + freq  + "\tfreqDiff\t" + freqDiff);
-			pos += 137;
 			periodSum += period;
 			periods[i] = period;
 		}
