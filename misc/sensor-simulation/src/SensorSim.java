@@ -60,7 +60,7 @@ public class SensorSim {
 	
 	public static final int TIMER_COUNTER_BITS = 20; 
 	public static final int TIMER_COUNTER_MASK = (1<<TIMER_COUNTER_BITS) - 1; 
-	public static final double SENSOR_NOISE_LEVEL = 0.001;
+	public static final double SENSOR_NOISE_LEVEL = 0; //0.001;
 	public static final double XTAL_NOISE_LEVEL = 0; //0.000001;
 
 	public static final int SIMULATION_SAMPLES_TO_COLLECT = 30000; 
@@ -170,6 +170,22 @@ public class SensorSim {
 		return acc;
 	}
 
+	public static long dumpDiffPatternAt(int[] samples, int pos, int diff, int width) {
+		int acc = 0;
+		StringBuilder buf = new StringBuilder();
+		buf.append("    ");
+		for (int i = 0; i < width; i++) {
+			// to fix timer overflows, calculate difference module timer counter width
+			int delta = (samples[pos - i] - samples[pos - i - diff]) & TIMER_COUNTER_MASK;
+			if (i == 0)
+				buf.append("period*" + diff + "~=" + delta + " pattern=");
+			buf.append((delta & 1) != 0 ? '1' : '0');
+			acc += delta;
+		}
+		log(buf.toString());
+		return acc;
+	}
+
 	private static Map<Integer, double[]> windowMap = new HashMap<>();
 	public static double[] makeLinearWindow(int width) {
 		double[] window = new double[width];
@@ -189,6 +205,7 @@ public class SensorSim {
 		}
 		return window;
 	}
+
 	/**
 	 * Measure signal period using averaging.
 	 * @param samples is array of timer counter values captured on each oscillator signal edge
@@ -253,8 +270,8 @@ public class SensorSim {
 		int minposition = diff + width;
 		for (int i = 0; i < maxMeasurementsToTest; i++) {
 			int pos = rnd.nextInt(SIMULATION_SAMPLES_TO_COLLECT-minposition) + minposition;
-			//long period = measureAt(samples, pos, diff, width);
-			long period = measureWithFIRFilter(samples, pos, diff, width);
+			long period = measureAt(samples, pos, diff, width);
+			//long period = measureWithFIRFilter(samples, pos, diff, width);
 			if (minPeriod < 0 || minPeriod > period)
 				minPeriod = period;
 			if (maxPeriod < 0 || maxPeriod < period)
@@ -294,6 +311,29 @@ public class SensorSim {
 				+ "\t" + String.format("%.3f", exactS)
 				//+ "\t" + String.format("%.6f", diff * timerFreq / signalFreq)
 				);
+		
+		if (exactS > 20) {
+			log("    near " + (diff));
+			for (int i = -28; i <= 28; i += 1 ) {
+				dumpDiffPatternAt(samples, 10000, diff + i, 256);
+			}
+			log("    near " + (diff/2));
+			for (int i = -8; i <= 8; i += 1 ) {
+				dumpDiffPatternAt(samples, 10000, diff/2 + i, 256);
+			}
+			log("    near " + (diff/3));
+			for (int i = -8; i <= 8; i += 1 ) {
+				dumpDiffPatternAt(samples, 10000, diff/3 + i, 256);
+			}
+//			dumpDiffPatternAt(samples, 10000, diff-6, width);
+//			dumpDiffPatternAt(samples, 10000, diff-4, width);
+//			dumpDiffPatternAt(samples, 10000, diff-2, width);
+//			dumpDiffPatternAt(samples, 10000, diff, width);
+//			dumpDiffPatternAt(samples, 10000, diff+2, width);
+//			dumpDiffPatternAt(samples, 10000, diff+4, width);
+//			dumpDiffPatternAt(samples, 10000, diff+6, width);
+//			dumpDiffPatternAt(samples, 10000, diff+8, width);
+		}
 		return exactS;
  	}
 
