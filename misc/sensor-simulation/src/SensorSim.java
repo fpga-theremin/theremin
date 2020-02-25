@@ -22,19 +22,19 @@ public class SensorSim {
 	public static final double XTAL_NOISE_LEVEL = 0; //0.000001;
 
 	// number of captured edges to collect
-	public static final int SIMULATION_SAMPLES_TO_COLLECT = 15000;
+	public static final int SIMULATION_SAMPLES_TO_COLLECT = 25000;
 	// number of random points to measure period in collected data
-	public static final int SIMULATION_RANDOM_TEST_POSITION_COUNT = 3;
+	public static final int SIMULATION_RANDOM_TEST_POSITION_COUNT = 20;
 
 	//public static final double TIMER_FREQUENCY = 1_200_000_000.0;
-	//public static final double TIMER_FREQUENCY = 240_000_000.0;
-	public static final double TIMER_FREQUENCY = 120_000_000.0;
+	public static final double TIMER_FREQUENCY = 240_000_000.0;
+	//public static final double TIMER_FREQUENCY = 120_000_000.0;
 	//public static final double TIMER_FREQUENCY = 150_000_000.0;
 	
-	public static final double SENSOR_NOISE_LEVEL = 0.0001; //0.001; //0.00001; //0.001;
+	public static final double SENSOR_NOISE_LEVEL = 0; //0.00001; //0.001; //0.00001; //0.001;
 	public static final double SENSOR_DUTY_CYCLE = 0.5;
-	public static final int SENSOR_DITHER_INTERVAL = 1; //512;
-	public static final double SENSOR_DITHER_AMOUNT = 0; //0.0001; //5000.1 / 2048.0 / 2048.0;
+	public static final int SENSOR_DITHER_INTERVAL = 1; //128; //512;
+	public static final double SENSOR_DITHER_AMOUNT = 0; //0.00001; //0.0001; //5000.1 / 2048.0 / 2048.0;
 	
 	public static final double OSCILLATOR_START_FREQUENCY = 870_000.0;
 	public static final double SENSOR_MAX_TEST_FREQ = 915_000.0;
@@ -42,6 +42,7 @@ public class SensorSim {
 	public final static double OSCILLATOR_FREQ_TEST_STEP = Math.PI / 5; //11; // / 7;
 	public static final int FILTER_DISTANCE = 1024;
 	public static final int FILTER_DISTANCE_OFFSET = 0; //7*2;
+	public static final int FILTER_WIDTH = 256;
 	
 	private static final Random noisernd = new Random();
 	
@@ -505,7 +506,7 @@ public class SensorSim {
 			for (int j = 0; j < diffLoop; j++) {
 				int diff = baseDiff - j; // >> j;
 				for (int k = 0; k < widthLoop; k++) {
-					int width = diff >> k;
+					int width = FILTER_WIDTH >> k;
 					double S = testMeasure(sensorFreq, TIMER_FREQUENCY, diff + FILTER_DISTANCE_OFFSET, width);
 					for (GoodAreaTracker tracker : trackers)
 						tracker.tick(sensorFreq, S);
