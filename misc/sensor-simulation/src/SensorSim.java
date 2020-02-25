@@ -24,7 +24,7 @@ public class SensorSim {
 	// number of captured edges to collect
 	public static final int SIMULATION_SAMPLES_TO_COLLECT = 15000;
 	// number of random points to measure period in collected data
-	public static final int SIMULATION_RANDOM_TEST_POSITION_COUNT = 30;
+	public static final int SIMULATION_RANDOM_TEST_POSITION_COUNT = 3;
 
 	//public static final double TIMER_FREQUENCY = 1_200_000_000.0;
 	//public static final double TIMER_FREQUENCY = 240_000_000.0;
