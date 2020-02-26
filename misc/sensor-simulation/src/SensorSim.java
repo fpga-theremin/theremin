@@ -24,7 +24,7 @@ public class SensorSim {
 	// number of captured edges to collect
 	public static final int SIMULATION_SAMPLES_TO_COLLECT = 30000;
 	// number of random points to measure period in collected data
-	public static final int SIMULATION_RANDOM_TEST_POSITION_COUNT = 20;
+	public static final int SIMULATION_RANDOM_TEST_POSITION_COUNT = 30;
 
 	//public static final double TIMER_FREQUENCY = 1_200_000_000.0;
 	public static final double TIMER_FREQUENCY = 240_000_000.0;
@@ -36,13 +36,15 @@ public class SensorSim {
 	public static final int SENSOR_DITHER_INTERVAL = 1; //128; //512;
 	public static final double SENSOR_DITHER_AMOUNT = 0; //0.00001; //0.0001; //5000.1 / 2048.0 / 2048.0;
 	
-	public static final double OSCILLATOR_START_FREQUENCY = 870_000.0;
-	public static final double SENSOR_MAX_TEST_FREQ = 915_000.0;
+	public static final double OSCILLATOR_START_FREQUENCY = 878_000.0;
+	public static final double SENSOR_MAX_TEST_FREQ = 887_000.0;
 	//public static final double SENSOR_MAX_TEST_FREQ = 1_050_000.0;
-	public final static double OSCILLATOR_FREQ_TEST_STEP = Math.PI / 5; //11; // / 7;
+	public final static double OSCILLATOR_FREQ_TEST_STEP = Math.PI / 7; //11; // / 7;
+	// number of periods to calculate sateg 1 filter value (edge(0) - edge(0-FILTER_DISTANCE))
 	public static final int FILTER_DISTANCE = 1024;
 	public static final int FILTER_DISTANCE_OFFSET = 0; //7*2;
 	public static final int FILTER_WIDTH = 1024;
+	public static final double IIR_FILTER_K = 0.002; // 0.002
 	
 	private static final Random noisernd = new Random();
 	
@@ -274,8 +276,7 @@ public class SensorSim {
 		return acc / 4;
 	}
 
-	public static long measureIIR(int[] samples, int pos, int diff, int width) {
-		final float k = 0.002f;
+	public static double measureIIR(int[] samples, int pos, int diff, int width) {
 		int startOffset = width * 8;
 		double stage1 = (samples[pos - startOffset] - samples[pos - startOffset - diff]) & TIMER_COUNTER_MASK;
 		double stage2 = stage1;
@@ -285,16 +286,14 @@ public class SensorSim {
 			// to fix timer overflows, calculate difference module timer counter width
 			double value = (samples[pos - i] - samples[pos - i - diff]) & TIMER_COUNTER_MASK;
 			//double diff1 = (value - stage1) * k;
-			stage1 = stage1 + (value - stage1) * k;
-			stage2 = stage2 + (stage1 - stage2) * k;
-			stage3 = stage3 + (stage2 - stage3) * k;
-			stage4 = stage4 + (stage3 - stage4) * k;
+			stage1 = stage1 + (value - stage1) * IIR_FILTER_K;
+			stage2 = stage2 + (stage1 - stage2) * IIR_FILTER_K;
+			stage3 = stage3 + (stage2 - stage3) * IIR_FILTER_K;
+			stage4 = stage4 + (stage3 - stage4) * IIR_FILTER_K;
 			//log(String.format("    %d:\t%.9f\t%.9f\t%.9f\t%.9f\t value=\t%.5f", i, stage1, stage2, stage3, stage4, value));
 			//log("  " + i + " :\t" + stage1 + "\t" + stage2 + "\t" + stage3 + "\t" + stage4 + "  \t delta=\t" + delta + " \t  value=\t" + value);
 		}
-		int destScale = width;
-		double res = stage4 * destScale;
-		return (int)(res + 0.5);
+		return stage4;
 	}
 
 
@@ -387,82 +386,87 @@ public class SensorSim {
 				);
 	}
 
+	public static double[] measure(double signalFreq, double timerFreq, int diff, int width, int testPointStep) {
+		int[] samples = genSamples(signalFreq, timerFreq, SIMULATION_SAMPLES_TO_COLLECT);
+		dumpCapturedData(samples, MAX_CAPTURED_VALUES_TO_DUMP);
+		int minposition = diff*2 + width * 8 + 2;
+		int numberOfTestPoints = (SIMULATION_SAMPLES_TO_COLLECT - minposition) / testPointStep;
+		double[] res = new double[numberOfTestPoints]; 
+		for (int i = 0; i < numberOfTestPoints; i++) {
+			int pos = minposition + i * testPointStep;
+			double period = measureIIR(samples, pos, diff, width);
+			res[i] = 2 * period / diff;
+		}
+		return res;
+	}
+
 	public static double testMeasure(double signalFreq, double timerFreq, int diff, int width) {
 		if (MAX_MEASUREMENTS_TO_DUMP > 0 || MAX_CAPTURED_VALUES_TO_DUMP > 0)
 			log("Testing measure of signal freq=" + signalFreq + " timerFreq=" + timerFreq + " diff=" + diff + " width=" + width);
-		int[] samples = genSamples(signalFreq, timerFreq, SIMULATION_SAMPLES_TO_COLLECT);
-		dumpCapturedData(samples, MAX_CAPTURED_VALUES_TO_DUMP);
-		long minPeriod = -1;
-		long maxPeriod = -1;
-		int maxMeasurementsToTest = SIMULATION_RANDOM_TEST_POSITION_COUNT;
-		double periodSum = 0;
-	    double [] periods = new double[maxMeasurementsToTest];
-		Random rnd = new Random();
 		int minposition = diff*2 + width * 8 + 2;
-		for (int i = 0; i < maxMeasurementsToTest; i++) {
-			int pos = rnd.nextInt(SIMULATION_SAMPLES_TO_COLLECT-minposition) + minposition;
-			//long period = measureAt(samples, pos, diff, width);
-			long period = measureIIR(samples, pos, diff, width);
-			//long period = measureAt2(samples, pos, diff, width);
-			//long period = measureAt2(samples, pos, diff, width);
-			//long period = measureWithFIRFilter(samples, pos, diff, width);
+		int testPointStep = (SIMULATION_SAMPLES_TO_COLLECT - minposition) / SIMULATION_RANDOM_TEST_POSITION_COUNT;
+		double[] measuredPeriods = measure(signalFreq, timerFreq, diff, width, testPointStep);
+		double minPeriod = -1;
+		double maxPeriod = -1;
+		double periodSum = 0;
+		for (int i = 0; i < measuredPeriods.length; i++) {
+			double period = measuredPeriods[i];
+			long periodLong = (long)(period * diff * width + 0.5);
 			if (minPeriod < 0 || minPeriod > period) {
 				minPeriod = period;
 			}
 			if (maxPeriod < 0 || maxPeriod < period) {
 				maxPeriod = period;
 			}
-			double periodFloat = (timerFreq/signalFreq) * (period / (double)diff / (double)width) * 2;
-			double freq = 1.0 / periodFloat;
+			double freq = 1.0 / period;
 			double freqDiff = freq - signalFreq;
 			if (i < MAX_MEASUREMENTS_TO_DUMP)
-				log("pos\t" + pos + "\tvalue\t" + period + "\tbin\t" + Long.toBinaryString(period) + "\tfreq=\t" + freq  + "\tfreqDiff\t" + freqDiff);
+				log("pos\t" + i + "\tvalue\t" + period + "\tbin\t" + Long.toBinaryString(periodLong) + "\tfreq=\t" + freq  + "\tfreqDiff\t" + freqDiff);
 			periodSum += period;
-			periods[i] = period;
 		}
-		double exactPeriod = (timerFreq/signalFreq) * width * diff / 2;
-		double periodAvg = periodSum / maxMeasurementsToTest;
+		double exactPeriod = (timerFreq / signalFreq);
+		double periodAvg = periodSum / measuredPeriods.length;
 		double squareDiffSum = 0;
 		double squareExactDiffSum = 0;
-		for (int i = 0; i < maxMeasurementsToTest; i++) {
-			squareDiffSum += (periods[i]-periodAvg)*(periods[i]-periodAvg);
-			squareExactDiffSum += (periods[i]-exactPeriod)*(periods[i]-exactPeriod);
+		for (int i = 0; i < measuredPeriods.length; i++) {
+			squareDiffSum += (measuredPeriods[i]-periodAvg) * (measuredPeriods[i]-periodAvg);
+			squareExactDiffSum += (measuredPeriods[i]-exactPeriod) * (measuredPeriods[i]-exactPeriod);
 		}
 		// standard deviation
-		double S = Math.sqrt(squareDiffSum / (maxMeasurementsToTest - 0));
-		double exactS = Math.sqrt(squareExactDiffSum / (maxMeasurementsToTest - 0));
+		double S = Math.sqrt(squareDiffSum / (measuredPeriods.length - 0));
+		double exactS = Math.sqrt(squareExactDiffSum / (measuredPeriods.length - 0));
 
+		double scaling = diff * width;
 		//System.out.println("exact period:\t" + exactPeriod);
 		log(
-				"" + signalFreq 
+				"" + String.format("%.4f", signalFreq) 
 				//+ "\ttimerFreq=\t" + timerFreq 
 				+ "\t" + diff 
 				+ "\t" + width
-				+ "\t" + minPeriod 
-				//+ "\t max=\t" + maxPeriod 
-				+ "\t" + (maxPeriod-minPeriod) 
-				+ "\t" + String.format("%.2f", periodAvg)
+				+ "\t" + String.format("%.2f", minPeriod*scaling) 
+				+ "\t" + String.format("%.2f", (maxPeriod-minPeriod)*scaling) 
+				+ "\t" + String.format("%.2f", periodAvg*scaling)
 				//+ "\t S=\t" + S 
-				+ "\t" + String.format("%.3f", exactS)
+				+ "\t" + String.format("%.3f", exactS*scaling)
 				//+ "\t" + String.format("%.6f", diff * timerFreq / signalFreq)
-				+ "\t" + String.format("%.3f", periodAvg - exactPeriod)
-				+ "\t" + String.format("%.3f", minPeriod - exactPeriod)
-				+ "\t" + String.format("%.3f", maxPeriod - exactPeriod)
+				+ "\t" + String.format("%.3f", (periodAvg - exactPeriod)*scaling)
+				+ "\t" + String.format("%.3f", (minPeriod - exactPeriod)*scaling)
+				+ "\t" + String.format("%.3f", (maxPeriod - exactPeriod)*scaling)
 				);
 		
-		if (exactS > 10000) {
-			int p = 10000;
-			log("    near diff " + (diff) + " pos " + p);
-			for (int i = -10; i <= 10; i += 2 ) {
-				dumpDiffPatternAt(samples, p, diff + i, 128);
-			}
-			p+=12345;
-			log("    near diff " + (diff) + " pos " + p);
-			for (int i = -10; i <= 10; i += 2 ) {
-				dumpDiffPatternAt(samples, p, diff + i, 128);
-			}
-		}
-		return exactS;
+//		if (exactS > 10000) {
+//			int p = 10000;
+//			log("    near diff " + (diff) + " pos " + p);
+//			for (int i = -10; i <= 10; i += 2 ) {
+//				dumpDiffPatternAt(samples, p, diff + i, 128);
+//			}
+//			p+=12345;
+//			log("    near diff " + (diff) + " pos " + p);
+//			for (int i = -10; i <= 10; i += 2 ) {
+//				dumpDiffPatternAt(samples, p, diff + i, 128);
+//			}
+//		}
+		return exactS * scaling;
  	}
 
 	public static void testFreqMeasures() {
@@ -510,15 +514,19 @@ public class SensorSim {
 		//double sensorFreq = 990098.8173689365;
 		//double sensorFreq = 999996;
 		int totalCount = 0;
+		int goodCount0 = 0;
 		int goodCount1 = 0;
 		int goodCount2 = 0;
 		int goodCount3 = 0;
+		int goodCount4 = 0;
 		int badCount1 = 0;
 		int badCount2 = 0;
 		int badCount3 = 0;
+		double s_threshold0 = 16;
 		double s_threshold1 = 8;
 		double s_threshold2 = 4;
 		double s_threshold3 = 2;
+		double s_threshold4 = 1;
 		double bad_threshold1 = 30;
 		double bad_threshold2 = 100;
 		double bad_threshold3 = 200;
@@ -534,12 +542,16 @@ public class SensorSim {
 					double S = testMeasure(sensorFreq, TIMER_FREQUENCY, diff + FILTER_DISTANCE_OFFSET, width);
 					for (GoodAreaTracker tracker : trackers)
 						tracker.tick(sensorFreq, S);
+					if (S < s_threshold0)
+						goodCount0++;
 					if (S < s_threshold1)
 						goodCount1++;
 					if (S < s_threshold2)
 						goodCount2++;
 					if (S < s_threshold3)
 						goodCount3++;
+					if (S < s_threshold4)
+						goodCount4++;
 					if (S > bad_threshold1)
 						badCount1++;
 					if (S > bad_threshold2)
@@ -552,9 +564,11 @@ public class SensorSim {
 			sensorFreq += OSCILLATOR_FREQ_TEST_STEP;
 		}
 		log("Finished.");
+		log(goodCount0 + " of " + totalCount + " (" + String.format("%.3f", goodCount0 * 100.0 / totalCount) + "%) cases with standard deviation < " + s_threshold0);
 		log(goodCount1 + " of " + totalCount + " (" + String.format("%.3f", goodCount1 * 100.0 / totalCount) + "%) cases with standard deviation < " + s_threshold1);
 		log(goodCount2 + " of " + totalCount + " (" + String.format("%.3f", goodCount2 * 100.0 / totalCount) + "%) cases with standard deviation < " + s_threshold2);
 		log(goodCount3 + " of " + totalCount + " (" + String.format("%.3f", goodCount3 * 100.0 / totalCount) + "%) cases with standard deviation < " + s_threshold3);
+		log(goodCount4 + " of " + totalCount + " (" + String.format("%.3f", goodCount4 * 100.0 / totalCount) + "%) cases with standard deviation < " + s_threshold4);
 		log(badCount1 + " of " + totalCount + " (" + String.format("%.3f", badCount1 * 100.0 / totalCount) + "%) cases with standard deviation > " + bad_threshold1);
 		log(badCount2 + " of " + totalCount + " (" + String.format("%.3f", badCount2 * 100.0 / totalCount) + "%) cases with standard deviation > " + bad_threshold2);
 		log(badCount3 + " of " + totalCount + " (" + String.format("%.3f", badCount3 * 100.0 / totalCount) + "%) cases with standard deviation > " + bad_threshold3);
