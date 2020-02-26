@@ -22,7 +22,7 @@ public class SensorSim {
 	public static final double XTAL_NOISE_LEVEL = 0; //0.000001;
 
 	// number of captured edges to collect
-	public static final int SIMULATION_SAMPLES_TO_COLLECT = 25000;
+	public static final int SIMULATION_SAMPLES_TO_COLLECT = 30000;
 	// number of random points to measure period in collected data
 	public static final int SIMULATION_RANDOM_TEST_POSITION_COUNT = 20;
 
@@ -32,7 +32,7 @@ public class SensorSim {
 	//public static final double TIMER_FREQUENCY = 150_000_000.0;
 	
 	public static final double SENSOR_NOISE_LEVEL = 0; //0.00001; //0.001; //0.00001; //0.001;
-	public static final double SENSOR_DUTY_CYCLE = 0.5;
+	public static final double SENSOR_DUTY_CYCLE = 0.531234;
 	public static final int SENSOR_DITHER_INTERVAL = 1; //128; //512;
 	public static final double SENSOR_DITHER_AMOUNT = 0; //0.00001; //0.0001; //5000.1 / 2048.0 / 2048.0;
 	
@@ -42,7 +42,7 @@ public class SensorSim {
 	public final static double OSCILLATOR_FREQ_TEST_STEP = Math.PI / 5; //11; // / 7;
 	public static final int FILTER_DISTANCE = 1024;
 	public static final int FILTER_DISTANCE_OFFSET = 0; //7*2;
-	public static final int FILTER_WIDTH = 256;
+	public static final int FILTER_WIDTH = 1024;
 	
 	private static final Random noisernd = new Random();
 	
@@ -274,6 +274,29 @@ public class SensorSim {
 		return acc / 4;
 	}
 
+	public static long measureIIR(int[] samples, int pos, int diff, int width) {
+		final float k = 0.002f;
+		int startOffset = width * 8;
+		double stage1 = (samples[pos - startOffset] - samples[pos - startOffset - diff]) & TIMER_COUNTER_MASK;
+		double stage2 = stage1;
+		double stage3 = stage1;
+		double stage4 = stage1;
+		for (int i = startOffset; i >= 0; i--) {
+			// to fix timer overflows, calculate difference module timer counter width
+			double value = (samples[pos - i] - samples[pos - i - diff]) & TIMER_COUNTER_MASK;
+			//double diff1 = (value - stage1) * k;
+			stage1 = stage1 + (value - stage1) * k;
+			stage2 = stage2 + (stage1 - stage2) * k;
+			stage3 = stage3 + (stage2 - stage3) * k;
+			stage4 = stage4 + (stage3 - stage4) * k;
+			//log(String.format("    %d:\t%.9f\t%.9f\t%.9f\t%.9f\t value=\t%.5f", i, stage1, stage2, stage3, stage4, value));
+			//log("  " + i + " :\t" + stage1 + "\t" + stage2 + "\t" + stage3 + "\t" + stage4 + "  \t delta=\t" + delta + " \t  value=\t" + value);
+		}
+		int destScale = width;
+		double res = stage4 * destScale;
+		return (int)(res + 0.5);
+	}
+
 
 	public static long dumpDiffPatternAt(int[] samples, int pos, int diff, int width) {
 		long acc = 0;
@@ -375,10 +398,11 @@ public class SensorSim {
 		double periodSum = 0;
 	    double [] periods = new double[maxMeasurementsToTest];
 		Random rnd = new Random();
-		int minposition = diff + width + 2;
+		int minposition = diff*2 + width * 8 + 2;
 		for (int i = 0; i < maxMeasurementsToTest; i++) {
 			int pos = rnd.nextInt(SIMULATION_SAMPLES_TO_COLLECT-minposition) + minposition;
-			long period = measureAt(samples, pos, diff, width);
+			//long period = measureAt(samples, pos, diff, width);
+			long period = measureIIR(samples, pos, diff, width);
 			//long period = measureAt2(samples, pos, diff, width);
 			//long period = measureAt2(samples, pos, diff, width);
 			//long period = measureWithFIRFilter(samples, pos, diff, width);
