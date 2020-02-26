@@ -22,7 +22,7 @@ public class SensorSim {
 	public static final double XTAL_NOISE_LEVEL = 0; //0.000001;
 
 	// number of captured edges to collect
-	public static final int SIMULATION_SAMPLES_TO_COLLECT = 30000;
+	public static final int SIMULATION_SAMPLES_TO_COLLECT = 50000;
 	// number of random points to measure period in collected data
 	public static final int SIMULATION_RANDOM_TEST_POSITION_COUNT = 30;
 
@@ -39,7 +39,7 @@ public class SensorSim {
 	public static final double OSCILLATOR_START_FREQUENCY = 878_000.0;
 	public static final double SENSOR_MAX_TEST_FREQ = 887_000.0;
 	//public static final double SENSOR_MAX_TEST_FREQ = 1_050_000.0;
-	public final static double OSCILLATOR_FREQ_TEST_STEP = Math.PI / 7; //11; // / 7;
+	public final static double OSCILLATOR_FREQ_TEST_STEP = Math.PI / 11; //11; // / 7;
 	// number of periods to calculate sateg 1 filter value (edge(0) - edge(0-FILTER_DISTANCE))
 	public static final int FILTER_DISTANCE = 1024;
 	public static final int FILTER_DISTANCE_OFFSET = 0; //7*2;
@@ -469,8 +469,41 @@ public class SensorSim {
 		return exactS * scaling;
  	}
 
+	public static void dumpMeasurementsNear(double signalFreq, double timerFreq, int diff, int width, double freqStep, int freqCount) {
+		int testPointStep = 100;
+		double[][] measurements = new double[freqCount][];
+		StringBuilder header = new StringBuilder();
+		header.append("cycle");
+		for (int i = 0; i < freqCount; i++) {
+			double freq = signalFreq - freqStep * freqCount / 2 + i * freqStep;
+			measurements[i] = measure(freq, timerFreq, diff, width, testPointStep);
+			header.append("\t");
+			header.append(String.format("f%.3f", freq));
+		}
+		log(String.format("Dumping measurements for frequencies near %.4f  freqStep=%.5f", signalFreq, freqStep));
+		log(header.toString());
+		int scaling = width * diff / 2;
+		for (int i = 0; i < measurements[0].length; i++) {
+			StringBuilder line = new StringBuilder();
+			line.append(i * testPointStep);
+			for (int j = 0; j < freqCount; j++) {
+				double freq = signalFreq - freqStep * freqCount / 2 + j * freqStep;
+				double exactPeriod = timerFreq/freq * scaling;
+				line.append("\t");
+				double measuredPeriod = measurements[j][i] * scaling; // / diff / width;
+				double k = measuredPeriod - exactPeriod;
+				line.append(String.format("%.3f", k));
+			}
+			log(line.toString());
+		}
+	}
+
 	public static void testFreqMeasures() {
+
+		
+		
 		testMeasureHeader();
+
 		
 //		testMeasure(1000567.890123456, 240000000.0, 2048, 2048);
 //		testMeasure(1234567.890123456, 240000000.0, 2048, 2048);
@@ -511,6 +544,8 @@ public class SensorSim {
 		
 		//990098.8173689365	2048	2048	508349644	382	508349770.97	143.882
 		double sensorFreq = OSCILLATOR_START_FREQUENCY;
+
+		
 		//double sensorFreq = 990098.8173689365;
 		//double sensorFreq = 999996;
 		int totalCount = 0;
@@ -534,12 +569,18 @@ public class SensorSim {
 		for (int i = 0; i < trackers.length; i++) {
 			trackers[i] = new GoodAreaTracker(0.0005, 20 + 5*i);
 		}
+		double worstS = 0;
+		double worstSFrequency = 0;
 		for (int i = 0; i < 1_000_000 && sensorFreq < SENSOR_MAX_TEST_FREQ; i++) {
 			for (int j = 0; j < diffLoop; j++) {
 				int diff = baseDiff - j; // >> j;
 				for (int k = 0; k < widthLoop; k++) {
 					int width = FILTER_WIDTH >> k;
 					double S = testMeasure(sensorFreq, TIMER_FREQUENCY, diff + FILTER_DISTANCE_OFFSET, width);
+					if (S > worstS) {
+						worstS = S;
+						worstSFrequency = sensorFreq;
+					}
 					for (GoodAreaTracker tracker : trackers)
 						tracker.tick(sensorFreq, S);
 					if (S < s_threshold0)
@@ -584,6 +625,10 @@ public class SensorSim {
 		for (GoodAreaTracker tracker : trackers)
 			tracker.dump();
 
+		dumpMeasurementsNear(worstSFrequency, TIMER_FREQUENCY, FILTER_DISTANCE * 2 + FILTER_DISTANCE_OFFSET, FILTER_WIDTH, 1.2, 9);
+		dumpMeasurementsNear(worstSFrequency, TIMER_FREQUENCY, FILTER_DISTANCE * 2 + FILTER_DISTANCE_OFFSET, FILTER_WIDTH, 0.3, 9);
+		dumpMeasurementsNear(worstSFrequency, TIMER_FREQUENCY, FILTER_DISTANCE * 2 + FILTER_DISTANCE_OFFSET, FILTER_WIDTH, 0.1, 9);
+		
 	}
 
 	public static void main(String[] args) {
