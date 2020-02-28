@@ -33,24 +33,30 @@ public class SensorSim {
 	//public static final double TIMER_FREQUENCY = 150_000_000.0;
 	
 	public static final double SENSOR_NOISE_LEVEL = 0; //0.0001; //0.00001; //0.001; //0.00001; //0.001;
-	public static final double SENSOR_DUTY_CYCLE = 0.5012345;
+	public static final double SENSOR_DUTY_CYCLE = 0.7;
 	public static final int SENSOR_DITHER_INTERVAL = 1; //512; //256; //128; //512;
 	public static final double SENSOR_DITHER_AMOUNT = 0; //0.05; //0.01; //0.00001; //0.0001; //5000.1 / 2048.0 / 2048.0;
 
 	public static final double SENSOR_ASYNC_DITHER_FREQUENCY = 44100.0 / 32; //0.01; //0.00001; //0.0001; //5000.1 / 2048.0 / 2048.0;
 	public static final double SENSOR_ASYNC_DITHER_AMOUNT = 0; //0.001; //0.01; //0.00001; //0.0001; //5000.1 / 2048.0 / 2048.0;
 	
-	public static final double OSCILLATOR_START_FREQUENCY = 878_000.0;
-	public static final double SENSOR_MAX_TEST_FREQ = 887_000.0;
-	//public static final double SENSOR_MAX_TEST_FREQ = 1_050_000.0;
-	public final static double OSCILLATOR_FREQ_TEST_STEP = Math.PI / 3; //11; // / 7;
+//	public static final double OSCILLATOR_MIN_FREQUENCY = 878_000.0;
+//	public static final double OSCILLATOR_MAX_FREQUENCY = 887_000.0;
+	public static final double OSCILLATOR_MIN_FREQUENCY =   850_000.0;
+	public static final double OSCILLATOR_MAX_FREQUENCY = 1_100_000.0;
+	public static final int OSCILLATOR_FREQ_DIVIDER_SUBSTEPS = 8*9*5*7; //*11;
+	public static final double OSCILLATOR_FREQ_SHIFT_FROM_RESONANCE_POINT = 0.05; // shift from TIMER_FREQUENCY/K as fraction of divider substep
 
 	// number of oscilator signal periods to calculate stage 1 filter value (edge(0) - edge(0-FILTER_DISTANCE))
 	// with distance 2048, first stage itself introduces 1ms latency (with 1MHz sensor frequency)
 	//      distance 4096, first stage itself introduces 2ms latency (with 1MHz sensor frequency)
 	//      distance 8192, first stage itself introduces 4ms latency (with 1MHz sensor frequency)
-	public static final int FILTER_DISTANCE = 2048;
+	public static final int FILTER_DISTANCE = 8192;
 	public static final int FILTER_DISTANCE_OFFSET = 0; //7*2;
+
+	public static final int[] FILTER_DISTANCE_DITHER_K = new int[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 7, 6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6, -7, -8, -7, -6, -5, -4, -3, -2, -1};
+
+	public static final int FILTER_DISTANCE_AVGERAGING = 10; // for FirstStageType.DIFF_AVG
 
 	// filter type for first stage filtering
 	public static final FirstStageType FILTER_TYPE_STAGE1 = FirstStageType.DIFF; // FirstStageType.WEIGHTED_DIFF_4;
@@ -58,7 +64,7 @@ public class SensorSim {
 	public static final FilterType FILTER_TYPE_STAGE2 = FilterType.IIR;
 	
 	// FIR filter parameter - width of window
-	public static final int FILTER_WIDTH = 4096;
+	public static final int FILTER_WIDTH = 2048;
 	
 	// IIR filter parameters
 	public static final double IIR_FILTER_K = 0.002; // 0.002
@@ -73,7 +79,9 @@ public class SensorSim {
 	
 	public enum FirstStageType {
 		DIFF,
-		WEIGHTED_DIFF_4
+		WEIGHTED_DIFF_4,
+		DIFF_DITHERED,
+		DIFF_AVG
 	}
 
 	public enum FilterType {
@@ -315,6 +323,14 @@ public class SensorSim {
 		case DIFF:
 			// to fix timer overflows, calculate difference module timer counter width
 			return ((samples[pos] - samples[pos - diff]) & TIMER_COUNTER_MASK) * 2.0 / diff;
+	    case DIFF_AVG:
+	        {
+	            double sum = 0;
+		    	for (int i = 0; i < FILTER_DISTANCE_AVGERAGING; i++) {
+		    	    sum = sum + ((samples[pos - i * 2] - samples[pos - diff - i * 2]) & TIMER_COUNTER_MASK) * 2.0 / diff;
+		    	}
+		    	return sum / FILTER_DISTANCE_AVGERAGING;
+	        }
 		case WEIGHTED_DIFF_4:
 			{
 				int offset1 = diff;
@@ -333,6 +349,32 @@ public class SensorSim {
 				final double combined = (d1 * k1 + d2 * k2 + d3 * k3 + d4 * k4);
 				return  combined / (k1 + k2 + k3 + k4);
 			}
+		case DIFF_DITHERED:
+		    {
+		    	int phase = pos % FILTER_DISTANCE_DITHER_K.length;
+		    	int d1 = 0;
+		    	int d2 = 0;
+		    	int posBit0 = pos & 1;
+		    	int amp = FILTER_DISTANCE_DITHER_K[phase] * 10;
+		    	int count = 1;
+		    	if (amp > 0) {
+		    	    d1 = 1 ^ posBit0;
+		    	    d2 = 0 ^ posBit0;
+		    	    count = amp;
+		    	} else if (amp < 0) {
+		    	    d1 = 0 ^ posBit0;
+		    	    d2 = 1 ^ posBit0;
+		    	    count = -amp;
+		    	}
+		    	double sum = 0;
+		    	for (int i = 0; i < count; i++) {
+			    	int pos1 = pos - d1- 2*i;
+			    	int pos2 = pos - diff - d2 - 2*i;
+			    	int length = pos1 - pos2;
+					sum = sum + ((samples[pos1] - samples[pos2]) & TIMER_COUNTER_MASK) * 2.0 / length;
+		    	}
+				return sum / count;
+		    }
 		}
 	}
 
@@ -596,7 +638,7 @@ public class SensorSim {
 		int baseDiff = FILTER_DISTANCE * 2;
 		
 		//990098.8173689365	2048	2048	508349644	382	508349770.97	143.882
-		double sensorFreq = OSCILLATOR_START_FREQUENCY;
+		double sensorFreq = OSCILLATOR_MIN_FREQUENCY;
 
 		
 		//double sensorFreq = 990098.8173689365;
@@ -624,7 +666,16 @@ public class SensorSim {
 		}
 		double worstBits = 1000;
 		double worstBitsFrequency = 0;
-		for (int i = 0; i < 1_000_000 && sensorFreq < SENSOR_MAX_TEST_FREQ; i++) {
+		int subSteps = OSCILLATOR_FREQ_DIVIDER_SUBSTEPS;
+		int minDividerK = (int)(subSteps * TIMER_FREQUENCY / OSCILLATOR_MAX_FREQUENCY - 0.5);
+		int maxDividerK = (int)(subSteps * TIMER_FREQUENCY / OSCILLATOR_MIN_FREQUENCY + 0.5);
+		for (int i = maxDividerK; i >= minDividerK; i--) {
+			double sensorFreq1 = TIMER_FREQUENCY / i * subSteps;
+			double sensorFreq2 = TIMER_FREQUENCY / (i + 1) * subSteps;
+			sensorFreq = sensorFreq1 + (sensorFreq2 - sensorFreq1) * OSCILLATOR_FREQ_SHIFT_FROM_RESONANCE_POINT;
+			if (sensorFreq < OSCILLATOR_MIN_FREQUENCY || sensorFreq > OSCILLATOR_MAX_FREQUENCY) 
+				continue;
+			//if (sensorFreq < SENSOR_
 			for (int j = 0; j < diffLoop; j++) {
 				int diff = baseDiff - j; // >> j;
 				for (int k = 0; k < widthLoop; k++) {
@@ -655,7 +706,7 @@ public class SensorSim {
 					totalCount++;
 				}
 			}
-			sensorFreq += OSCILLATOR_FREQ_TEST_STEP;
+			//sensorFreq += OSCILLATOR_FREQ_TEST_STEP;
 		}
 		log("Finished.");
 		log(goodCount0 + " of " + totalCount + " (" + String.format("%.3f", goodCount0 * 100.0 / totalCount) + "%) cases with exact bits > " + s_threshold0);
