@@ -9,8 +9,18 @@
 #define DMAMEM
 #define FASTRUN
 
-#include "pins_arduino.h"
+#define __attribute__(x)
 
+#include "pins_arduino.h"
+#include "Print.h"
+
+// fix C++ boolean issue
+// https://github.com/arduino/Arduino/pull/2151
+#ifdef __cplusplus
+typedef bool boolean;
+#else
+typedef uint8_t boolean;
+#endif
 
 
 #endif //ARDUINO_H_INCLUDED

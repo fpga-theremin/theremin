@@ -3,15 +3,25 @@
 
 #include "simulator_impl.h"
 
-#include "arduino/Arduino.h"
+#include "Arduino.h"
 
+#include "ILI9341_t3.h"
 
 //#include "../../theremin_sdk/theremin/src/lcd_screen.h"
 //#include "../../theremin_sdk/theremin/src/bitmap_fonts.h"
 //#include "../../theremin_sdk/theremin/src/ugui.h"
 //#include "../../theremin_sdk/synthesizer/src/synthesizer.h"
 
+// The display also uses hardware SPI, plus #9 & #10
+#define TFT_CS 10
+#define TFT_DC  9
+ILI9341_t3 tft = ILI9341_t3(TFT_CS, TFT_DC);
+
+
 void drawTestImage() {
+    tft.setRotation(1);
+    tft.fillScreen(0x1111);
+    tft.fillRect(4, 4, 100, 120, 0x3344);
 //    lcd_fill_rect(6, 5, 120, 50, 0x0f84);
 //    lcd_fill_rect(5, 55, 121, 100, 0x058e);
 
@@ -57,12 +67,13 @@ void drawTestImage() {
 
 int main(int argc, char *argv[])
 {
+    tft.begin();
     //thereminIO_init();
 
     //thereminLCD_setFramebufferAddress(SCREEN_BUF);
     //lcd_init();
 
-    //drawTestImage();
+    drawTestImage();
     //drawTestGUI();
 
 

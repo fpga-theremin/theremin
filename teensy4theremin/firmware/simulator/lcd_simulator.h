@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QImage>
+#include <QTimer>
 
 
 class LCDSimulator : public QWidget
@@ -12,9 +13,12 @@ class LCDSimulator : public QWidget
 
     QImage screenImage;
 
+    QTimer periodicTimer;
+
 protected:
     void paintEvent(QPaintEvent *event) override;
     void updateImage();
+
 
 public:
     explicit LCDSimulator(QWidget *parent = nullptr);
@@ -22,6 +26,7 @@ public:
 signals:
 
 public slots:
+    void onPeriodicTimer();
 };
 
 #endif // LCD_SIMULATOR_H

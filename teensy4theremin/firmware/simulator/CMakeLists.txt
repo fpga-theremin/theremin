@@ -10,11 +10,14 @@ if(CMAKE_VERSION VERSION_LESS "3.7.0")
     set(CMAKE_INCLUDE_CURRENT_DIR ON)
 endif()
 
+add_definitions(-D__IMXRT1062__ -DTHEREMIN_SIMULATOR)
+
+
 find_package(Qt5 COMPONENTS Widgets Multimedia REQUIRED)
 
 add_executable(teensy4_theremin_sim
-	arduino/Arduino.h
-	arduino/pins_arduino.h
+	Arduino.h
+	pins_arduino.h
 	main.cpp
 	mainwindow.cpp
 	mainwindow.h
@@ -39,6 +42,22 @@ add_executable(teensy4_theremin_sim
 	theremin_sensor_simulator.cpp
 	encoder_widget.h
     	encoder_widget.cpp
+	ILI9341_t3.h
+	ILI9341_t3_sim.cpp
+	SPI.h
+	SPI_sim.cpp
+	Print.h
+	Print.cpp
+	Printable.h
+	WString.h
+	WString.cpp
+	core_id.h
+	avr_functions.h
+	avr/pgmspace.h
+	nonstd.c
+	glcdfont.c
 )
+
+target_include_directories(teensy4_theremin_sim PRIVATE .)
 
 target_link_libraries(teensy4_theremin_sim Qt5::Widgets Qt5::Multimedia)
