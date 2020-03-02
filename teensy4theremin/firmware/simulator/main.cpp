@@ -3,7 +3,7 @@
 
 #include "simulator_impl.h"
 
-#include <arduino/Arduino.h>
+#include "arduino/Arduino.h"
 
 
 //#include "../../theremin_sdk/theremin/src/lcd_screen.h"

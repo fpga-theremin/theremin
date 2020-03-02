@@ -5,7 +5,7 @@
 #include <QIODevice>
 #include <QAudioFormat>
 #include <QAudioOutput>
-#include <audiogen.h>
+#include "audiogen.h"
 
 #define MAX_BUFFER_SAMPLES 16384
 
