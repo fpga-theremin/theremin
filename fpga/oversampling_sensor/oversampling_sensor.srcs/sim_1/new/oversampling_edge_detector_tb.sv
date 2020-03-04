@@ -29,7 +29,7 @@ localparam OVERSAMPLING = 3;
 // reference frequency for delay line, in MHz
 localparam DELAY_REFCLOCK_FREQUENCY=200.0;
 // number of bits in timer cycle counter (8 bits for 150MHz->1MHz, 6 bits for max filter stage1 delay)
-localparam COUNTER_BITS = 8 + 6;
+localparam COUNTER_BITS = 8 + 9 - 1;
 
 // ~600MHz
 logic CLK_SHIFT;
@@ -53,8 +53,9 @@ logic CHANGE_FLAG;
 // 1 if change is raising edge, 0 if falling edge
 logic CHANGE_EDGE;
 
+localparam EDGE_POSITION_BITS = 3 + OVERSAMPLING + COUNTER_BITS;
 // counter value for edge    
-logic[3 + OVERSAMPLING + COUNTER_BITS - 1 : 0] EDGE_POSITION;
+logic[EDGE_POSITION_BITS - 1 : 0] EDGE_POSITION;
 
 oversampling_edge_detector
 #(
@@ -93,40 +94,68 @@ oversampling_edge_detector_inst
     .EDGE_POSITION
 );
 
+logic [EDGE_POSITION_BITS - 1 : 0] OUT_DIFF;
+localparam DELAY_CYCLES = 512;
 
-initial begin
+delay_diff_filter
+#(
+    // filter will calculate diff with value delayed by DELAY_CYCLES WR cycles, power of two is recommended
+    .DELAY_CYCLES(DELAY_CYCLES),
+    // number of bits in value (the bigger is delay, the more bits in value is needed: one addr bit == +1 value bit)
+    .VALUE_BITS(EDGE_POSITION_BITS),
+    // use BRAM for delays with log2(DELAY_CYCLE) >= BRAM_ADDR_BITS_THRESHOLD
+    .BRAM_ADDR_BITS_THRESHOLD(5)
+)
+delay_diff_filter_inst
+(
+    // clock signal, inputs and outputs are being changed on raising edge of this clock 
+    .CLK,
+
+    // reset, active 1
+    .RESET,
+
+    // input value for filter
+    .IN_VALUE(EDGE_POSITION),
+
+    // set to 1 for one clock cycle to push new value
+    .WR(CHANGE_FLAG),
+    
+    // filter output (IN_VALUE - delay(IN_VALUE, 2**DELAY_ADDR_BITS)), updated one cycle after WR
+    // delay is counted as number of input values (WR==1 count)
+    .OUT_DIFF
+);
+
+always begin
     // 150MHz
-    repeat (100000) begin
-        #0.833333333333333 CLK_SHIFT = 1; CLK_SHIFTB=0; CLK = 1;
-        #0.833333333333333 CLK_SHIFT = 0; CLK_SHIFTB=1; CLK = 1;
-        #0.833333333333333 CLK_SHIFT = 1; CLK_SHIFTB=0; CLK = 1;
-        #0.833333333333333 CLK_SHIFT = 0; CLK_SHIFTB=1; CLK = 1;
-        #0.833333333333333 CLK_SHIFT = 1; CLK_SHIFTB=0; CLK = 0;
-        #0.833333333333333 CLK_SHIFT = 0; CLK_SHIFTB=1; CLK = 0;
-        #0.833333333333333 CLK_SHIFT = 1; CLK_SHIFTB=0; CLK = 0;
-        #0.833333333333333 CLK_SHIFT = 0; CLK_SHIFTB=1; CLK = 0;
-    end;
+    #0.833333333333333 CLK_SHIFT = 1; CLK_SHIFTB=0; CLK = 1;
+    #0.833333333333333 CLK_SHIFT = 0; CLK_SHIFTB=1; CLK = 1;
+    #0.833333333333333 CLK_SHIFT = 1; CLK_SHIFTB=0; CLK = 1;
+    #0.833333333333333 CLK_SHIFT = 0; CLK_SHIFTB=1; CLK = 1;
+    #0.833333333333333 CLK_SHIFT = 1; CLK_SHIFTB=0; CLK = 0;
+    #0.833333333333333 CLK_SHIFT = 0; CLK_SHIFTB=1; CLK = 0;
+    #0.833333333333333 CLK_SHIFT = 1; CLK_SHIFTB=0; CLK = 0;
+    #0.833333333333333 CLK_SHIFT = 0; CLK_SHIFTB=1; CLK = 0;
 end
 
 initial begin
     IN = 0;
-    $display("freq1");
-    repeat (20) begin
+    $display("freq1 = %f MHz", 1000.0/(451.73561123+473.14321239));
+    repeat (1500) begin
         #451.73561123 IN = 1;
         #473.14321239 IN = 0;
     end
-    $display("freq2");
-    repeat (20) begin
+    $display("freq2 = %f MHz", 1000.0/(371.12387443+543.87325367));
+    repeat (1500) begin
         #371.12387443 IN = 1;
         #543.87325367 IN = 0;
     end
-    $display("freq3");
-    repeat (20) begin
+    $display("freq3 = %f MHz", 1000.0/(333.14343443+773.54435367));
+    repeat (1500) begin
         #333.14343443 IN = 1;
         #773.54435367 IN = 0;
     end
-    $display("freq4");
-    repeat (200) begin
+    $display("freq4 = %f MHz", 1000.0/(521.54345343+449.43243367));
+    repeat (2000) begin
         #521.54345343 IN = 1;
         #449.43243367 IN = 0;
     end
@@ -141,7 +170,12 @@ end
 
 logic[3 + OVERSAMPLING + COUNTER_BITS - 1 : 0] prev_position;
 always @(posedge CHANGE_FLAG) begin
-    #4 $display("Edge detected: CHANGE_FLAG = %d\tCHANGE_EDGE = %d\tEDGE_POSITION = %d\tDIFF = ", CHANGE_FLAG, CHANGE_EDGE, EDGE_POSITION, EDGE_POSITION - prev_position);
+    #4 @(posedge CLK) #4 $display("Edge detected: CHANGE_FLAG = \t%d\tCHANGE_EDGE = \t%d\tEDGE_POSITION = \t%d\tDIFF = \t%d\tDELAY_DIFF = \t%d\tfreq=\t%f", 
+        CHANGE_FLAG, CHANGE_EDGE, 
+        EDGE_POSITION, EDGE_POSITION - prev_position, 
+        OUT_DIFF,
+        (150.0 * 8 * (1<<OVERSAMPLING)) / ((OUT_DIFF + 0.0) / (DELAY_CYCLES/2.0))
+        );
     prev_position = EDGE_POSITION;
 end
 
