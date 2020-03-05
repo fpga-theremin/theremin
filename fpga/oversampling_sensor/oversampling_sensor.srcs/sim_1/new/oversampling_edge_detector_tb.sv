@@ -169,14 +169,24 @@ end
         end
 
 logic[3 + OVERSAMPLING + COUNTER_BITS - 1 : 0] prev_position;
+long tick_count = 0;
 always @(posedge CHANGE_FLAG) begin
-    #4 @(posedge CLK) #4 $display("Edge detected: CHANGE_FLAG = \t%d\tCHANGE_EDGE = \t%d\tEDGE_POSITION = \t%d\tDIFF = \t%d\tDELAY_DIFF = \t%d\tfreq=\t%f", 
+    #4 @(posedge CLK) #4 begin
+        $display("Edge detected: CHANGE_FLAG = \t%d\tCHANGE_EDGE = \t%d\tEDGE_POSITION = \t%d\tDIFF = \t%d\tDELAY_DIFF = \t%d\tTIME,ms=\t%f\tfreq=\t%f", 
         CHANGE_FLAG, CHANGE_EDGE, 
         EDGE_POSITION, EDGE_POSITION - prev_position, 
         OUT_DIFF,
+        tick_count / (150.0 * 8 * (1<<OVERSAMPLING)),
         (150.0 * 8 * (1<<OVERSAMPLING)) / ((OUT_DIFF + 0.0) / (DELAY_CYCLES/2.0))
         );
-    prev_position = EDGE_POSITION;
+        if (RESET) begin
+            tick_count = 0;
+            prev_position = 0;
+        end else begin
+            tick_count = tick_count + (EDGE_POSITION - prev_position);
+            prev_position = EDGE_POSITION;
+        end
+    end
 end
 
 initial begin
