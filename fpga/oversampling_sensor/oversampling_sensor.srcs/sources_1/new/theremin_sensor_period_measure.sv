@@ -39,6 +39,28 @@ module theremin_sensor_period_measure
     // first stage filter for volume axis: delay in half cycles (two edges per oscillator cycle)
     parameter VOLUME_DELAY_HALFCYCLES = 512,
 
+    // STAGE2 IIR filter parameters for Pitch axis
+    
+    // filter coefficient is 1 / (1 << K_SHIFT_BITS) : instead of multiply, right shift is used
+    parameter PITCH_STAGE2_IIR_FILTER_K_SHIFT_BITS = 8,
+    // number of bits in filter input and output
+    parameter PITCH_STAGE2_IIR_FILTER_VALUE_BITS = 36,
+    // filter output is being updated once per CYCLE_COUNT (can be bigger than number of stages to align output rate with other clock)
+    parameter PITCH_STAGE2_IIR_FILTER_CYCLE_COUNT = 4,
+    // number of IIR filter stages, should be <= CYCLE_COUNT
+    parameter PITCH_STAGE2_IIR_FILTER_STAGE_COUNT = 4,
+
+    // STAGE2 IIR filter parameters for Volume axis
+
+    // filter coefficient is 1 / (1 << K_SHIFT_BITS) : instead of multiply, right shift is used
+    parameter VOLUME_STAGE2_IIR_FILTER_K_SHIFT_BITS = 8,
+    // number of bits in filter input and output
+    parameter VOLUME_STAGE2_IIR_FILTER_VALUE_BITS = 30,
+    // filter output is being updated once per CYCLE_COUNT (can be bigger than number of stages to align output rate with other clock)
+    parameter VOLUME_STAGE2_IIR_FILTER_CYCLE_COUNT = 4,
+    // number of IIR filter stages, should be <= CYCLE_COUNT
+    parameter VOLUME_STAGE2_IIR_FILTER_STAGE_COUNT = 4,
+
     // CLK_DELAY frequency value: reference frequency for delay line, in MHz
     parameter DELAY_REFCLOCK_FREQUENCY=200.0
 
@@ -82,11 +104,12 @@ module theremin_sensor_period_measure
     output logic [31:0] VOLUME_PERIOD_STAGE1_OUT,
     
     // measured pitch period from stage2 IIR filter
-    output logic [31:0] PITCH_PERIOD_OUT,
+    output logic [31:0] PITCH_PERIOD_STAGE2_OUT,
     // measured volume period from stage2 IIR filter
-    output logic [31:0] VOLUME_PERIOD_OUT
+    output logic [31:0] VOLUME_PERIOD_STAGE2_OUT
 );
 
+// max low frequency counter value when measuring 
 localparam PITCH_COUNTER_MAX_VALUE = ISERDES_FREQUENCY_MHZ / PITCH_MIN_FREQUENCY_MHZ;
 // number of bits in timer cycle counter (8 bits for 150MHz->0.6MHz min osc freq, 7 bits for 150->1.2MHz min osc freq)
 localparam PITCH_COUNTER_BITS = PITCH_COUNTER_MAX_VALUE < 32 ? 5
@@ -329,6 +352,9 @@ volume_edge_to_pulse_position_inst
     .PULSE_POSITION(volume_pulse_position)
 );
 
+//====================================================================
+// Stage 1 Delay Diff filter
+//====================================================================
 
 localparam BRAM_ADDR_BITS_THRESHOLD = 7;
 
@@ -392,5 +418,98 @@ volume_delay_diff_filter_inst
     .OUT_DIFF(volume_period_stage1)
 );
 
+
+//====================================================================
+// Stage 2 IIR Filter
+//====================================================================
+
+// filter input value
+logic [PITCH_STAGE2_IIR_FILTER_VALUE_BITS-1 : 0] pitch_stage2_iir_filter_in_value;
+// filter output value
+logic [PITCH_STAGE2_IIR_FILTER_VALUE_BITS-1 : 0] pitch_stage2_iir_filter_out_value;
+// pitch period from stage1 (diff between last pitch pulse position and one delayed by PITCH_DELAY_HALFCYCLES)
+
+// filter input value
+logic [VOLUME_STAGE2_IIR_FILTER_VALUE_BITS-1 : 0] volume_stage2_iir_filter_in_value;
+// filter output value
+logic [VOLUME_STAGE2_IIR_FILTER_VALUE_BITS-1 : 0] volume_stage2_iir_filter_out_value;
+
+// map input values
+// padding input value with zeroes
+always_comb pitch_stage2_iir_filter_in_value <= { pitch_period_stage1, {(PITCH_STAGE2_IIR_FILTER_VALUE_BITS - PITCH_PULSE_POSITION_BITS){1'b0}} };
+
+// padding input value with zeroes
+always_comb volume_stage2_iir_filter_in_value <= { volume_period_stage1, {(VOLUME_STAGE2_IIR_FILTER_VALUE_BITS - VOLUME_PULSE_POSITION_BITS){1'b0}} };
+
+// map output values
+generate
+
+    // stage 2 pitch output mapping
+    if (PITCH_STAGE2_IIR_FILTER_VALUE_BITS >= 32) begin
+        // trim extra bits to 32
+        always_comb PITCH_PERIOD_STAGE2_OUT <= pitch_stage2_iir_filter_out_value[PITCH_STAGE2_IIR_FILTER_VALUE_BITS-1 : PITCH_STAGE2_IIR_FILTER_VALUE_BITS - 32];
+    end else begin
+        // padding missing bits to 32
+        always_comb PITCH_PERIOD_STAGE2_OUT <= { pitch_stage2_iir_filter_out_value, {(32 - PITCH_STAGE2_IIR_FILTER_VALUE_BITS){1'b0}} };
+    end
+
+    // stage 2 volume output mapping
+    if (VOLUME_STAGE2_IIR_FILTER_VALUE_BITS >= 32) begin
+        // trim extra bits to 32
+        always_comb VOLUME_PERIOD_STAGE2_OUT <= volume_stage2_iir_filter_out_value[VOLUME_STAGE2_IIR_FILTER_VALUE_BITS-1 : VOLUME_STAGE2_IIR_FILTER_VALUE_BITS - 32];
+    end else begin
+        // padding missing bits to 32
+        always_comb VOLUME_PERIOD_STAGE2_OUT <= { volume_stage2_iir_filter_out_value, {(32 - VOLUME_STAGE2_IIR_FILTER_VALUE_BITS){1'b0}} };
+    end
+endgenerate
+
+
+
+iir_nstage_pow2k
+#(
+    // filter coefficient is 1 / (1 << K_SHIFT_BITS) : instead of multiply, right shift is used
+    .K_SHIFT_BITS(PITCH_STAGE2_IIR_FILTER_K_SHIFT_BITS),
+    // number of bits in filter input and output
+    .VALUE_BITS(PITCH_STAGE2_IIR_FILTER_VALUE_BITS),
+    // filter output is being updated once per CYCLE_COUNT (can be bigger than number of stages to align output rate with other clock)
+    .CYCLE_COUNT(PITCH_STAGE2_IIR_FILTER_CYCLE_COUNT),
+    // number of IIR filter stages, should be <= CYCLE_COUNT
+    .STAGE_COUNT(PITCH_STAGE2_IIR_FILTER_STAGE_COUNT)
+)
+pitch_iir_nstage_pow2k_inst
+(
+    // clock signal, inputs and outputs are being changed on raising edge of this clock 
+    .CLK,
+    // reset, active 1
+    .RESET,
+    // filter input value
+    .IN_VALUE(pitch_stage2_iir_filter_in_value),
+    // filter output value
+    .OUT_VALUE(pitch_stage2_iir_filter_in_value)
+);
+
+
+iir_nstage_pow2k
+#(
+    // filter coefficient is 1 / (1 << K_SHIFT_BITS) : instead of multiply, right shift is used
+    .K_SHIFT_BITS(VOLUME_STAGE2_IIR_FILTER_K_SHIFT_BITS),
+    // number of bits in filter input and output
+    .VALUE_BITS(VOLUME_STAGE2_IIR_FILTER_VALUE_BITS),
+    // filter output is being updated once per CYCLE_COUNT (can be bigger than number of stages to align output rate with other clock)
+    .CYCLE_COUNT(VOLUME_STAGE2_IIR_FILTER_CYCLE_COUNT),
+    // number of IIR filter stages, should be <= CYCLE_COUNT
+    .STAGE_COUNT(VOLUME_STAGE2_IIR_FILTER_STAGE_COUNT)
+)
+volume_iir_nstage_pow2k_inst
+(
+    // clock signal, inputs and outputs are being changed on raising edge of this clock 
+    .CLK,
+    // reset, active 1
+    .RESET,
+    // filter input value
+    .IN_VALUE(volume_stage2_iir_filter_in_value),
+    // filter output value
+    .OUT_VALUE(volume_stage2_iir_filter_in_value)
+);
 
 endmodule
