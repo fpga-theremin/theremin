@@ -45,9 +45,13 @@ module delay_diff_filter
     // set to 1 for one clock cycle to push new value
     input logic WR,
     
+    // toggling each time we have new value on output
+    output logic CHANGED,
     // filter output (IN_VALUE - delay(IN_VALUE, 2**DELAY_ADDR_BITS)), updated one cycle after WR
     // delay is counted as number of input values (WR==1 count)
     output logic [VALUE_BITS - 1 : 0] OUT_DIFF
+    
+    
 );
 
 
@@ -95,13 +99,20 @@ always_ff @(posedge CLK) begin
     end
 end
 
+// toggling each time we have new value on output
+logic output_changed;
+always_comb CHANGED <= output_changed;
+
 // Output value logic
 always_ff @(posedge CLK) begin
     if (RESET) begin
         diff_value <= 'b0;
+        output_changed <= 'b0;
     end else begin
-        if (WR & ram_initialized)
+        if (WR & ram_initialized) begin
             diff_value <= IN_VALUE - ram_read_value;
+            output_changed <= ~output_changed;
+        end
     end
 end
 
