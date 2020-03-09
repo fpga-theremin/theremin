@@ -485,7 +485,7 @@ pitch_iir_nstage_pow2k_inst
     // filter input value
     .IN_VALUE(pitch_stage2_iir_filter_in_value),
     // filter output value
-    .OUT_VALUE(pitch_stage2_iir_filter_in_value)
+    .OUT_VALUE(pitch_stage2_iir_filter_out_value)
 );
 
 
@@ -509,7 +509,7 @@ volume_iir_nstage_pow2k_inst
     // filter input value
     .IN_VALUE(volume_stage2_iir_filter_in_value),
     // filter output value
-    .OUT_VALUE(volume_stage2_iir_filter_in_value)
+    .OUT_VALUE(volume_stage2_iir_filter_out_value)
 );
 
 endmodule
