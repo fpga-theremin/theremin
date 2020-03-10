@@ -10,7 +10,12 @@
 // Target Devices: 
 // Tool Versions: 
 // Description: 
-// 
+//     Minimalistic 16-bit ALU for Xilinx Series 7 devices, based on DSP48E1
+//     Add / Subtract: ADD, ADDC, SUB, SUBC, INC, DEC, MOV
+//     Logic operations: AND, ANDN, OR, XOR
+//     Multiply: MUL, MULHUU, MULHSU, MULHSS -- separate ops for low and high parts of result, signed and unsigned
+//     Shifts: SHL, SHR, SAR, SAL, ROR, ROL, RCL, RCR -- arithmetic, logic, rotation, rotation via carry (implemented using multiplication)
+//     Pipeline latency: 2 clock cycles 
 // Dependencies: 
 // 
 // Revision:
@@ -35,6 +40,7 @@ module bcpu_alu
     // enable ALU (when disabled it should force output to 0 and flags should be kept unchanged)
     input logic EN,
 
+    // CONST_OR_REG_INDEX and IMM_MODE are needed to implement special cases for shifts and MOV
     // this is actually register index from instruction, unused with IMM_MODE == 00; for reg index 000 force ouput to 0
     input [2:0] CONST_OR_REG_INDEX, 
     // immediate mode from instruction: 00 for bypassing B_VALUE_IN, 01,10,11: replace value with immediate constant from table

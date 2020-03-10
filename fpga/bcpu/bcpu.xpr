@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Product Version: Vivado v2019.1.1 (64-bit)              -->
+<!-- Product Version: Vivado v2019.1 (64-bit)              -->
 <!--                                                         -->
 <!-- Copyright 1986-2019 Xilinx, Inc. All Rights Reserved.   -->
 
-<Project Version="7" Minor="40" Path="D:/projects/fpga/theremin-source/fpga/bcpu/bcpu.xpr">
+<Project Version="7" Minor="40" Path="C:/projects/theremin-source/fpga/bcpu/bcpu.xpr">
   <DefaultLaunch Dir="$PRUNDIR"/>
   <Configuration>
     <Option Name="Id" Val="f8fdb1b2d4014a2eabec53690b7026be"/>
