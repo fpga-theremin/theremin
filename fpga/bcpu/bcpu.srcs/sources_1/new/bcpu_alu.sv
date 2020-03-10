@@ -65,6 +65,9 @@ module bcpu_alu
     output logic [DATA_WIDTH-1 : 0] ALU_OUT
 );
 
+logic disable_all_flags_update;
+always_comb disable_all_flags_update <= ~EN | ((ALU_OP == ALUOP_INC) & ~A_IN_EN); // MOV
+
 logic [3:0] flags_mask;
 logic [3:0] flags_mask_stage1;
 logic [3:0] flags_mask_stage2;
@@ -87,7 +90,7 @@ always_ff @(posedge CLK)
         flags_stage2 <= flags_stage1;
         flags_stage1 <= FLAGS_IN;
         flags_mask_stage2 <= flags_mask_stage1;
-        flags_mask_stage1 <= flags_mask;
+        flags_mask_stage1 <= flags_mask & {4{~disable_all_flags_update}};
     end
         
 
@@ -111,6 +114,38 @@ logic dsp_carry_in;
 // Carry IN value processing
 always_comb dsp_carry_in <= (ALU_OP == ALUOP_ADDC || ALU_OP == ALUOP_SUBC) ? FLAGS_IN[FLAG_C] : 1'b0;
 
+// for special handling of carry flag in multiplications 
+logic is_shift;
+always_comb is_shift <= ((IMM_MODE[1] == 1'b1) 
+                && (ALU_OP == ALUOP_MUL || ALU_OP == ALUOP_MULHUU || ALU_OP == ALUOP_MULHSU || ALU_OP == ALUOP_ROTATE || ALU_OP == ALUOP_ROTATEC));
+logic is_left_shift;
+always_comb is_left_shift <= (ALU_OP == ALUOP_MUL) || ((ALU_OP == ALUOP_ROTATE  || ALU_OP == ALUOP_ROTATEC) && ~IMM_MODE[1]);
+logic is_multiply;
+always_comb is_multiply <= (ALU_OP == ALUOP_MUL || ALU_OP == ALUOP_MULHUU || ALU_OP == ALUOP_MULHSU || ALU_OP == ALUOP_MULHSS || ALU_OP == ALUOP_ROTATE || ALU_OP == ALUOP_ROTATEC);
+
+logic is_shift_stage1;
+logic is_shift_stage2;
+logic is_left_shift_stage1;
+logic is_left_shift_stage2;
+logic is_multiply_stage1;
+logic is_multiply_stage2;
+always_ff @(posedge CLK) begin
+    if (RESET) begin
+        is_shift_stage2 <= 'b0;
+        is_shift_stage1 <= 'b0;
+        is_left_shift_stage2 <= 'b0;
+        is_left_shift_stage1 <= 'b0;
+        is_multiply_stage2 <= 'b0;
+        is_multiply_stage1 <= 'b0;
+    end else if (CE) begin
+        is_shift_stage2 <= is_shift_stage1;
+        is_shift_stage1 <= is_shift;
+        is_left_shift_stage2 <= is_left_shift_stage1;
+        is_left_shift_stage1 <= is_left_shift;
+        is_multiply_stage2 <= is_multiply_stage1;
+        is_multiply_stage1 <= is_multiply;
+    end
+end
 
 // data inputs
 logic [29:0] dsp_a_in; // 30-bit A data input
@@ -219,7 +254,7 @@ always_comb case(ALU_OP)
         ALUOP_ROTATEC: begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= 1'b0;   b_signex = 1'b0;    out_mode <= OUT_MODE_LH;  flags_mask <= FLAGS_MASK_SZC;    end
         
         // unsigned*unsigned mul low part, arithmetic shift left, logic shift left, take carry_out from p[16]         
-        ALUOP_MULL:    begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= 1'b0;   b_signex = 1'b0;    out_mode <= OUT_MODE_L;   flags_mask <= FLAGS_MASK_SZC;    end
+        ALUOP_MUL:     begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= 1'b0;   b_signex = 1'b0;    out_mode <= OUT_MODE_L;   flags_mask <= FLAGS_MASK_SZC;    end
         // unsigned*unsigned mul high part, logic shift right  
         ALUOP_MULHUU:  begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= 1'b0;   b_signex = 1'b0;    out_mode <= OUT_MODE_H;   flags_mask <= FLAGS_MASK_SZC;    end
         ALUOP_MULHSS:  begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= a_sign; b_signex = b_sign;  out_mode <= OUT_MODE_H;   flags_mask <= FLAGS_MASK_SZ;     end
@@ -234,58 +269,37 @@ assign dsp_c_in = {{32{a_signex}}, A_IN};
 assign dsp_d_in = {{25{a_signex}}, A_IN};
 
 logic [DATA_WIDTH-1 : 0] alu_out_mux;
-assign ALU_OUT = alu_out_mux;
 
+
+// result MUX: use low half, high half, or mix high|low part of result 
 assign alu_out_mux = out_mode_high_stage2 ? dsp_p_out[31:16] : ((dsp_p_out[31:16] & {16{out_mode_mix_stage2}}) | dsp_p_out[15:0]); 
-//(dsp_p_out[31:16] & {16{out_mode_high_stage2}}) |
 
-//(dsp_p_out[31:16] & {16{out_mode_mix_stage2}}) | dsp_p_out[15:0]
+logic override_bit0_with_carryin;
+logic override_bit15_with_carryin;
 
-//function logic[1:0] outMix2Bits;
-//    input logic[1:0] low;
-//    input logic[1:0] high;
-//    input logic mix_low;
-//    input logic use_high;
-//    outMix2Bits = use_high ? high : (low | (high[1] & {mix_low, mix_low }) );
-//endfunction
+always_comb override_bit0_with_carryin <= out_mode_mix_stage2 & is_left_shift_stage2 & en_stage2 & is_shift_stage2;
+always_comb override_bit15_with_carryin <= out_mode_mix_stage2 & ~is_left_shift_stage2 & en_stage2 & is_shift_stage2;
 
-//assign alu_out_mux[1:0] = outMix2Bits(dsp_p_out[1:0], dsp_p_out[17:16], out_mode_mix_stage2, out_mode_high_stage2);
-//assign alu_out_mux[3:2] = outMix2Bits(dsp_p_out[3:2], dsp_p_out[19:18], out_mode_mix_stage2, out_mode_high_stage2);
-//assign alu_out_mux[5:4] = outMix2Bits(dsp_p_out[5:4], dsp_p_out[21:20], out_mode_mix_stage2, out_mode_high_stage2);
-//assign alu_out_mux[7:6] = outMix2Bits(dsp_p_out[7:6], dsp_p_out[23:22], out_mode_mix_stage2, out_mode_high_stage2);
-//assign alu_out_mux[9:8] = outMix2Bits(dsp_p_out[9:8], dsp_p_out[25:24], out_mode_mix_stage2, out_mode_high_stage2);
-//assign alu_out_mux[11:10] = outMix2Bits(dsp_p_out[11:10], dsp_p_out[27:26], out_mode_mix_stage2, out_mode_high_stage2);
-//assign alu_out_mux[13:12] = outMix2Bits(dsp_p_out[13:12], dsp_p_out[29:28], out_mode_mix_stage2, out_mode_high_stage2);
-//assign alu_out_mux[15:14] = outMix2Bits(dsp_p_out[15:14], dsp_p_out[31:30], out_mode_mix_stage2, out_mode_high_stage2);
-
-//logic [DATA_WIDTH-1 : 0] alu_out_mux_high;
-//logic [DATA_WIDTH-1 : 0] alu_out_mux_low;
-
-//always_comb alu_out_mux_high <= dsp_p_out[DATA_WIDTH*2-1:DATA_WIDTH];
-//always_comb alu_out_mux_low <= (out_mode_mix_stage2 ? dsp_p_out[DATA_WIDTH*2-1:DATA_WIDTH] : 0) | dsp_p_out[DATA_WIDTH-1:0];
-//always_comb alu_out_mux <= out_mode_high_stage2 ? alu_out_mux_high : alu_out_mux_low;
-//        out_mode_high_stage2 <= out_mode_high_stage1;
-//        out_mode_mix_stage2 <= out_mode_mix_stage1;
-
-//always_comb case(out_mode_stage2)
-//       OUT_MODE_0:  alu_out_mux <= 'b0;
-//       OUT_MODE_L:  alu_out_mux <= dsp_p_out[DATA_WIDTH-1:0];
-//       OUT_MODE_H:  alu_out_mux <= dsp_p_out[DATA_WIDTH*2-1:DATA_WIDTH];
-//       OUT_MODE_LH: alu_out_mux <= dsp_p_out[DATA_WIDTH-1:0] | dsp_p_out[DATA_WIDTH*2-1:DATA_WIDTH];
-//    endcase
-//always_comb alu_out_mux <= dsp_p_out[DATA_WIDTH-1:0];
+assign ALU_OUT = { 
+        override_bit15_with_carryin ? flags_stage2[FLAG_C] : alu_out_mux[15],  // override for ROTATEC
+        alu_out_mux[14:1],
+        override_bit0_with_carryin ? flags_stage2[FLAG_C] : alu_out_mux[0]     // override for ROTATEC
+};
 
 logic new_c_flag;
 logic new_z_flag;
 logic new_s_flag;
 logic new_v_flag;
 
-always_comb new_c_flag <= dsp_carryout;
+always_comb new_c_flag <=
+        is_shift_stage2 ? (is_left_shift_stage2 ? dsp_p_out[16] : dsp_p_out[15])
+        :                 dsp_carryout;
+
 always_comb new_z_flag <= dsp_patterndetect;
 always_comb new_s_flag <= alu_out_mux[DATA_WIDTH-1];
 always_comb new_v_flag <= dsp_carryout != alu_out_mux[DATA_WIDTH-1];
 
-always_comb FLAGS_OUT[FLAG_C] <= flags_mask_stage2[FLAG_C] ? new_c_flag : flags_stage2[FLAG_C];
+always_comb FLAGS_OUT[FLAG_C] <= flags_mask_stage2[FLAG_C] & (~(is_multiply_stage2 & ~is_shift_stage2)) ? new_c_flag : flags_stage2[FLAG_C];
 always_comb FLAGS_OUT[FLAG_Z] <= flags_mask_stage2[FLAG_Z] ? new_z_flag : flags_stage2[FLAG_Z];
 always_comb FLAGS_OUT[FLAG_S] <= flags_mask_stage2[FLAG_S] ? new_s_flag : flags_stage2[FLAG_S];
 always_comb FLAGS_OUT[FLAG_V] <= flags_mask_stage2[FLAG_V] ? new_v_flag : flags_stage2[FLAG_V];
