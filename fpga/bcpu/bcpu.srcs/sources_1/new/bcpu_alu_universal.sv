@@ -67,6 +67,23 @@ module bcpu_alu_universal
     output logic [DATA_WIDTH-1 : 0] ALU_OUT
 );
 
+// immediate constant table: override B_IN value if immediate mode != 00
+logic [DATA_WIDTH-1 : 0] b_in_override;
+bcpu_imm_table
+#(
+    .DATA_WIDTH(DATA_WIDTH)
+)
+bcpu_imm_table_inst
+(
+    // input register value
+    .B_VALUE_IN(B_IN),
+    // this is actually register index from instruction, unused with IMM_MODE == 00; for reg index 000 force ouput to 0
+    .CONST_OR_REG_INDEX(B_CONST_OR_REG_INDEX), 
+    // immediate mode from instruction: 00 for bypassing B_VALUE_IN, 01,10,11: replace value with immediate constant from table
+    .IMM_MODE(B_IMM_MODE),
+    .B_VALUE_OUT(b_in_override)
+);
+
 // EN signal pipelining
 logic en_stage1;
 logic en_stage2;
@@ -117,11 +134,15 @@ always_comb flags_mask[FLAG_Z] <= 'b1;
 always_comb flags_mask[FLAG_C] <= (ALU_OP == ALUOP_ADD || ALU_OP == ALUOP_ADDC || ALU_OP == ALUOP_SUB || ALU_OP == ALUOP_SUBC
                                 || ALU_OP == ALUOP_ROTATE || ALU_OP == ALUOP_ROTATEC);
 
+// special case: INC RC, R0, RB_imm    (RC=0+RB_imm) is treated as MOV operation, w/o flags
+logic disable_flags_update;
+always_comb disable_flags_update <= ((ALU_OP == ALUOP_INC) & (A_REG_INDEX == 3'b000)) | ~EN | RESET; // move or ~EN - to disable flags update
+
 // flags update mask pipelining
 logic [3:0] flags_mask_stage1;
 logic [3:0] flags_mask_stage2;
 always_ff @(posedge CLK)
-    if (RESET | (CE & ~EN) | is_move) begin
+    if (disable_flags_update) begin
         flags_mask_stage1 <= 'b0;
     end else if (CE) begin
         flags_mask_stage1 <= flags_mask;
@@ -166,7 +187,7 @@ always_ff @(posedge CLK) begin
     if (RESET | (B_IMM_MODE == 2'b00 && B_CONST_OR_REG_INDEX == 3'b000) | ~EN)
         b_in_reg <= 'b0;
     else if (CE)
-        b_in_reg <= B_IN;
+        b_in_reg <= b_in_override;
 end
 
 //================================================================================
@@ -278,11 +299,11 @@ logic signed [35:0] multiplier_out;
 logic multiplier_carry_out;
 
 always_comb multiplier_a_in <= { 
-               {18-DATA_WIDTH{(multiplier_a_sign_extended ? a_in_reg[DATA_WIDTH-1] : 1'b0)}}, // optional sign extension 
+               {18-DATA_WIDTH{multiplier_a_sign_extended & a_in_reg[DATA_WIDTH-1]}}, // optional sign extension 
                a_in_reg 
             };
 always_comb multiplier_b_in <= { 
-               {18-DATA_WIDTH{(multiplier_b_sign_extended ? b_in_reg[DATA_WIDTH-1] : 1'b0)}}, // optional sign extension 
+               {18-DATA_WIDTH{multiplier_b_sign_extended & b_in_reg[DATA_WIDTH-1]}}, // optional sign extension 
                b_in_reg 
             };
 always_comb multiplier_out <= multiplier_a_in * multiplier_b_in;
@@ -290,7 +311,7 @@ always_comb multiplier_out <= multiplier_a_in * multiplier_b_in;
 logic signed [DATA_WIDTH-1:0] multiplier_out_mixed;
 always_comb multiplier_out_mixed <= 
                (multiplier_out[DATA_WIDTH*2-1:DATA_WIDTH] & {DATA_WIDTH{multiplier_out_high}})
-            || (multiplier_out[DATA_WIDTH-1:0] & {DATA_WIDTH{multiplier_out_low}});
+            |  (multiplier_out[DATA_WIDTH-1:0]            & {DATA_WIDTH{multiplier_out_low}});
 
 // multiplier result pipelining
 logic [DATA_WIDTH-1:0] multiplier_out_stage2;
@@ -341,7 +362,7 @@ assign FLAGS_OUT = flags_stage3;
 // result value
 logic [DATA_WIDTH-1 : 0] alu_out_stage3;
 always_ff @(posedge CLK)
-    if (RESET)
+    if (RESET | (CE & ~en_stage2))
         alu_out_stage3 <= 'b0;
     else if (CE)
         alu_out_stage3 <= alu_out_stage2;
