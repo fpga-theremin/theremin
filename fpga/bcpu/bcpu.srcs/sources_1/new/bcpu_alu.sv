@@ -6,16 +6,16 @@
 // Create Date: 03/10/2020 11:20:04 AM
 // Design Name: 
 // Module Name: bcpu_alu
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
+// Project Name:
+// Target Devices:
+// Tool Versions:
+// Description:
 //     Minimalistic 16-bit ALU for Xilinx Series 7 devices, based on DSP48E1
-//     Add / Subtract: ADD, ADDC, SUB, SUBC, INC, DEC, MOV
+//     Add / Subtract: ADD, ADDC, SUB, SUBC, INC, DEC, MOV, CMP, CMPC
 //     Logic operations: AND, ANDN, OR, XOR
 //     Multiply: MUL, MULHUU, MULHSU, MULHSS -- separate ops for low and high parts of result, signed and unsigned
 //     Shifts: SHL, SHR, SAR, SAL, ROR, ROL, RCL, RCR -- arithmetic, logic, rotation, rotation via carry (implemented using multiplication)
-//     Pipeline latency: 2 clock cycles 
+//     Pipeline latency: 3 clock cycles 
 // Dependencies: 
 // 
 // Revision:
@@ -56,7 +56,7 @@ module bcpu_alu
     // immediate mode from instruction: 00 for bypassing B_VALUE_IN, 01,10,11: replace value with immediate constant from table
     // when B_IMM_MODE == 00 and B_CONST_OR_REG_INDEX == 000, use 0 instead of B_IN as operand B value
     input [1:0] B_IMM_MODE,
-    // operand B input    
+    // operand B input
     input logic [DATA_WIDTH-1 : 0] B_IN,
 
     // alu operation code    
@@ -137,8 +137,7 @@ logic [3:0] flags_mask;
 always_comb flags_mask[FLAG_V] <= (ALU_OP == ALUOP_ADD || ALU_OP == ALUOP_ADDC || ALU_OP == ALUOP_SUB || ALU_OP == ALUOP_SUBC);
 always_comb flags_mask[FLAG_S] <= 'b1;
 always_comb flags_mask[FLAG_Z] <= 'b1;
-always_comb flags_mask[FLAG_C] <= (ALU_OP == ALUOP_ADD || ALU_OP == ALUOP_ADDC || ALU_OP == ALUOP_SUB || ALU_OP == ALUOP_SUBC
-                                || ALU_OP == ALUOP_ROTATE || ALU_OP == ALUOP_ROTATEC);
+always_comb flags_mask[FLAG_C] <= (ALU_OP == ALUOP_ADD || ALU_OP == ALUOP_ADDC || ALU_OP == ALUOP_SUB || ALU_OP == ALUOP_SUBC);
 
 // special case: INC RC, R0, RB_imm    (RC=0+RB_imm) is treated as MOV operation, w/o flags
 logic disable_flags_update;
@@ -269,21 +268,15 @@ typedef enum logic[1:0] {
 } out_mode_t;
 
 out_mode_t out_mode;
-logic out_mode_high_stage1;
-logic out_mode_high_stage2;
-logic out_mode_mix_stage1;
-logic out_mode_mix_stage2;
+out_mode_t out_mode_stage1;
+out_mode_t out_mode_stage2;
 always_ff @(posedge CLK) begin
     if (RESET) begin
-        out_mode_high_stage2 <= 'b0;
-        out_mode_high_stage1 <= 'b0;
-        out_mode_mix_stage1 <= 'b0;
-        out_mode_mix_stage2 <= 'b0;
+        out_mode_stage2 <= OUT_MODE_0;
+        out_mode_stage1 <= OUT_MODE_0;
     end else if (CE) begin
-        out_mode_high_stage2 <= out_mode_high_stage1;
-        out_mode_mix_stage2 <= out_mode_mix_stage1;
-        out_mode_high_stage1 <= out_mode == OUT_MODE_H;
-        out_mode_mix_stage1 <= out_mode == OUT_MODE_LH;
+        out_mode_stage2 <= out_mode_stage1;
+        out_mode_stage1 <= out_mode;
     end
 end
 
@@ -327,16 +320,19 @@ always_comb case(ALU_OP)
     endcase
 
 
-assign dsp_a_in = {30{b_signex & b_sign}};
-assign dsp_b_in = {b_signex & b_sign, b_signex & b_sign, b_in_override};
-assign dsp_c_in = {{32{a_signex & a_sign}}, A_IN};
-assign dsp_d_in = {{25{a_signex & a_sign}}, A_IN};
+assign dsp_a_in = { 30{b_signex & b_sign}};
+assign dsp_b_in = {b_signex & b_sign, b_signex & b_sign,  b_in_override};
+assign dsp_c_in = { {32{a_signex & a_sign}},              A_IN};
+assign dsp_d_in = { {25{a_signex & a_sign}},              A_IN};
 
 logic [DATA_WIDTH-1 : 0] alu_out_mux;
 
 
 // result MUX: use low half, high half, or mix high|low part of result 
-assign alu_out_mux = out_mode_high_stage2 ? dsp_p_out[31:16] : ((dsp_p_out[31:16] & {16{out_mode_mix_stage2}}) | dsp_p_out[15:0]); 
+//assign alu_out_mux = out_mode_high_stage2 ? dsp_p_out[31:16] : ((dsp_p_out[31:16] & {16{out_mode_mix_stage2}}) | dsp_p_out[15:0]); 
+
+assign alu_out_mux = ( {16{out_mode_stage2[1]}} & dsp_p_out[31:16] )   // higher part
+                   | ( {16{out_mode_stage2[0]}} & dsp_p_out[15:0]  );  // lower part
 
 logic [DATA_WIDTH-1:0] alu_out_stage2;
 always_comb alu_out_stage2 <= { 
