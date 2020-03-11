@@ -42,11 +42,11 @@ module bcpu_imm_table
     // immediate mode from instruction: 00 for bypassing B_VALUE_IN, 01,10,11: replace value with immediate constant from table
     input [1:0] IMM_MODE,
     
-    output [DATA_WIDTH - 1 : 0] b_value_out
+    output [DATA_WIDTH - 1 : 0] B_VALUE_OUT
 );
 
 logic [DATA_WIDTH-1:0] b_out;
-assign b_value_out = b_out;
+assign B_VALUE_OUT = b_out;
 
 genvar i;
 generate

@@ -40,16 +40,22 @@ module bcpu_alu
     // enable ALU (when disabled it should force output to 0 and flags should be kept unchanged)
     input logic EN,
 
-    // CONST_OR_REG_INDEX and IMM_MODE are needed to implement special cases for shifts and MOV
-    // this is actually register index from instruction, unused with IMM_MODE == 00; for reg index 000 force ouput to 0
-    input [2:0] CONST_OR_REG_INDEX, 
-    // immediate mode from instruction: 00 for bypassing B_VALUE_IN, 01,10,11: replace value with immediate constant from table
-    input [1:0] IMM_MODE,
 
-    // when 0, force A to 0 (e.g. can be useful for R0 = 0 as operand A)
-    input logic A_IN_EN,
-    // operand A input    
+    // Operand A inputs:
+    
+    // when A_REG_INDEX==000 (RA is R0), use 0 instead of A_IN for operand A
+    input logic[2:0] A_REG_INDEX,
+    // operand A input
     input logic [DATA_WIDTH-1 : 0] A_IN,
+
+    // Operand B inputs:
+    
+    // B_CONST_OR_REG_INDEX and B_IMM_MODE are needed to implement special cases for shifts and MOV
+    // this is actually register index from instruction, unused with IMM_MODE == 00; for reg index 000 force ouput to 0
+    input [2:0] B_CONST_OR_REG_INDEX,
+    // immediate mode from instruction: 00 for bypassing B_VALUE_IN, 01,10,11: replace value with immediate constant from table
+    // when B_IMM_MODE == 00 and B_CONST_OR_REG_INDEX == 000, use 0 instead of B_IN as operand B value
+    input [1:0] B_IMM_MODE,
     // operand B input    
     input logic [DATA_WIDTH-1 : 0] B_IN,
 
@@ -58,39 +64,81 @@ module bcpu_alu
     
     // input flags {V, S, Z, C}
     input logic [3:0] FLAGS_IN,
-
+    
     // input flags {V, S, Z, C}
     output logic [3:0] FLAGS_OUT,
+    
     // alu result output    
     output logic [DATA_WIDTH-1 : 0] ALU_OUT
 );
 
-logic disable_all_flags_update;
-always_comb disable_all_flags_update <= ~EN | ((ALU_OP == ALUOP_INC) & ~A_IN_EN); // MOV
-
-logic [3:0] flags_mask;
-logic [3:0] flags_mask_stage1;
-logic [3:0] flags_mask_stage2;
-
-logic [3:0] flags_stage1;
-logic [3:0] flags_stage2;
+// EN signal pipelining
 logic en_stage1;
 logic en_stage2;
 always_ff @(posedge CLK)
     if (RESET) begin
-        en_stage2 <= 'b0;
         en_stage1 <= 'b0;
-        flags_stage2 <= 'b0;
-        flags_stage1 <= 'b0;
-        flags_mask_stage2 <= 'b0;
-        flags_mask_stage1 <= 'b0;
+        en_stage2 <= 'b0;
     end else if (CE) begin
         en_stage2 <= en_stage1;
         en_stage1 <= EN;
-        flags_stage2 <= flags_stage1;
-        flags_stage1 <= FLAGS_IN;
+    end
+
+// input flags pipelining
+logic [3:0] flags_in_stage1;
+logic [3:0] flags_in_stage2;
+always_ff @(posedge CLK)
+    if (RESET) begin
+        flags_in_stage1 <= 'b0;
+        flags_in_stage2 <= 'b0;
+    end else if (CE) begin
+        flags_in_stage2 <= flags_in_stage1;
+        flags_in_stage1 <= FLAGS_IN;
+    end
+
+// shifts support, C flag generation
+// is multiplier operation which can be treated as left shift - for shifted out C flag generation
+logic is_left_shift;
+always_comb is_left_shift  <= ((ALU_OP == ALUOP_MUL) && B_IMM_MODE[1]) // any MUL with single bit immediate
+                           || ((ALU_OP == ALUOP_ROTATE || ALU_OP == ALUOP_ROTATEC) && B_IMM_MODE == 2'b10); // rotations with single bit < 1<<8
+logic is_right_shift;
+always_comb is_right_shift <= ((ALU_OP == ALUOP_MULHUU || ALU_OP == ALUOP_MULHSU)  && B_IMM_MODE[1])         // any MULH with single bit immediate
+                           || ((ALU_OP == ALUOP_ROTATE || ALU_OP == ALUOP_ROTATEC) && B_IMM_MODE == 2'b11); // rotations with single bit >= 1<<8
+
+// shifts support, shifting in C flag with rotation (ROTATEC: RCL, RCR)
+// rotate left through C: need to replace lower bit with C_in
+logic is_rcl;
+// rotate right through C: need to replace upper bit with C_in
+logic is_rcr;
+always_comb is_rcl <= (ALU_OP == ALUOP_ROTATEC) & (B_IMM_MODE == 2'b10); // ROTATEC with single bit imm < 1<<8
+always_comb is_rcr <= (ALU_OP == ALUOP_ROTATEC) & (B_IMM_MODE == 2'b11); // ROTATEC with single bit imm >= 1<<8
+
+// special case: INC RC, R0, RB_imm    (RC=0+RB_imm) is treated as MOV operation, w/o flags
+logic is_move;
+always_comb is_move <= (ALU_OP == ALUOP_INC) & (A_REG_INDEX == 3'b000); 
+
+// flags update mask decoding
+logic [3:0] flags_mask;
+always_comb flags_mask[FLAG_V] <= (ALU_OP == ALUOP_ADD || ALU_OP == ALUOP_ADDC || ALU_OP == ALUOP_SUB || ALU_OP == ALUOP_SUBC);
+always_comb flags_mask[FLAG_S] <= 'b1;
+always_comb flags_mask[FLAG_Z] <= 'b1;
+always_comb flags_mask[FLAG_C] <= (ALU_OP == ALUOP_ADD || ALU_OP == ALUOP_ADDC || ALU_OP == ALUOP_SUB || ALU_OP == ALUOP_SUBC
+                                || ALU_OP == ALUOP_ROTATE || ALU_OP == ALUOP_ROTATEC);
+
+// flags update mask pipelining
+logic [3:0] flags_mask_stage1;
+logic [3:0] flags_mask_stage2;
+always_ff @(posedge CLK)
+    if (RESET | (CE & ~EN) | is_move) begin
+        flags_mask_stage1 <= 'b0;
+    end else if (CE) begin
+        flags_mask_stage1 <= flags_mask;
+    end
+always_ff @(posedge CLK)
+    if (RESET) begin
+        flags_mask_stage2 <= 'b0;
+    end else if (CE) begin
         flags_mask_stage2 <= flags_mask_stage1;
-        flags_mask_stage1 <= flags_mask & {4{~disable_all_flags_update}};
     end
         
 
@@ -100,7 +148,10 @@ logic dsp_reset_a;
 // 1 to reset DSP input
 logic dsp_reset_out;
 
-always_comb dsp_reset_a <= RESET | ~(A_IN_EN & EN);
+always_comb dsp_reset_a <= RESET                      // set dsp A to 0 for reset 
+                         | (A_REG_INDEX == 3'b000)    // set dsp A to 0 for R0 as A operand
+                         | ~EN;                       // set dsp A to 0 when ALU is disabled
+                         
 always_comb dsp_reset_in <= RESET | ~(EN);
 always_comb dsp_reset_out <= RESET | ~(en_stage1);
 
@@ -112,40 +163,44 @@ always_comb dsp_ce_output <= CE;
 // carry input
 logic dsp_carry_in;
 // Carry IN value processing
-always_comb dsp_carry_in <= (ALU_OP == ALUOP_ADDC || ALU_OP == ALUOP_SUBC) ? FLAGS_IN[FLAG_C] : 1'b0;
+always_comb dsp_carry_in <= ((ALU_OP == ALUOP_ADDC || ALU_OP == ALUOP_SUBC) ? FLAGS_IN[FLAG_C]
+                          : 1'b0) & EN;
 
-// for special handling of carry flag in multiplications 
-logic is_shift;
-always_comb is_shift <= ((IMM_MODE[1] == 1'b1) 
-                && (ALU_OP == ALUOP_MUL || ALU_OP == ALUOP_MULHUU || ALU_OP == ALUOP_MULHSU || ALU_OP == ALUOP_ROTATE || ALU_OP == ALUOP_ROTATEC));
-logic is_left_shift;
-always_comb is_left_shift <= (ALU_OP == ALUOP_MUL) || ((ALU_OP == ALUOP_ROTATE  || ALU_OP == ALUOP_ROTATEC) && ~IMM_MODE[1]);
-logic is_multiply;
-always_comb is_multiply <= (ALU_OP == ALUOP_MUL || ALU_OP == ALUOP_MULHUU || ALU_OP == ALUOP_MULHSU || ALU_OP == ALUOP_MULHSS || ALU_OP == ALUOP_ROTATE || ALU_OP == ALUOP_ROTATEC);
 
-logic is_shift_stage1;
-logic is_shift_stage2;
+// shift options pipeline
 logic is_left_shift_stage1;
 logic is_left_shift_stage2;
-logic is_multiply_stage1;
-logic is_multiply_stage2;
-always_ff @(posedge CLK) begin
-    if (RESET) begin
-        is_shift_stage2 <= 'b0;
-        is_shift_stage1 <= 'b0;
-        is_left_shift_stage2 <= 'b0;
+logic is_right_shift_stage1;
+logic is_right_shift_stage2;
+logic is_rcl_stage1;
+logic is_rcl_stage2;
+logic is_rcr_stage1;
+logic is_rcr_stage2;
+always_ff @(posedge CLK)
+    if (RESET | (CE & ~EN)) begin
         is_left_shift_stage1 <= 'b0;
-        is_multiply_stage2 <= 'b0;
-        is_multiply_stage1 <= 'b0;
+        is_right_shift_stage1 <= 'b0;
+        is_rcl_stage1 <= 'b0;
+        is_rcr_stage1 <= 'b0;
     end else if (CE) begin
-        is_shift_stage2 <= is_shift_stage1;
-        is_shift_stage1 <= is_shift;
-        is_left_shift_stage2 <= is_left_shift_stage1;
         is_left_shift_stage1 <= is_left_shift;
-        is_multiply_stage2 <= is_multiply_stage1;
-        is_multiply_stage1 <= is_multiply;
+        is_right_shift_stage1 <= is_right_shift;
+        is_rcl_stage1 <= is_rcl;
+        is_rcr_stage1 <= is_rcr;
     end
-end
+
+always_ff @(posedge CLK)
+    if (RESET) begin
+        is_left_shift_stage2 <= 'b0;
+        is_right_shift_stage2 <= 'b0;
+        is_rcl_stage2 <= 'b0;
+        is_rcr_stage2 <= 'b0;
+    end else if (CE) begin
+        is_left_shift_stage2 <= is_left_shift_stage1;
+        is_right_shift_stage2 <= is_right_shift_stage1;
+        is_rcl_stage2 <= is_rcl_stage1;
+        is_rcr_stage2 <= is_rcr_stage1;
+    end
 
 // data inputs
 logic [29:0] dsp_a_in; // 30-bit A data input
@@ -167,9 +222,7 @@ logic[6:0] dsp_opmode;                // 7-bit input: Operation mode input
 typedef enum logic[3:0] {
     DSP_ALUMODE_ADD     = 4'b0000,  // Z + X + Y + CIN
     DSP_ALUMODE_SUB     = 4'b0011,  // Z - (X + Y + CIN)
-    DSP_ALUMODE_SUB_INV = 4'b0001,  // -Z + (X + Y + CIN) - 1
     DSP_ALUMODE_AND_OR  = 4'b1100,  // Z & X   -- OR requires opmode[3:2]=10 (DSP_OPMODE_XAB_YFF_ZC)
-    //DSP_ALUMODE_OR      = 4'b1100,  // Z | X  // requires opmode[3:2]=10 (DSP_OPMODE_XAB_YFF_ZC)
     DSP_ALUMODE_XOR     = 4'b0101,  // Z ^ X  // requires opmode[3:2]=10 (DSP_OPMODE_XAB_YFF_ZC)
     DSP_ALUMODE_ANDN    = 4'b1111   // Z & ~X // requires opmode[3:2]=10 (DSP_OPMODE_XAB_YFF_ZC)
 } dsp_alumode_t;
@@ -195,14 +248,6 @@ typedef enum logic[1:0] {
     OUT_MODE_H =  2'b10,    // use higher part of DSP output
     OUT_MODE_LH = 2'b11     // combine lower and higher part of DSP output by OR
 } out_mode_t;
-
-typedef enum logic[3:0] {
-    FLAGS_MASK_NONE =  4'b0000,    // don't update flags
-    FLAGS_MASK_VSZC =  4'b1111,    // update all flags
-    FLAGS_MASK_SZC  =  4'b0111,    // update all flags
-    FLAGS_MASK_SZ   =  4'b0110,    // update ZF ans SF only
-    FLAGS_MASK_C    =  4'b0001     // update CF only
-} flags_mask_t;
 
 out_mode_t out_mode;
 logic out_mode_high_stage1;
@@ -235,38 +280,38 @@ logic a_signex;
 logic b_signex;
 
 always_comb case(ALU_OP)
-        ALUOP_ADD:    begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= a_sign; b_signex = b_sign;  out_mode <= OUT_MODE_L;  flags_mask <= FLAGS_MASK_VSZC;   end
-        ALUOP_ADDC:   begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= a_sign; b_signex = b_sign;  out_mode <= OUT_MODE_L;  flags_mask <= FLAGS_MASK_VSZC;   end
-        ALUOP_SUB:    begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_SUB;     a_signex <= a_sign; b_signex = b_sign;  out_mode <= OUT_MODE_L;  flags_mask <= FLAGS_MASK_VSZC;   end
-        ALUOP_SUBC:   begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_SUB;     a_signex <= a_sign; b_signex = b_sign;  out_mode <= OUT_MODE_L;  flags_mask <= FLAGS_MASK_VSZC;   end
+        ALUOP_ADD:    begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= 1'b1; b_signex = 1'b1;  out_mode <= OUT_MODE_L;  end
+        ALUOP_ADDC:   begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= 1'b1; b_signex = 1'b1;  out_mode <= OUT_MODE_L;  end
+        ALUOP_SUB:    begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_SUB;     a_signex <= 1'b1; b_signex = 1'b1;  out_mode <= OUT_MODE_L;  end
+        ALUOP_SUBC:   begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_SUB;     a_signex <= 1'b1; b_signex = 1'b1;  out_mode <= OUT_MODE_L;  end
         
-        ALUOP_INC:    begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= a_sign; b_signex = b_sign;  out_mode <= OUT_MODE_L;  flags_mask <= FLAGS_MASK_SZ;     end
-        ALUOP_DEC:    begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_SUB;     a_signex <= a_sign; b_signex = b_sign;  out_mode <= OUT_MODE_L;  flags_mask <= FLAGS_MASK_SZ;     end
+        ALUOP_INC:    begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= 1'b1; b_signex = 1'b1;  out_mode <= OUT_MODE_L;  end
+        ALUOP_DEC:    begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_SUB;     a_signex <= 1'b1; b_signex = 1'b1;  out_mode <= OUT_MODE_L;  end
 
-        ALUOP_AND:    begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_AND_OR;  a_signex <= a_sign; b_signex = b_sign;  out_mode <= OUT_MODE_L;   flags_mask <= FLAGS_MASK_SZ;     end
-        ALUOP_ANDN:   begin    dsp_opmode <= DSP_OPMODE_XAB_YFF_ZC;   dsp_alumode <= DSP_ALUMODE_ANDN;    a_signex <= a_sign; b_signex = b_sign;  out_mode <= OUT_MODE_L;   flags_mask <= FLAGS_MASK_SZ;     end
-        ALUOP_OR:     begin    dsp_opmode <= DSP_OPMODE_XAB_YFF_ZC;   dsp_alumode <= DSP_ALUMODE_AND_OR;  a_signex <= a_sign; b_signex = b_sign;  out_mode <= OUT_MODE_L;   flags_mask <= FLAGS_MASK_SZ;     end
-        ALUOP_XOR:    begin    dsp_opmode <= DSP_OPMODE_XAB_YFF_ZC;   dsp_alumode <= DSP_ALUMODE_XOR;     a_signex <= a_sign; b_signex = b_sign;  out_mode <= OUT_MODE_L;   flags_mask <= FLAGS_MASK_SZ;     end
+        ALUOP_AND:    begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_AND_OR;  a_signex <= 1'b0; b_signex = 1'b0;  out_mode <= OUT_MODE_L;  end
+        ALUOP_ANDN:   begin    dsp_opmode <= DSP_OPMODE_XAB_YFF_ZC;   dsp_alumode <= DSP_ALUMODE_ANDN;    a_signex <= 1'b0; b_signex = 1'b0;  out_mode <= OUT_MODE_L;  end
+        ALUOP_OR:     begin    dsp_opmode <= DSP_OPMODE_XAB_YFF_ZC;   dsp_alumode <= DSP_ALUMODE_AND_OR;  a_signex <= 1'b0; b_signex = 1'b0;  out_mode <= OUT_MODE_L;  end
+        ALUOP_XOR:    begin    dsp_opmode <= DSP_OPMODE_XAB_YFF_ZC;   dsp_alumode <= DSP_ALUMODE_XOR;     a_signex <= 1'b0; b_signex = 1'b0;  out_mode <= OUT_MODE_L;  end
 
         // rotate
-        ALUOP_ROTATE:  begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= 1'b0;   b_signex = 1'b0;    out_mode <= OUT_MODE_LH;  flags_mask <= FLAGS_MASK_SZC;    end
+        ALUOP_ROTATE:  begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= 1'b0;   b_signex = 1'b0;    out_mode <= OUT_MODE_LH; end
         // rotate with shifting in carry flag bit 0 or bit 15 of result will be replaced with carry_in value
-        ALUOP_ROTATEC: begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= 1'b0;   b_signex = 1'b0;    out_mode <= OUT_MODE_LH;  flags_mask <= FLAGS_MASK_SZC;    end
+        ALUOP_ROTATEC: begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= 1'b0;   b_signex = 1'b0;    out_mode <= OUT_MODE_LH; end
         
         // unsigned*unsigned mul low part, arithmetic shift left, logic shift left, take carry_out from p[16]         
-        ALUOP_MUL:     begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= 1'b0;   b_signex = 1'b0;    out_mode <= OUT_MODE_L;   flags_mask <= FLAGS_MASK_SZC;    end
+        ALUOP_MUL:     begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= 1'b0;   b_signex = 1'b0;    out_mode <= OUT_MODE_L;  end
         // unsigned*unsigned mul high part, logic shift right  
-        ALUOP_MULHUU:  begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= 1'b0;   b_signex = 1'b0;    out_mode <= OUT_MODE_H;   flags_mask <= FLAGS_MASK_SZC;    end
-        ALUOP_MULHSS:  begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= a_sign; b_signex = b_sign;  out_mode <= OUT_MODE_H;   flags_mask <= FLAGS_MASK_SZ;     end
+        ALUOP_MULHUU:  begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= 1'b0;   b_signex = 1'b0;    out_mode <= OUT_MODE_H;  end
+        ALUOP_MULHSS:  begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= 1'b1;   b_signex = 1'b1;    out_mode <= OUT_MODE_H;  end
         // signed*unsigned mul high part, arithmetic shift right
-        ALUOP_MULHSU:  begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= a_sign; b_signex = 1'b0;    out_mode <= OUT_MODE_H;   flags_mask <= FLAGS_MASK_SZC;    end
+        ALUOP_MULHSU:  begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= 1'b1;   b_signex = 1'b0;    out_mode <= OUT_MODE_H;  end
     endcase
 
 
-assign dsp_a_in = {30{b_signex}};
-assign dsp_b_in = {b_signex, b_signex, B_IN};
-assign dsp_c_in = {{32{a_signex}}, A_IN};
-assign dsp_d_in = {{25{a_signex}}, A_IN};
+assign dsp_a_in = {30{b_signex & b_sign}};
+assign dsp_b_in = {b_signex & b_sign, b_signex & b_sign, B_IN};
+assign dsp_c_in = {{32{a_signex & a_sign}}, A_IN};
+assign dsp_d_in = {{25{a_signex & a_sign}}, A_IN};
 
 logic [DATA_WIDTH-1 : 0] alu_out_mux;
 
@@ -274,35 +319,47 @@ logic [DATA_WIDTH-1 : 0] alu_out_mux;
 // result MUX: use low half, high half, or mix high|low part of result 
 assign alu_out_mux = out_mode_high_stage2 ? dsp_p_out[31:16] : ((dsp_p_out[31:16] & {16{out_mode_mix_stage2}}) | dsp_p_out[15:0]); 
 
-logic override_bit0_with_carryin;
-logic override_bit15_with_carryin;
-
-always_comb override_bit0_with_carryin <= out_mode_mix_stage2 & is_left_shift_stage2 & en_stage2 & is_shift_stage2;
-always_comb override_bit15_with_carryin <= out_mode_mix_stage2 & ~is_left_shift_stage2 & en_stage2 & is_shift_stage2;
-
-assign ALU_OUT = { 
-        override_bit15_with_carryin ? flags_stage2[FLAG_C] : alu_out_mux[15],  // override for ROTATEC
+logic [DATA_WIDTH-1:0] alu_out_stage2;
+always_comb alu_out_stage2 <= { 
+        is_rcr_stage2 ? flags_in_stage2[FLAG_C] : alu_out_mux[15],  // override for ROTATEC
         alu_out_mux[14:1],
-        override_bit0_with_carryin ? flags_stage2[FLAG_C] : alu_out_mux[0]     // override for ROTATEC
+        is_rcl_stage2 ? flags_in_stage2[FLAG_C] : alu_out_mux[0]     // override for ROTATEC
 };
 
-logic new_c_flag;
-logic new_z_flag;
-logic new_s_flag;
-logic new_v_flag;
+logic [3:0] new_flags;
 
-always_comb new_c_flag <=
-        is_shift_stage2 ? (is_left_shift_stage2 ? dsp_p_out[16] : dsp_p_out[15])
-        :                 dsp_carryout;
+always_comb new_flags[FLAG_C] <=
+          is_left_shift_stage2 ? dsp_p_out[16] 
+        : is_right_shift_stage2 ? dsp_p_out[15]
+        : dsp_carryout;
 
-always_comb new_z_flag <= dsp_patterndetect;
-always_comb new_s_flag <= alu_out_mux[DATA_WIDTH-1];
-always_comb new_v_flag <= dsp_carryout != alu_out_mux[DATA_WIDTH-1];
+always_comb new_flags[FLAG_Z] <= dsp_patterndetect;
+always_comb new_flags[FLAG_S] <= alu_out_mux[DATA_WIDTH-1];
+always_comb new_flags[FLAG_V] <= dsp_carryout != alu_out_mux[DATA_WIDTH-1];
 
-always_comb FLAGS_OUT[FLAG_C] <= flags_mask_stage2[FLAG_C] & (~(is_multiply_stage2 & ~is_shift_stage2)) ? new_c_flag : flags_stage2[FLAG_C];
-always_comb FLAGS_OUT[FLAG_Z] <= flags_mask_stage2[FLAG_Z] ? new_z_flag : flags_stage2[FLAG_Z];
-always_comb FLAGS_OUT[FLAG_S] <= flags_mask_stage2[FLAG_S] ? new_s_flag : flags_stage2[FLAG_S];
-always_comb FLAGS_OUT[FLAG_V] <= flags_mask_stage2[FLAG_V] ? new_v_flag : flags_stage2[FLAG_V];
+logic [3:0] flags_stage2;
+always_comb flags_stage2 <= (flags_in_stage2 & ~flags_mask_stage2) | (new_flags & flags_mask_stage2);
+
+// result flags
+logic [3:0] flags_stage3;
+always_ff @(posedge CLK)
+    if (RESET)
+        flags_stage3 <= 'b0;
+    else if (CE)
+        flags_stage3 <= flags_stage2;
+        
+assign FLAGS_OUT = flags_stage3;
+
+// result value
+logic [DATA_WIDTH-1 : 0] alu_out_stage3;
+always_ff @(posedge CLK)
+    if (RESET | (CE & ~en_stage2))
+        alu_out_stage3 <= 'b0;
+    else if (CE)
+        alu_out_stage3 <= alu_out_stage2;
+
+assign ALU_OUT = alu_out_stage3;
+
 
 // DSP48E1: 48-bit Multi-Functional Arithmetic Block
 //          Artix-7

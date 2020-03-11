@@ -24,13 +24,13 @@ package bcpu_defs;
 
 typedef enum logic[3:0] {
 //  mnemonic             opcode                                                   flags      mapped
-	ALUOP_ADD        = 4'b0000, //   RC = RA + RB                                 VSZC
-	ALUOP_ADDC       = 4'b0001, //   RC = RA + RB + CF                            VSZC
-	ALUOP_SUB        = 4'b0010, //   RC = RA - RB                                 VSZC
-	ALUOP_SUBC       = 4'b0011, //   RC = RA - RB - CF                            VSZC
+	ALUOP_INC        = 4'b0000, //   RC = RA + RB                                  SZ        MOV, NOP
+	ALUOP_DEC        = 4'b0001, //   RC = RA - RB                                  SZ
+	ALUOP_ADD        = 4'b0010, //   RC = RA + RB                                 VSZC
+	ALUOP_SUB        = 4'b0011, //   RC = RA - RB                                 VSZC
 	
-	ALUOP_INC        = 4'b0100, //   RC = RA + RB                                  SZ        MOV
-	ALUOP_DEC        = 4'b0101, //   RC = RA - RB                                  SZ
+	ALUOP_ADDC       = 4'b0100, //   RC = RA + RB + CF                            VSZC
+	ALUOP_SUBC       = 4'b0101, //   RC = RA - RB - CF                            VSZC
 	ALUOP_ROTATE     = 4'b0110, //   RC = high_low(unsigned RA * unsigned RB)      SZC       ROL, ROR
 	ALUOP_ROTATEC    = 4'b0111, //   RC = high_low(unsigned RA * unsigned RB)|CF   SZC       RCL, RCR
 	
@@ -48,6 +48,7 @@ typedef enum logic[3:0] {
 /*
     Additional ops mapping
     alias op                 mapped to                   behavior change comparing to original op    
+    NOP                  <=  INC R0, R0, 0               -- disable ALL flags update
     MOV RC, RB           <=  INC RC, R0, RB              -- disable ALL flags update
     TEST RA, RB          <=  AND R0, RA, RB              -- only flags updated
     CMP RA, RB           <=  SUB R0, RA, RB              -- only flags updated
