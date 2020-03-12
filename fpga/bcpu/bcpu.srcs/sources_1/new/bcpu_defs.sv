@@ -10,7 +10,7 @@
 // Target Devices: 
 // Tool Versions: 
 // Description: 
-// 
+//     Various definitions for BCPU FPGA Barrel CPU softcore implementation.
 // Dependencies: 
 // 
 // Revision:
@@ -34,12 +34,14 @@ typedef enum logic[2:0] {
 	INSTR_JMP_WAIT   = 3'b111   //   WAIT - wait on memory value, JMP long address jump
 } instr_category_t;
 
+// Types of memory address bases
 typedef enum logic {
 //  mnemonic             opcode      
-	BASEADDR_REG     = 1'b0,    //   Reg or simple immediate const is used as base address
-	BASEADDR_PC      = 1'b1     //   PC (program counter) is used as base address
+	BASEADDR_REG     = 1'b0,    //   Reg or simple immediate const is used as base address (R+offs)
+	BASEADDR_PC      = 1'b1     //   PC (program counter) is used as base address          (PC+offs)
 } base_address_t;
 
+// ALU opcodes
 typedef enum logic[3:0] {
 //  mnemonic             opcode                                                   flags      mapped
 	ALUOP_INC        = 4'b0000, //   RC = RA + RB                                 .SZ.       MOV, NOP
@@ -81,6 +83,7 @@ typedef enum logic[3:0] {
     RCR RC, RA, n        <=  ROTATE RC, RA, (1<<(16-n))  -- enable C flag, CF=p[15], result[15]=CF_in
 */
 
+// flag indexes
 typedef enum logic[1:0] {
     FLAG_C,        // carry flag
     FLAG_Z,        // zero flag
@@ -89,28 +92,8 @@ typedef enum logic[1:0] {
 } flag_index_t;
 typedef logic[3:0] bcpu_flags_t;
 
-/*
-0000 jmp  1                 unconditional
-0001 jnc  c = 0
-0010 jnz  z = 0             jne
-0011 jz   z = 1             je
-
-0100 jns  s = 0
-0101 js   s = 1
-0100 jno  v = 0
-0101 jo   v = 1
-
-1000 ja   c = 0 & z = 0     above (unsigned compare)            !jbe
-1001 jae  c = 0 | z = 1     above or equal (unsigned compare)
-1010 jb   c = 1             below (unsigned compare)            jc
-1011 jbe  c = 1 | z = 1     below or equal (unsigned compare)   !ja
-
-1100 jl   v != s            less (signed compare)
-1101 jle  v != s | z = 1    less or equal (signed compare)      !jg
-1110 jg   v = s & z = 0     greater (signed compare)            !jle
-1111 jge  v = s | z = 1     less or equal (signed compare)
-*/
-typedef enum logic[1:0] {
+// condition codes for conditional jumps
+typedef enum logic[3:0] {
     COND_NONE = 4'b0000, // jmp  1                 unconditional
     
     COND_NC   = 4'b0001, // jnc  c = 0
@@ -119,8 +102,8 @@ typedef enum logic[1:0] {
 
     COND_NS   = 4'b0100, // jns  s = 0
     COND_S    = 4'b0101, // js   s = 1
-    COND_NO   = 4'b0100, // jno  v = 0
-    COND_O    = 4'b0101, // jo   v = 1
+    COND_NO   = 4'b0110, // jno  v = 0
+    COND_O    = 4'b0111, // jo   v = 1
 
     COND_A    = 4'b1000, // ja   c = 0 & z = 0     above (unsigned compare)            !jbe
     COND_AE   = 4'b1001, // jae  c = 0 | z = 1     above or equal (unsigned compare)
