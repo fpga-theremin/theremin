@@ -35,21 +35,21 @@ logic CLK;
 //=========================================
 // Synchronous write port
 // when WR_EN == 1, write value WR_DATA to address WR_ADDR on raising edge of CLK 
-logic WR_EN;
-logic [REG_ADDR_WIDTH-1:0] WR_ADDR;
-logic [DATA_WIDTH-1:0] WR_DATA;
+logic REG_WR_EN;
+logic [REG_ADDR_WIDTH-1:0] WR_REG_ADDR;
+logic [DATA_WIDTH-1:0] WR_REG_DATA;
 
 //=========================================
 // asynchronous read port A
 // always exposes value from address RD_ADDR_A to RD_DATA_A
-logic [REG_ADDR_WIDTH-1:0] RD_ADDR_A;
-logic [DATA_WIDTH-1:0] RD_DATA_A;
+logic [REG_ADDR_WIDTH-1:0] RD_REG_ADDR_A;
+logic [DATA_WIDTH-1:0] RD_REG_DATA_A;
 
 //=========================================
 // asynchronous read port B 
 // always exposes value from address RD_ADDR_B to RD_DATA_B
-logic [REG_ADDR_WIDTH-1:0] RD_ADDR_B;
-logic [DATA_WIDTH-1:0] RD_DATA_B;
+logic [REG_ADDR_WIDTH-1:0] RD_REG_ADDR_B;
+logic [DATA_WIDTH-1:0] RD_REG_DATA_B;
 
 
 bcpu_regfile
@@ -69,21 +69,21 @@ always begin
 end
 
 `define readA(addr) \
-    RD_ADDR_A = addr; #3 $display("A[%2x] = %x", addr, RD_DATA_A);
+    RD_REG_ADDR_A = addr; #4 $display("A[%2x] = %x", addr, RD_REG_DATA_A);
 `define readB(addr) \
-    RD_ADDR_B = addr; #3 $display("B[%2x] = %x", addr, RD_DATA_B);
+    RD_REG_ADDR_B = addr; #4 $display("B[%2x] = %x", addr, RD_REG_DATA_B);
 `define write(addr, data) \
     $display("write [%2x] <= %x", addr, data); \
-    @(posedge CLK) #1 WR_ADDR = addr; WR_DATA = data; WR_EN = 1; \
-    @(posedge CLK) #1 WR_EN = 0;
+    @(posedge CLK) #2 WR_REG_ADDR = addr; WR_REG_DATA = data; REG_WR_EN = 1; \
+    @(posedge CLK) #2 REG_WR_EN = 0;
 
 initial begin
 
-    #3 WR_EN = 0;
-    #44 RD_ADDR_A = 0;
-    #33 RD_ADDR_B = 1;
-    #14 WR_ADDR = 2;
-    #15 WR_DATA = 16'h1234;
+    #3 REG_WR_EN = 0;
+    #44 RD_REG_ADDR_A = 0;
+    #33 RD_REG_ADDR_B = 1;
+    #14 WR_REG_ADDR = 2;
+    #15 WR_REG_DATA = 16'h1234;
 
     `readA(0)
     `readA(3)
@@ -101,6 +101,7 @@ initial begin
     `write(1, 16'hdead)        
     `readA(31)
     `readB(0)
+    `readB(1)
     
     $finish();
     

@@ -15,7 +15,8 @@
 //     Logic operations: AND, ANDN, OR, XOR
 //     Multiply: MUL, MULHUU, MULHSU, MULHSS -- separate ops for low and high parts of result, signed and unsigned
 //     Shifts: SHL, SHR, SAR, SAL, ROR, ROL, RCL, RCR -- arithmetic, logic, rotation, rotation via carry (implemented using multiplication)
-//     Pipeline latency: 3 clock cycles 
+//     Pipeline latency: 3 clock cycles
+//     Note: with DATA_WIDTH=18, unsigned multiply and right shifts will be broken because only signed multiplication is supported
 // Dependencies: 
 // 
 // Revision:
@@ -28,7 +29,8 @@ import bcpu_defs::*;
 
 module bcpu_alu
 #(
-    parameter DATA_WIDTH = 16
+    parameter DATA_WIDTH = 16,
+    parameter EMBEDDED_IMMEDIATE_TABLE = 0
 )
 (
     // input clock
@@ -74,21 +76,29 @@ module bcpu_alu
 
 // immediate constant table: override B_IN value if immediate mode != 00
 logic [DATA_WIDTH-1 : 0] b_in_override;
-bcpu_imm_table
-#(
-    .DATA_WIDTH(DATA_WIDTH)
-)
-bcpu_imm_table_inst
-(
-    // input register value
-    .B_VALUE_IN(B_IN),
-    // this is actually register index from instruction, unused with IMM_MODE == 00; for reg index 000 force ouput to 0
-    .CONST_OR_REG_INDEX(B_CONST_OR_REG_INDEX), 
-    // immediate mode from instruction: 00 for bypassing B_VALUE_IN, 01,10,11: replace value with immediate constant from table
-    .IMM_MODE(B_IMM_MODE),
-    .B_VALUE_OUT(b_in_override)
-);
 
+generate
+    if (EMBEDDED_IMMEDIATE_TABLE == 1) begin
+        // instantiate embed table here
+        bcpu_imm_table
+        #(
+            .DATA_WIDTH(DATA_WIDTH)
+        )
+        bcpu_imm_table_inst
+        (
+            // input register value
+            .B_VALUE_IN(B_IN),
+            // this is actually register index from instruction, unused with IMM_MODE == 00; for reg index 000 force ouput to 0
+            .CONST_OR_REG_INDEX(B_CONST_OR_REG_INDEX), 
+            // immediate mode from instruction: 00 for bypassing B_VALUE_IN, 01,10,11: replace value with immediate constant from table
+            .IMM_MODE(B_IMM_MODE),
+            .B_VALUE_OUT(b_in_override)
+        );
+    end else begin
+        // B_IN already preprocessed with immediate table
+        always_comb b_in_override <= B_IN;
+    end
+endgenerate
 
 // EN signal pipelining
 logic en_stage1;
@@ -167,7 +177,6 @@ logic dsp_reset_a;
 logic dsp_reset_out;
 
 always_comb dsp_reset_a <= RESET                      // set dsp A to 0 for reset 
-                         | (A_REG_INDEX == 3'b000)    // set dsp A to 0 for R0 as A operand
                          | ~EN;                       // set dsp A to 0 when ALU is disabled
                          
 always_comb dsp_reset_in <= RESET | ~(EN);
@@ -307,7 +316,7 @@ always_comb case(ALU_OP)
 
         // rotate
         ALUOP_ROTATE:  begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= 1'b0;   b_signex = 1'b0;    out_mode <= OUT_MODE_LH; end
-        // rotate with shifting in carry flag bit 0 or bit 15 of result will be replaced with carry_in value
+        // rotate with shifting in carry flag bit 0 or bit DATA_WIDTH-1 of result will be replaced with carry_in value
         ALUOP_ROTATEC: begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= 1'b0;   b_signex = 1'b0;    out_mode <= OUT_MODE_LH; end
         
         // unsigned*unsigned mul low part, arithmetic shift left, logic shift left, take carry_out from p[16]         
@@ -320,32 +329,30 @@ always_comb case(ALU_OP)
     endcase
 
 
-assign dsp_a_in = { 30{b_signex & b_sign}};
-assign dsp_b_in = {b_signex & b_sign, b_signex & b_sign,  b_in_override};
-assign dsp_c_in = { {32{a_signex & a_sign}},              A_IN};
-assign dsp_d_in = { {25{a_signex & a_sign}},              A_IN};
+assign dsp_c_in = { {32{a_signex & a_sign}},              A_IN};            // add/subtract operand 1 C
+assign dsp_d_in = { {25{a_signex & a_sign}},              A_IN};            // multiplier 1
+assign dsp_b_in = { {18-DATA_WIDTH{b_signex & b_sign}},   b_in_override};   // multiplier 2, A:B add/subtract operand 2
+assign dsp_a_in = {30{b_signex & b_sign}};                                  // sign only: top part of A:B for add/subtract operand 2  
 
 logic [DATA_WIDTH-1 : 0] alu_out_mux;
 
 
 // result MUX: use low half, high half, or mix high|low part of result 
-//assign alu_out_mux = out_mode_high_stage2 ? dsp_p_out[31:16] : ((dsp_p_out[31:16] & {16{out_mode_mix_stage2}}) | dsp_p_out[15:0]); 
-
-assign alu_out_mux = ( {16{out_mode_stage2[1]}} & dsp_p_out[31:16] )   // higher part
-                   | ( {16{out_mode_stage2[0]}} & dsp_p_out[15:0]  );  // lower part
+assign alu_out_mux = ( {16{out_mode_stage2[1]}} & dsp_p_out[DATA_WIDTH*2-1:DATA_WIDTH] )   // higher part
+                   | ( {16{out_mode_stage2[0]}} & dsp_p_out[DATA_WIDTH-1:0]  );            // lower part
 
 logic [DATA_WIDTH-1:0] alu_out_stage2;
 always_comb alu_out_stage2 <= { 
-        is_rcr_stage2 ? flags_in_stage2[FLAG_C] : alu_out_mux[15],  // override for ROTATEC
-        alu_out_mux[14:1],
+        is_rcr_stage2 ? flags_in_stage2[FLAG_C] : alu_out_mux[DATA_WIDTH-1],  // override for ROTATEC
+        alu_out_mux[DATA_WIDTH-2:1],
         is_rcl_stage2 ? flags_in_stage2[FLAG_C] : alu_out_mux[0]     // override for ROTATEC
 };
 
 logic [3:0] new_flags;
 
 always_comb new_flags[FLAG_C] <=
-          is_left_shift_stage2 ? dsp_p_out[16] 
-        : is_right_shift_stage2 ? dsp_p_out[15]
+          is_left_shift_stage2 ? dsp_p_out[DATA_WIDTH] 
+        : is_right_shift_stage2 ? dsp_p_out[DATA_WIDTH-1]
         : dsp_carryout;
 
 always_comb new_flags[FLAG_Z] <= dsp_patterndetect;
