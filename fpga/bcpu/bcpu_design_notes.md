@@ -34,9 +34,24 @@ E.g. ADD A, B, C is implemented as A = B + C
 
 ### Number of registers
 
+In 3-address architecture, we need to store 3 register indexes for 3-address instructions.
+
+With 8 regs, we need 3 bits for each register address, 3*3 = 9 bits only for register indexes.
+
+With 16 regs, we need 4 bits for each register, 4*3 = 12 bits only for register indexes.
+
+We will need ALU OP code in instruction, at least 4 bits. So, for 16 regs, 16 bits will be occupied only by register indexes and ALU opcode. Instruction length should be bigger.
+
 In Barrel CPU, real number of registers in register bank are multiplied by number of threads.
 
-With 8 registers per thread, 32 total registers should be stored in register bank.
+With 8 registers per thread, 32 total registers should be stored in register bank. For 16 - 64 in total. The more regs, the more resources will be needed.
+
+It makes sense to support some immediate constants inside instruction (power of two - single bit set - constants are must have for implementing shifts). At least, additional single bit is needed as immediate mode flag. One or more bits will be needed to specify immediate mode.
+
+With 16 regs, single bit for imm mode allows to specify 16 constants (register index will be used as constant table index) - if const table contains only power of two values.
+
+With 8 regs, we need at lease 2 immediate mode bits (e.g. mode 00 for register value, 01..11 for constants - 24 constants available).
+
 
 
 ### Flags
