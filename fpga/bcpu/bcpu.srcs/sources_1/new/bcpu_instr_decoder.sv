@@ -68,9 +68,9 @@ module bcpu_instr_decoder
     // register B or immediate index, e.g. for ALU 
     output logic [2:0] B_INDEX,
 
-    // register A operand value, e.g. for ALU or write data for memory
+    // register A operand value, e.g. for ALU operand A, write data for memory, or mask for WAIT
     output logic [DATA_WIDTH-1:0] A_VALUE,
-    // register B or immediate operand value, e.g. for ALU
+    // register B or immediate operand value, e.g. for ALU operand B
     output logic [DATA_WIDTH-1:0] B_VALUE,
 
     // 1 to enable ALU operation

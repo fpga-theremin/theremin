@@ -26,14 +26,16 @@
 
 module bcpu_dualport_bram
 #(
+    // data width
     parameter DATA_WIDTH = 18,
+    // address width
     parameter ADDR_WIDTH = 10,
-    // 1 to disable writing to port A
-    parameter USE_PORTA_READONLY = 1,
     // 1 to enable output register on port A read data
     parameter USE_PORTA_REG = 1,
     // 1 to enable output register on port B read data
-    parameter USE_PORTB_REG = 1
+    parameter USE_PORTB_REG = 1,
+    // specify init file to fill ram with
+    parameter INIT_FILE = ""
 )
 (
     // clock
@@ -54,7 +56,7 @@ module bcpu_dualport_bram
     // port A write data 
     input logic [DATA_WIDTH-1:0] PORT_A_WRDATA, 
     // port A read data 
-    output logic [ADDR_WIDTH-1:0] PORT_A_RDDATA, 
+    output logic [DATA_WIDTH-1:0] PORT_A_RDDATA, 
     //====================================
     // Port B    
     // 1 to start port B read or write operation
@@ -66,11 +68,26 @@ module bcpu_dualport_bram
     // port B write data 
     input logic [DATA_WIDTH-1:0] PORT_B_WRDATA, 
     // port B read data 
-    output logic [ADDR_WIDTH-1:0] PORT_B_RDDATA 
+    output logic [DATA_WIDTH-1:0] PORT_B_RDDATA 
 );
 
 localparam MEMSIZE = 1 << ADDR_WIDTH;
 logic [DATA_WIDTH-1:0] memory[MEMSIZE];
+
+// The following code either initializes the memory values to a specified file or to all zeros to match hardware
+generate
+    if (INIT_FILE != "") begin: use_init_file
+        initial
+            $readmemh(INIT_FILE, memory, 0, MEMSIZE-1);
+    end else begin: init_bram_to_zero
+        integer ram_index;
+        initial
+            for (ram_index = 0; ram_index < MEMSIZE; ram_index = ram_index + 1)
+                memory[ram_index] = {DATA_WIDTH{1'b0}};
+    end
+endgenerate
+
+
 
 logic [DATA_WIDTH-1:0] port_a_rddata;
 logic [DATA_WIDTH-1:0] port_b_rddata;
