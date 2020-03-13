@@ -34,6 +34,12 @@ E.g. ADD A, B, C is implemented as A = B + C
 
 ### Number of registers
 
+The more registers we have in CPU, the less LOAD/STORE operations will be required for the same algorithm.
+
+8 registers is probably bare minimum.
+
+
+
 In 3-address architecture, we need to store 3 register indexes for 3-address instructions.
 
 With 8 regs, we need 3 bits for each register address, 3*3 = 9 bits only for register indexes.
@@ -144,4 +150,41 @@ Individual bit operations
 * ANDN - reset individual bit
 * OR - set bit
 * XOR - toggle bit
+
+
+### LOAD / STORE / WAIT
+
+### Peripherial access
+
+00 1: Peripherial bus access
+
+Up to 32 16-bit output regs : 
+Up to 32 16-bit input regs
+
+
+         r/w      type
+		 |        |  
+         |        |  
+00 1 rrr w bbb mm t aaaaa
+     |     |        | 
+     |     |        |
+     |     |         -- periph bus address
+     |     |
+     |      --- value B   MASK
+     |
+	  -- value A    VALUE or dest
+
+address
+
+optype
+
+// input bus
+00 BUSREAD   bus_addr, Rdst, MASK          puts read_value&mask to Rdst, calculate Z flag based on result
+01 BUSWAIT   bus_addr, Rdst, MASK          same as read, but wait till (read_value & mask)!=0
+// output bus
+10 BUSWRITE  bus_addr, value, MASK
+11 BUSTOGGLE bus_addr, value, MASK
+
+
+
 
