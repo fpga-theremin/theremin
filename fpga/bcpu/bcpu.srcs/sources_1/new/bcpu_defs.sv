@@ -85,10 +85,10 @@ typedef enum logic[3:0] {
 
 // flag indexes
 typedef enum logic[1:0] {
-    FLAG_C,        // carry flag
-    FLAG_Z,        // zero flag
-    FLAG_S,        // sign flag
-    FLAG_V         // overflow flag
+    FLAG_C,        // carry flag, 1 when there is carry out or borrow from ADD/SUB, or shifted out bit for shifts
+    FLAG_Z,        // zero flag, set to 1 when all bits of result are zeroes
+    FLAG_S,        // sign flag, meaningful for signed operations (usually derived from HSB of result, sign bit)
+    FLAG_V         // signed overflow flag, meaningful for signed arithmetic operations
 } flag_index_t;
 typedef logic[3:0] bcpu_flags_t;
 
@@ -96,24 +96,24 @@ typedef logic[3:0] bcpu_flags_t;
 typedef enum logic[3:0] {
     COND_NONE = 4'b0000, // jmp  1                 unconditional
     
-    COND_NC   = 4'b0001, // jnc  c = 0
-    COND_NZ   = 4'b0010, // jnz  z = 0             jne
-    COND_Z    = 4'b0011, // jz   z = 1             je
+    COND_NC   = 4'b0001, // jnc  c = 0             for C==1 test, use JB code
+    COND_NZ   = 4'b0010, // jnz  z = 0             jne                                        !=
+    COND_Z    = 4'b0011, // jz   z = 1             je                                         ==
 
     COND_NS   = 4'b0100, // jns  s = 0
     COND_S    = 4'b0101, // js   s = 1
     COND_NO   = 4'b0110, // jno  v = 0
     COND_O    = 4'b0111, // jo   v = 1
 
-    COND_A    = 4'b1000, // ja   c = 0 & z = 0     above (unsigned compare)            !jbe
-    COND_AE   = 4'b1001, // jae  c = 0 | z = 1     above or equal (unsigned compare)
-    COND_B    = 4'b1010, // jb   c = 1             below (unsigned compare)            jc
-    COND_BE   = 4'b1011, // jbe  c = 1 | z = 1     below or equal (unsigned compare)   !ja
+    COND_A    = 4'b1000, // ja   c = 0 & z = 0     above (unsigned compare)            !jbe    >
+    COND_AE   = 4'b1001, // jae  c = 0 | z = 1     above or equal (unsigned compare)           >=
+    COND_B    = 4'b1010, // jb   c = 1             below (unsigned compare)            jc      <
+    COND_BE   = 4'b1011, // jbe  c = 1 | z = 1     below or equal (unsigned compare)   !ja     <=
 
-    COND_L    = 4'b1100, // jl   v != s            less (signed compare)
-    COND_LE   = 4'b1101, // jle  v != s | z = 1    less or equal (signed compare)      !jg
-    COND_G    = 4'b1110, // jg   v = s & z = 0     greater (signed compare)            !jle
-    COND_GE   = 4'b1111  // jge  v = s | z = 1     less or equal (signed compare)
+    COND_L    = 4'b1100, // jl   v != s            less (signed compare)                       <
+    COND_LE   = 4'b1101, // jle  v != s | z = 1    less or equal (signed compare)      !jg     <=
+    COND_G    = 4'b1110, // jg   v = s & z = 0     greater (signed compare)            !jle    >
+    COND_GE   = 4'b1111  // jge  v = s | z = 1     less or equal (signed compare)              >=
 } jmp_condition_t;
 
 

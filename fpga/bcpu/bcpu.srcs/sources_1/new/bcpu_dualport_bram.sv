@@ -93,7 +93,7 @@ always_ff @(posedge CLK)
 generate
     if (USE_PORTA_REG == 1) begin
         always_ff @(posedge CLK)
-            if (RESET & CE)
+            if (RESET)
                 PORT_A_RDDATA <= 'b0;
             else if (CE)
                 PORT_A_RDDATA <= port_a_rddata;
@@ -103,7 +103,7 @@ generate
 
     if (USE_PORTB_REG == 1) begin
         always_ff @(posedge CLK)
-            if (RESET & CE)
+            if (RESET)
                 PORT_B_RDDATA <= 'b0;
             else if (CE)
                 PORT_B_RDDATA <= port_b_rddata;

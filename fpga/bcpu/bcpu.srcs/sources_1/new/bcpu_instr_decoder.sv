@@ -34,11 +34,18 @@ module bcpu_instr_decoder
     // instruction width
     parameter INSTR_WIDTH = 18,
     // program counter width (limits program memory size, PC_WIDTH <= ADDR_WIDTH)
-    parameter PC_WIDTH = 12,
+    // PC_WIDTH should match local program/data BRAM size
+    parameter PC_WIDTH = 10,
     // address width (limited by DATA_WIDTH, ADDR_WIDTH <= DATA_WIDTH)
-    parameter ADDR_WIDTH = 14,
+    // when PC_WIDTH == ADDR_WIDTH, no shared mem extension of number of threads is supported
+    // when PC_WIDTH < ADDR_WIDTH, higher address space can be used for shared mem of two 4-core CPUs
+    //      and for higher level integration in multicore CPU
+    parameter ADDR_WIDTH = 10,
     // register file address width, 3 + 2 == 8 registers * 4 threads
-    parameter REG_ADDR_WIDTH = 5   // (1<<REG_ADDR_WIDTH) values: 32 values for addr width 5 
+    parameter REG_ADDR_WIDTH = 5,  // (1<<REG_ADDR_WIDTH) values: 32 values for addr width 5
+    // when 1, 2 bits from offset are used for immediate mode to allow using constant table value instead of register
+    //         Reduces offset range from 8 to 6 bits, but allows simple addressing of address (1<<n)+(0..63)   
+    parameter USE_IMM_MODE_FOR_BASE_ADDRESS = 1 
 )
 (
     // INPUTS
@@ -74,6 +81,8 @@ module bcpu_instr_decoder
     output logic STORE_EN,
     // 1 if instruction is JUMP, CALL or conditional jump operation
     output logic JMP_EN,
+    // 1 if instruction is CALL operation and we need to know return address
+    output logic CALL_EN,
     // 1 if instruction is memory WAIT operation
     output logic WAIT_EN,
     // 1 if instruction is LOAD_OP, STORE_OP, or WAIT_OP
@@ -243,17 +252,35 @@ assign offset_sign_ex =
         is_long_jmp ? INSTR_IN[14] : INSTR_IN[10];
 // using DATA_WIDTH instead of ADDR_WIDTH to simplify slicing
 logic [DATA_WIDTH-1:0] offset_value; // fill more bits than needed, then take only useful part from it 
-assign offset_value[5:0] = INSTR_IN[5:0];
-assign offset_value[10:6] = base_addr_pc ? INSTR_IN[10:6] : 5'b00000; // fill with 0 for non-PC -- unsigned
-assign offset_value[13:11] = base_addr_pc 
-                ? (((instr_category == INSTR_JMP_WAIT) & base_addr_pc)   
-                         ? INSTR_IN[10:6]                               // long PC address format
-                         : {3{offset_sign_ex}})                         // short PC address: fill with sign
-                :  3'b000; // fill with 0 for non-PC -- unsigned
+if (USE_IMM_MODE_FOR_BASE_ADDRESS == 1) begin
+    // using IMM MODE code: we have 6 bits in first chunk
+    assign offset_value[5:0] = INSTR_IN[5:0];
+    assign offset_value[10:6] = base_addr_pc ? INSTR_IN[10:6] : 5'b00000; // fill with 0 for non-PC -- unsigned
+    assign offset_value[13:11] = base_addr_pc 
+                    ? (((instr_category == INSTR_JMP_WAIT) & base_addr_pc)   
+                             ? INSTR_IN[10:6]                               // long PC address format
+                             : {3{offset_sign_ex}})                         // short PC address: fill with sign
+                    :  3'b000; // fill with 0 for non-PC -- unsigned
+end else begin
+    // no IMM MODE code: we have 8 bits in first chunk
+    assign offset_value[7:0] = INSTR_IN[7:0];
+    assign offset_value[12:8] = base_addr_pc ? INSTR_IN[10:6] : 5'b00000; // fill with 0 for non-PC -- unsigned
+    assign offset_value[15:13] = base_addr_pc 
+                    ? (((instr_category == INSTR_JMP_WAIT) & base_addr_pc)   
+                             ? INSTR_IN[10:6]                               // long PC address format
+                             : {3{offset_sign_ex}})                         // short PC address: fill with sign
+                    :  3'b000; // fill with 0 for non-PC -- unsigned
+end
+
 // base for address calculation
 logic [DATA_WIDTH-1:0] base_value; 
-assign base_value = base_addr_pc ? { {DATA_WIDTH-PC_WIDTH{1'b0}}, PC_IN } 
-                                 : { b_value };
+assign base_value = base_addr_pc 
+                        ? { {DATA_WIDTH-PC_WIDTH{1'b0}}, PC_IN } // use PC as base 
+                        : { // use REG value or REG+imm table override
+                             (USE_IMM_MODE_FOR_BASE_ADDRESS == 1) 
+                                 ? b_value        // imm mode enabled:  use output of immediate decoder which can replace register B value with constant 
+                                 : RD_REG_DATA_B  // imm mode disabled: use register B value directly
+                          };
 // effective address for instruction (base + offset)
 logic [ADDR_WIDTH-1:0] addr_value;
 always_comb addr_value <= base_value[ADDR_WIDTH-1:0] + offset_value[ADDR_WIDTH-1:0];
@@ -306,6 +333,7 @@ assign WAIT_EN   =  is_wait;
 assign PERIPH_EN = (instr_category == INSTR_PERIPH);
 assign MEMORY_EN = (instr_category == INSTR_LOAD) | (instr_category == INSTR_STORE) | is_wait;
 assign ALU_EN    = (instr_category == INSTR_ALU);
+assign CALL_EN   = (instr_category == INSTR_CALL);
 
 
 endmodule
