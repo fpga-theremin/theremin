@@ -117,6 +117,18 @@ typedef enum logic[3:0] {
 } jmp_condition_t;
 
 
+// BUS operation codes (operands: RB_imm is mask, RA is value to write)
+typedef enum logic[2:0] {
+    BUSOP_READ_IBUS        = 3'b000, //  Rdest = (IBUS[addr] & mask),  update ZF
+    BUSOP_WAIT_IBUS        = 3'b001, //  Rdest = (IBUS[addr] & mask),  update ZF, wait until ZF=0
+    BUSOP_READ_OBUS        = 3'b010, //  Rdest = (OBUS[addr] & mask),  update ZF
+    BUSOP_WAIT_OBUS        = 3'b011, //  Rdest = (OBUS[addr] & mask),  update ZF, wait until ZF=0
+    BUSOP_TOGGLE_OBUS      = 3'b100, //  OBUS'[addr] =  OBUS[addr] ^ mask, Rdest = (OBUS[addr] & mask) -- read previous value
+    BUSOP_SET_OBUS         = 3'b101, //  OBUS'[addr] =  OBUS[addr] | mask, Rdest = (OBUS[addr] & mask) -- read previous value
+    BUSOP_RESET_OBUS       = 3'b110, //  OBUS'[addr] =  OBUS[addr] & ~mask, Rdest = (OBUS[addr] & mask) -- read previous value
+    BUSOP_WRITE_OBUS       = 3'b111  //  OBUS'[addr] = (OBUS[addr] & ~mask) | (value & mask)
+} bus_op_t;
+
 /*
 Instruction set planning:
 
