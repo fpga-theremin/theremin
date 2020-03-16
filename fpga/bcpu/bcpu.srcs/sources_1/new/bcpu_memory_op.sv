@@ -71,6 +71,7 @@ module bcpu_memory_op
 
 );
 
+
 logic [DATA_WIDTH-1:0] rd_value_stage2;
 
 localparam HAS_EXT_MEM = (ADDR_WIDTH > PC_WIDTH) ? 1 : 0;
