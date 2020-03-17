@@ -54,10 +54,10 @@ module bcpu_alu
     
     // B_CONST_OR_REG_INDEX and B_IMM_MODE are needed to implement special cases for shifts and MOV
     // this is actually register index from instruction, unused with IMM_MODE == 00; for reg index 000 force ouput to 0
-    input [2:0] B_CONST_OR_REG_INDEX,
+    input logic [2:0] B_CONST_OR_REG_INDEX,
     // immediate mode from instruction: 00 for bypassing B_VALUE_IN, 01,10,11: replace value with immediate constant from table
     // when B_IMM_MODE == 00 and B_CONST_OR_REG_INDEX == 000, use 0 instead of B_IN as operand B value
-    input [1:0] B_IMM_MODE,
+    input logic [1:0] B_IMM_MODE,
     // operand B input
     input logic [DATA_WIDTH-1 : 0] B_IN,
 
@@ -73,6 +73,31 @@ module bcpu_alu
     // alu result output    
     output logic [DATA_WIDTH-1 : 0] ALU_OUT
 );
+
+// alu operation code    
+logic [3:0] alu_op_stage1;
+logic alu_en_stage1;
+logic [DATA_WIDTH-1 : 0] a_in_stage1;
+logic [1:0] b_imm_mode_stage1;
+logic disable_flags_update_stage1;
+
+always_ff @(posedge CLK) begin
+    if (RESET) begin
+        alu_op_stage1 <= 'b0;
+        alu_en_stage1 <= 'b0;
+        a_in_stage1 <= 'b0;
+        b_imm_mode_stage1 <= 'b0;
+        disable_flags_update_stage1 <= 'b0;
+    end else if (CE) begin
+        // special case: INC RC, R0, RB_imm    (RC=0+RB_imm) is treated as MOV operation, w/o flags
+        disable_flags_update_stage1 <= ((ALU_OP == ALUOP_INC) & (A_REG_INDEX == 3'b000)) | ~EN;
+        alu_op_stage1 <= ALU_OP;
+        alu_en_stage1 <= EN;
+        a_in_stage1 <= A_IN;
+        b_imm_mode_stage1 <= B_IMM_MODE;
+    end
+end
+
 
 // immediate constant table: override B_IN value if immediate mode != 00
 logic [DATA_WIDTH-1 : 0] b_in_override;
@@ -115,14 +140,19 @@ always_ff @(posedge CLK)
 // input flags pipelining
 logic [3:0] flags_in_stage1;
 logic [3:0] flags_in_stage2;
+logic [3:0] flags_in_stage3;
 always_ff @(posedge CLK)
     if (RESET) begin
         flags_in_stage1 <= 'b0;
         flags_in_stage2 <= 'b0;
+        flags_in_stage3 <= 'b0;
     end else if (CE) begin
+        flags_in_stage3 <= flags_in_stage2;
         flags_in_stage2 <= flags_in_stage1;
         flags_in_stage1 <= FLAGS_IN;
     end
+
+
 
 // shifts support, C flag generation
 // is multiplier operation which can be treated as left shift - for shifted out C flag generation
@@ -144,29 +174,25 @@ always_comb is_rcr <= (ALU_OP == ALUOP_ROTATEC) & (B_IMM_MODE == 2'b11); // ROTA
 
 // flags update mask decoding
 logic [3:0] flags_mask;
-always_comb flags_mask[FLAG_V] <= (ALU_OP == ALUOP_ADD || ALU_OP == ALUOP_ADDC || ALU_OP == ALUOP_SUB || ALU_OP == ALUOP_SUBC);
+always_comb flags_mask[FLAG_V] <= (alu_op_stage1 == ALUOP_ADD || alu_op_stage1 == ALUOP_ADDC || alu_op_stage1 == ALUOP_SUB || alu_op_stage1 == ALUOP_SUBC);
 always_comb flags_mask[FLAG_S] <= 'b1;
 always_comb flags_mask[FLAG_Z] <= 'b1;
-always_comb flags_mask[FLAG_C] <= (ALU_OP == ALUOP_ADD || ALU_OP == ALUOP_ADDC || ALU_OP == ALUOP_SUB || ALU_OP == ALUOP_SUBC);
-
-// special case: INC RC, R0, RB_imm    (RC=0+RB_imm) is treated as MOV operation, w/o flags
-logic disable_flags_update;
-always_comb disable_flags_update <= ((ALU_OP == ALUOP_INC) & (A_REG_INDEX == 3'b000)) | ~EN | RESET; // move or ~EN - to disable flags update
+always_comb flags_mask[FLAG_C] <= (alu_op_stage1 == ALUOP_ADD || alu_op_stage1 == ALUOP_ADDC || alu_op_stage1 == ALUOP_SUB || alu_op_stage1 == ALUOP_SUBC);
 
 // flags update mask pipelining
-logic [3:0] flags_mask_stage1;
 logic [3:0] flags_mask_stage2;
+logic [3:0] flags_mask_stage3;
 always_ff @(posedge CLK)
-    if (disable_flags_update) begin
-        flags_mask_stage1 <= 'b0;
+    if (disable_flags_update_stage1 | RESET) begin
+        flags_mask_stage2 <= 'b0;
     end else if (CE) begin
-        flags_mask_stage1 <= flags_mask;
+        flags_mask_stage2 <= flags_mask;
     end
 always_ff @(posedge CLK)
     if (RESET) begin
-        flags_mask_stage2 <= 'b0;
+        flags_mask_stage3 <= 'b0;
     end else if (CE) begin
-        flags_mask_stage2 <= flags_mask_stage1;
+        flags_mask_stage3 <= flags_mask_stage2;
     end
         
 
@@ -176,33 +202,34 @@ logic dsp_reset_a;
 // 1 to reset DSP input
 logic dsp_reset_out;
 
-always_comb dsp_reset_a <= RESET                      // set dsp A to 0 for reset 
-                         | ~EN;                       // set dsp A to 0 when ALU is disabled
+always_comb dsp_reset_a <= RESET;                       // set dsp A to 0 when ALU is disabled
                          
-always_comb dsp_reset_in <= RESET | ~(EN);
-always_comb dsp_reset_out <= RESET | ~(en_stage1);
+always_comb dsp_reset_in <= RESET;
+always_comb dsp_reset_out <= RESET;
 
-logic dsp_ce_inputs;
-logic dsp_ce_output;
-always_comb dsp_ce_inputs <= CE;
-always_comb dsp_ce_output <= CE;
+logic dsp_ce;
+always_comb dsp_ce <= CE;
 
 // carry input
 logic dsp_carry_in;
 // Carry IN value processing
-always_comb dsp_carry_in <= ((ALU_OP == ALUOP_ADDC || ALU_OP == ALUOP_SUBC) ? FLAGS_IN[FLAG_C]
-                          : 1'b0) & EN;
+always_comb dsp_carry_in <= ((alu_op_stage1 == ALUOP_ADDC || alu_op_stage1 == ALUOP_SUBC) ? flags_in_stage1[FLAG_C]
+                          : 1'b0) & alu_en_stage1;
 
 
 // shift options pipeline
 logic is_left_shift_stage1;
 logic is_left_shift_stage2;
+logic is_left_shift_stage3;
 logic is_right_shift_stage1;
 logic is_right_shift_stage2;
+logic is_right_shift_stage3;
 logic is_rcl_stage1;
 logic is_rcl_stage2;
+logic is_rcl_stage3;
 logic is_rcr_stage1;
 logic is_rcr_stage2;
+logic is_rcr_stage3;
 always_ff @(posedge CLK)
     if (RESET | (CE & ~EN)) begin
         is_left_shift_stage1 <= 'b0;
@@ -218,11 +245,21 @@ always_ff @(posedge CLK)
 
 always_ff @(posedge CLK)
     if (RESET) begin
+        is_left_shift_stage3 <= 'b0;
+        is_right_shift_stage3 <= 'b0;
+        is_rcl_stage3 <= 'b0;
+        is_rcr_stage3 <= 'b0;
+
         is_left_shift_stage2 <= 'b0;
         is_right_shift_stage2 <= 'b0;
         is_rcl_stage2 <= 'b0;
         is_rcr_stage2 <= 'b0;
     end else if (CE) begin
+        is_left_shift_stage3 <= is_left_shift_stage2;
+        is_right_shift_stage3 <= is_right_shift_stage2;
+        is_rcl_stage3 <= is_rcl_stage2;
+        is_rcr_stage3 <= is_rcr_stage2;
+
         is_left_shift_stage2 <= is_left_shift_stage1;
         is_right_shift_stage2 <= is_right_shift_stage1;
         is_rcl_stage2 <= is_rcl_stage1;
@@ -277,20 +314,19 @@ typedef enum logic[1:0] {
 } out_mode_t;
 
 out_mode_t out_mode;
-out_mode_t out_mode_stage1;
 out_mode_t out_mode_stage2;
+out_mode_t out_mode_stage3;
 always_ff @(posedge CLK) begin
     if (RESET) begin
+        out_mode_stage3 <= OUT_MODE_0;
         out_mode_stage2 <= OUT_MODE_0;
-        out_mode_stage1 <= OUT_MODE_0;
     end else if (CE) begin
-        out_mode_stage2 <= out_mode_stage1;
-        out_mode_stage1 <= out_mode;
+        out_mode_stage3 <= out_mode_stage2;
+        out_mode_stage2 <= out_mode;
     end
 end
 
 always_comb dsp_carryinsel <= 'b000; // CARRYIN
-always_comb dsp_inmode <= DSP_INMODE_B2_D;
 
 logic a_sign;
 logic b_sign;
@@ -300,36 +336,36 @@ assign b_sign = b_in_override[DATA_WIDTH-1];
 logic a_signex;
 logic b_signex;
 
-always_comb case(ALU_OP)
-        ALUOP_ADD:    begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= 1'b1; b_signex = 1'b1;  out_mode <= OUT_MODE_L;  end
-        ALUOP_ADDC:   begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= 1'b1; b_signex = 1'b1;  out_mode <= OUT_MODE_L;  end
-        ALUOP_SUB:    begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_SUB;     a_signex <= 1'b1; b_signex = 1'b1;  out_mode <= OUT_MODE_L;  end
-        ALUOP_SUBC:   begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_SUB;     a_signex <= 1'b1; b_signex = 1'b1;  out_mode <= OUT_MODE_L;  end
+always_comb case(alu_op_stage1)
+        ALUOP_ADD:    begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_ADD;    dsp_inmode <= DSP_INMODE_B2_A2;   a_signex <= 1'b1; b_signex = 1'b1;  out_mode <= OUT_MODE_L;  end
+        ALUOP_ADDC:   begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_ADD;    dsp_inmode <= DSP_INMODE_B2_A2;   a_signex <= 1'b1; b_signex = 1'b1;  out_mode <= OUT_MODE_L;  end
+        ALUOP_SUB:    begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_SUB;    dsp_inmode <= DSP_INMODE_B2_D;   a_signex <= 1'b1; b_signex = 1'b1;  out_mode <= OUT_MODE_L;  end
+        ALUOP_SUBC:   begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_SUB;    dsp_inmode <= DSP_INMODE_B2_D;   a_signex <= 1'b1; b_signex = 1'b1;  out_mode <= OUT_MODE_L;  end
         
-        ALUOP_INC:    begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= 1'b1; b_signex = 1'b1;  out_mode <= OUT_MODE_L;  end
-        ALUOP_DEC:    begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_SUB;     a_signex <= 1'b1; b_signex = 1'b1;  out_mode <= OUT_MODE_L;  end
+        ALUOP_INC:    begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_ADD;    dsp_inmode <= DSP_INMODE_B2_D;   a_signex <= 1'b1; b_signex = 1'b1;  out_mode <= OUT_MODE_L;  end
+        ALUOP_DEC:    begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_SUB;    dsp_inmode <= DSP_INMODE_B2_D;   a_signex <= 1'b1; b_signex = 1'b1;  out_mode <= OUT_MODE_L;  end
 
-        ALUOP_AND:    begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_AND_OR;  a_signex <= 1'b0; b_signex = 1'b0;  out_mode <= OUT_MODE_L;  end
-        ALUOP_ANDN:   begin    dsp_opmode <= DSP_OPMODE_XAB_YFF_ZC;   dsp_alumode <= DSP_ALUMODE_ANDN;    a_signex <= 1'b0; b_signex = 1'b0;  out_mode <= OUT_MODE_L;  end
-        ALUOP_OR:     begin    dsp_opmode <= DSP_OPMODE_XAB_YFF_ZC;   dsp_alumode <= DSP_ALUMODE_AND_OR;  a_signex <= 1'b0; b_signex = 1'b0;  out_mode <= OUT_MODE_L;  end
-        ALUOP_XOR:    begin    dsp_opmode <= DSP_OPMODE_XAB_YFF_ZC;   dsp_alumode <= DSP_ALUMODE_XOR;     a_signex <= 1'b0; b_signex = 1'b0;  out_mode <= OUT_MODE_L;  end
+        ALUOP_AND:    begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_AND_OR; dsp_inmode <= DSP_INMODE_B2_D; a_signex <= 1'b0; b_signex = 1'b0;  out_mode <= OUT_MODE_L;  end
+        ALUOP_ANDN:   begin    dsp_opmode <= DSP_OPMODE_XAB_YFF_ZC;   dsp_alumode <= DSP_ALUMODE_ANDN;   dsp_inmode <= DSP_INMODE_B2_D; a_signex <= 1'b0; b_signex = 1'b0;  out_mode <= OUT_MODE_L;  end
+        ALUOP_OR:     begin    dsp_opmode <= DSP_OPMODE_XAB_YFF_ZC;   dsp_alumode <= DSP_ALUMODE_AND_OR; dsp_inmode <= DSP_INMODE_B2_D; a_signex <= 1'b0; b_signex = 1'b0;  out_mode <= OUT_MODE_L;  end
+        ALUOP_XOR:    begin    dsp_opmode <= DSP_OPMODE_XAB_YFF_ZC;   dsp_alumode <= DSP_ALUMODE_XOR;    dsp_inmode <= DSP_INMODE_B2_D; a_signex <= 1'b0; b_signex = 1'b0;  out_mode <= OUT_MODE_L;  end
 
         // rotate
-        ALUOP_ROTATE:  begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= 1'b0;   b_signex = 1'b0;    out_mode <= OUT_MODE_LH; end
+        ALUOP_ROTATE:  begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;    dsp_inmode <= DSP_INMODE_B2_D; a_signex <= 1'b0;   b_signex = 1'b0;    out_mode <= OUT_MODE_LH; end
         // rotate with shifting in carry flag bit 0 or bit DATA_WIDTH-1 of result will be replaced with carry_in value
-        ALUOP_ROTATEC: begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= 1'b0;   b_signex = 1'b0;    out_mode <= OUT_MODE_LH; end
+        ALUOP_ROTATEC: begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;    dsp_inmode <= DSP_INMODE_B2_D; a_signex <= 1'b0;   b_signex = 1'b0;    out_mode <= OUT_MODE_LH; end
         
         // unsigned*unsigned mul low part, arithmetic shift left, logic shift left, take carry_out from p[16]         
-        ALUOP_MUL:     begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= 1'b0;   b_signex = 1'b0;    out_mode <= OUT_MODE_L;  end
+        ALUOP_MUL:     begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;    dsp_inmode <= DSP_INMODE_B2_D; a_signex <= 1'b0;   b_signex = 1'b0;    out_mode <= OUT_MODE_L;  end
         // unsigned*unsigned mul high part, logic shift right  
-        ALUOP_MULHUU:  begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= 1'b0;   b_signex = 1'b0;    out_mode <= OUT_MODE_H;  end
-        ALUOP_MULHSS:  begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= 1'b1;   b_signex = 1'b1;    out_mode <= OUT_MODE_H;  end
+        ALUOP_MULHUU:  begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;    dsp_inmode <= DSP_INMODE_B2_D; a_signex <= 1'b0;   b_signex = 1'b0;    out_mode <= OUT_MODE_H;  end
+        ALUOP_MULHSS:  begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;    dsp_inmode <= DSP_INMODE_B2_D; a_signex <= 1'b1;   b_signex = 1'b1;    out_mode <= OUT_MODE_H;  end
         // signed*unsigned mul high part, arithmetic shift right
-        ALUOP_MULHSU:  begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;     a_signex <= 1'b1;   b_signex = 1'b0;    out_mode <= OUT_MODE_H;  end
+        ALUOP_MULHSU:  begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;    dsp_inmode <= DSP_INMODE_B2_D; a_signex <= 1'b1;   b_signex = 1'b0;    out_mode <= OUT_MODE_H;  end
     endcase
 
 
-assign dsp_c_in = { {32{a_signex & a_sign}},              A_IN};            // add/subtract operand 1 C
+assign dsp_c_in = { {32{a_signex & a_sign}},              a_in_stage1};            // add/subtract operand 1 C
 assign dsp_d_in = { {25{a_signex & a_sign}},              A_IN};            // multiplier 1
 assign dsp_b_in = { {18-DATA_WIDTH{b_signex & b_sign}},   b_in_override};   // multiplier 2, A:B add/subtract operand 2
 assign dsp_a_in = {30{b_signex & b_sign}};                                  // sign only: top part of A:B for add/subtract operand 2  
@@ -338,11 +374,11 @@ logic [DATA_WIDTH-1 : 0] alu_out_mux;
 
 
 // result MUX: use low half, high half, or mix high|low part of result 
-assign alu_out_mux = ( {16{out_mode_stage2[1]}} & dsp_p_out[DATA_WIDTH*2-1:DATA_WIDTH] )   // higher part
-                   | ( {16{out_mode_stage2[0]}} & dsp_p_out[DATA_WIDTH-1:0]  );            // lower part
+assign alu_out_mux = ( {16{out_mode_stage3[1]}} & dsp_p_out[DATA_WIDTH*2-1:DATA_WIDTH] )   // higher part
+                   | ( {16{out_mode_stage3[0]}} & dsp_p_out[DATA_WIDTH-1:0]  );            // lower part
 
-logic [DATA_WIDTH-1:0] alu_out_stage2;
-always_comb alu_out_stage2 <= { 
+logic [DATA_WIDTH-1:0] alu_out_stage3;
+always_comb alu_out_stage3 <= { 
         is_rcr_stage2 ? flags_in_stage2[FLAG_C] : alu_out_mux[DATA_WIDTH-1],  // override for ROTATEC
         alu_out_mux[DATA_WIDTH-2:1],
         is_rcl_stage2 ? flags_in_stage2[FLAG_C] : alu_out_mux[0]     // override for ROTATEC
@@ -355,7 +391,7 @@ always_comb new_flags[FLAG_C] <=
         : is_right_shift_stage2 ? dsp_p_out[DATA_WIDTH-1]
         : dsp_carryout;
 
-always_comb new_flags[FLAG_Z] <= ~(|alu_out_stage2);
+always_comb new_flags[FLAG_Z] <= ~(|alu_out_stage3);
 always_comb new_flags[FLAG_S] <= alu_out_mux[DATA_WIDTH-1];
 always_comb new_flags[FLAG_V] <= dsp_carryout != alu_out_mux[DATA_WIDTH-1];
 
@@ -371,14 +407,6 @@ always_ff @(posedge CLK)
         flags_stage3 <= flags_stage2;
         
 assign FLAGS_OUT = flags_stage3;
-
-// result value
-logic [DATA_WIDTH-1 : 0] alu_out_stage3;
-always_ff @(posedge CLK)
-    if (RESET | (CE & ~en_stage2))
-        alu_out_stage3 <= 'b0;
-    else if (CE)
-        alu_out_stage3 <= alu_out_stage2;
 
 assign ALU_OUT = alu_out_stage3;
 
@@ -402,18 +430,18 @@ DSP48E1 #(
     .SEL_PATTERN("PATTERN"),          // Select pattern value ("PATTERN" or "C")
     .USE_PATTERN_DETECT("NO_PATDET"), // Enable pattern detect ("PATDET" or "NO_PATDET")
     // Register Control Attributes: Pipeline Register Configuration
-    .ACASCREG(1),                     // Number of pipeline stages between A/ACIN and ACOUT (0, 1 or 2)
+    .ACASCREG(2),                     // Number of pipeline stages between A/ACIN and ACOUT (0, 1 or 2)
     .ADREG(0),                        // Number of pipeline stages for pre-adder (0 or 1)
     .ALUMODEREG(1),                   // Number of pipeline stages for ALUMODE (0 or 1)
-    .AREG(1),                         // Number of pipeline stages for A (0, 1 or 2)
-    .BCASCREG(1),                     // Number of pipeline stages between B/BCIN and BCOUT (0, 1 or 2)
-    .BREG(1),                         // Number of pipeline stages for B (0, 1 or 2)
+    .AREG(2),                         // Number of pipeline stages for A (0, 1 or 2)
+    .BCASCREG(2),                     // Number of pipeline stages between B/BCIN and BCOUT (0, 1 or 2)
+    .BREG(2),                         // Number of pipeline stages for B (0, 1 or 2)
     .CARRYINREG(1),                   // Number of pipeline stages for CARRYIN (0 or 1)
     .CARRYINSELREG(1),                // Number of pipeline stages for CARRYINSEL (0 or 1)
     .CREG(1),                         // Number of pipeline stages for C (0 or 1)
     .DREG(1),                         // Number of pipeline stages for D (0 or 1)
     .INMODEREG(1),                    // Number of pipeline stages for INMODE (0 or 1)
-    .MREG(0),                         // Number of multiplier pipeline stages (0 or 1)
+    .MREG(1),                         // Number of multiplier pipeline stages (0 or 1)
     .OPMODEREG(1),                    // Number of pipeline stages for OPMODE (0 or 1)
     .PREG(1)                          // Number of pipeline stages for P (0 or 1)
 )
@@ -451,19 +479,19 @@ DSP48E1_inst (
     .CARRYIN(dsp_carry_in),        // 1-bit input: Carry input signal
     .D(dsp_d_in),                           // 25-bit input: D data input
     // Reset/Clock Enable: 1-bit (each) input: Reset/Clock Enable Inputs
-    .CEA1(1'b0),                           // 1-bit input: Clock enable input for 1st stage AREG
-    .CEA2(dsp_ce_inputs),                  // 1-bit input: Clock enable input for 2nd stage AREG
+    .CEA1(dsp_ce),                         // 1-bit input: Clock enable input for 1st stage AREG
+    .CEA2(dsp_ce),                         // 1-bit input: Clock enable input for 2nd stage AREG
     .CEAD(1'b0),                           // 1-bit input: Clock enable input for ADREG
-    .CEALUMODE(dsp_ce_inputs),             // 1-bit input: Clock enable input for ALUMODE
-    .CEB1(1'b0),                           // 1-bit input: Clock enable input for 1st stage BREG
-    .CEB2(dsp_ce_inputs),                  // 1-bit input: Clock enable input for 2nd stage BREG
-    .CEC(dsp_ce_inputs),                   // 1-bit input: Clock enable input for CREG
-    .CECARRYIN(dsp_ce_inputs),             // 1-bit input: Clock enable input for CARRYINREG
-    .CECTRL(dsp_ce_inputs),                // 1-bit input: Clock enable input for OPMODEREG and CARRYINSELREG
-    .CED(dsp_ce_inputs),                   // 1-bit input: Clock enable input for DREG
-    .CEINMODE(dsp_ce_inputs),              // 1-bit input: Clock enable input for INMODEREG
-    .CEM(1'b0),                            // 1-bit input: Clock enable input for MREG
-    .CEP(dsp_ce_output),                   // 1-bit input: Clock enable input for PREG
+    .CEALUMODE(dsp_ce),                    // 1-bit input: Clock enable input for ALUMODE
+    .CEB1(dsp_ce),                         // 1-bit input: Clock enable input for 1st stage BREG
+    .CEB2(dsp_ce),                         // 1-bit input: Clock enable input for 2nd stage BREG
+    .CEC(dsp_ce),                          // 1-bit input: Clock enable input for CREG
+    .CECARRYIN(dsp_ce),                    // 1-bit input: Clock enable input for CARRYINREG
+    .CECTRL(dsp_ce),                       // 1-bit input: Clock enable input for OPMODEREG and CARRYINSELREG
+    .CED(dsp_ce),                          // 1-bit input: Clock enable input for DREG
+    .CEINMODE(dsp_ce),                     // 1-bit input: Clock enable input for INMODEREG
+    .CEM(dsp_ce),                          // 1-bit input: Clock enable input for MREG
+    .CEP(dsp_ce),                          // 1-bit input: Clock enable input for PREG
     // reset
     .RSTA(dsp_reset_in),                   // 1-bit input: Reset input for AREG
     .RSTALLCARRYIN(dsp_reset_in),          // 1-bit input: Reset input for CARRYINREG
