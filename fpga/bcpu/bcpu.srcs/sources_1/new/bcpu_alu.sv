@@ -237,8 +237,8 @@ logic [24:0] dsp_d_in; // 25-bit D data input
 // data output
 logic [47:0] dsp_p_out; // 48-bit P data output
 logic[3:0] dsp_carryout;                // 7-bit input: Operation mode input
-logic dsp_patterndetect;          // 1-bit output: Pattern detect output   (1 when P[17:0] == 18'b0)
-logic dsp_patternbdetect;         // 1-bit output: Pattern detect output   (1 when P[17:0] == 18'h3ffff)
+//logic dsp_patterndetect;          // 1-bit output: Pattern detect output   (1 when P[17:0] == 18'b0)
+//logic dsp_patternbdetect;         // 1-bit output: Pattern detect output   (1 when P[17:0] == 18'h3ffff)
 // mode
 logic[3:0] dsp_alumode;               // 4-bit input: ALU control input
 logic[2:0] dsp_carryinsel;            // 3-bit input: Carry select input
@@ -355,7 +355,7 @@ always_comb new_flags[FLAG_C] <=
         : is_right_shift_stage2 ? dsp_p_out[DATA_WIDTH-1]
         : dsp_carryout;
 
-always_comb new_flags[FLAG_Z] <= dsp_patterndetect;
+always_comb new_flags[FLAG_Z] <= ~(|alu_out_stage2);
 always_comb new_flags[FLAG_S] <= alu_out_mux[DATA_WIDTH-1];
 always_comb new_flags[FLAG_V] <= dsp_carryout != alu_out_mux[DATA_WIDTH-1];
 
@@ -396,11 +396,11 @@ DSP48E1 #(
     .USE_SIMD("ONE48"),               // SIMD selection ("ONE48", "TWO24", "FOUR12")
     // Pattern Detector Attributes: Pattern Detection Configuration
     .AUTORESET_PATDET("NO_RESET"),    // "NO_RESET", "RESET_MATCH", "RESET_NOT_MATCH" 
-    .MASK(~(48'h00000003ffff >> (18-DATA_WIDTH))),          // 48-bit mask value for pattern detect (1=ignore)
+    .MASK(1),                         // 48-bit mask value for pattern detect (1=ignore)
     .PATTERN(48'h000000000000),       // 48-bit pattern match for pattern detect
     .SEL_MASK("MASK"),                // "C", "MASK", "ROUNDING_MODE1", "ROUNDING_MODE2" 
     .SEL_PATTERN("PATTERN"),          // Select pattern value ("PATTERN" or "C")
-    .USE_PATTERN_DETECT("PATDET"), // Enable pattern detect ("PATDET" or "NO_PATDET")
+    .USE_PATTERN_DETECT("NO_PATDET"), // Enable pattern detect ("PATDET" or "NO_PATDET")
     // Register Control Attributes: Pipeline Register Configuration
     .ACASCREG(1),                     // Number of pipeline stages between A/ACIN and ACOUT (0, 1 or 2)
     .ADREG(0),                        // Number of pipeline stages for pre-adder (0 or 1)
@@ -426,8 +426,8 @@ DSP48E1_inst (
     .PCOUT(),                   // 48-bit output: Cascade output
     // Control: 1-bit (each) output: Control Inputs/Status Bits
     .OVERFLOW(),                // 1-bit output: Overflow in add/acc output
-    .PATTERNBDETECT(dsp_patternbdetect),         // 1-bit output: Pattern bar detect output
-    .PATTERNDETECT(dsp_patterndetect),           // 1-bit output: Pattern detect output
+    .PATTERNBDETECT(),          // 1-bit output: Pattern bar detect output
+    .PATTERNDETECT(),           // 1-bit output: Pattern detect output
     .UNDERFLOW(),               // 1-bit output: Underflow in add/acc output
     // Data: 4-bit (each) output: Data Ports
     .CARRYOUT(dsp_carryout),    // 4-bit output: Carry output

@@ -325,7 +325,11 @@ assign ADDR_VALUE = addr_value;
 // Should be 0 for instructions which don't want to write output value to register
 
 assign dst_reg_index = (instr_category == INSTR_ALU) ? INSTR_IN[2:0] // for ALU it's located at unusual place
-                     : (instr_category == INSTR_CALL || instr_category == INSTR_LOAD) ? INSTR_IN[14:12]
+                     : (instr_category == INSTR_CALL || instr_category == INSTR_LOAD
+                        || (instr_category == INSTR_BUS 
+                              && ~INSTR_IN[11] // BUS read/wait instructions
+                           )
+                       ) ? INSTR_IN[14:12]
                      : 3'b000; // instruction doesn't write result to register
                       
 //======================================================================

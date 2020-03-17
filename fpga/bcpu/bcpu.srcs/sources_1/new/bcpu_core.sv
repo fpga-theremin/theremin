@@ -44,9 +44,9 @@ module bcpu_core
     // number of bits in bus opcode, see bus_op_t in bcpu_defs
     parameter BUS_OP_WIDTH = 3,
     // size of input bus, in bits, addressable by DATA_WIDTH words
-    parameter IBUS_BITS = 4,
+    parameter IBUS_BITS = 16,
     // size of output bus, in bits, addressable by DATA_WIDTH words
-    parameter OBUS_BITS = 4,
+    parameter OBUS_BITS = 16,
     
     // when 1, two bits from offset are used for immediate mode to allow using constant table value instead of register
     //         Reduces offset range from 8 to 6 bits, but allows simple addressing of address (1<<n)+(0..63)   
@@ -382,7 +382,7 @@ bcpu_program_counter_inst
 // read value, to store into register
 logic [DATA_WIDTH-1:0] bus_read_value;
 // 1 to write OUT_VALUE to register
-logic bus_save_value;
+//logic bus_save_value;
 // Z flag value output
 logic bus_zflag;
 // 1 to replace ALU's Z flag with OUT_ZFLAG 
@@ -432,7 +432,7 @@ bcpu_bus_op_inst
     // read value, to store into register
     .OUT_VALUE(bus_read_value),
     // 1 to write OUT_VALUE to register
-    .SAVE_VALUE(bus_save_value),
+    //.SAVE_VALUE(bus_save_value),
     // Z flag value output
     .OUT_ZFLAG(bus_zflag),
     // 1 to replace ALU's Z flag with OUT_ZFLAG 

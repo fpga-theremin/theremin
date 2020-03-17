@@ -63,7 +63,7 @@ module bcpu_bus_op
     // read value, to store into register
     output logic [DATA_WIDTH-1:0] OUT_VALUE,
     // 1 to write OUT_VALUE to register
-    output logic SAVE_VALUE,
+    //output logic SAVE_VALUE,
     // Z flag value output
     output logic OUT_ZFLAG,
     // 1 to replace ALU's Z flag with OUT_ZFLAG 
@@ -334,7 +334,7 @@ logic save_value_stage3;
 
 assign OUT_ZFLAG = zflag_stage3;
 assign SAVE_ZFLAG = save_zflag_stage3;
-assign SAVE_VALUE = save_value_stage3;
+//assign SAVE_VALUE = save_value_stage3;
 assign WAIT_REQUEST = wait_request_stage2;
 
 // output pipeline

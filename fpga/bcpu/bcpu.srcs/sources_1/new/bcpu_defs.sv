@@ -25,13 +25,13 @@ package bcpu_defs;
 typedef enum logic[2:0] {
 //  mnemonic             opcode      
 	INSTR_ALU        = 3'b000,  //   ALU operation
-	INSTR_PERIPH     = 3'b001,  //   Peripherial operations: read, write, wait
-	INSTR_LOAD       = 3'b010,  //   LOAD - memory reads   
-	INSTR_STORE      = 3'b011,  //   STORE - memory writes   
+	INSTR_BUS        = 3'b001,  //   Peripherial operations: read, write, wait
+	INSTR_LOAD       = 3'b010,  //   LOAD - memory reads
+	INSTR_STORE      = 3'b011,  //   STORE - memory writes
 	INSTR_CONDJMP1   = 3'b100,  //   conditional jumps, part 1
-	INSTR_CONDJMP2   = 3'b101,  //   conditional jumps, part 2   
-	INSTR_CALL       = 3'b110,  //   CALL - jumps with storing return address into register   
-	INSTR_JMP_WAIT   = 3'b111   //   WAIT - wait on memory value, JMP long address jump
+	INSTR_CONDJMP2   = 3'b101,  //   conditional jumps, part 2
+	INSTR_CALL       = 3'b110,  //   CALL - jumps with storing return address into register
+	INSTR_JMP        = 3'b111   //   JMP with long offset
 } instr_category_t;
 
 // Types of memory address bases
@@ -145,10 +145,16 @@ Instruction set planning:
 	ddd destination register index (0: don't write)
 
 
-00 1: Misc ops
+00 1: Bus operations
 
-00 1 rrr x bbb mmxx xaaa
+00 1 rrr i bbb mmii aaaa
 
+    rrr  destination register for read operations
+         write value register for write operation
+    bbb  RB
+    mm   RB mode (00=reg, 01=consts, 10,11: single bit)
+    iii  BUS operation code
+    aaaa BUS address
 
 01 0: LOAD
 
@@ -174,8 +180,9 @@ Instruction set planning:
 
 11 1: WAIT and log jump
 
-11 1 rrr 0 bbb mmaa aaaa        WAIT   R, Rbase+offs6           memory based wait: wait until mem(Rbase+offs8) & R != 0, then put mem(Rbase+offs8) & R to register R
-11 1 aaa 1 aaa aaaa aaaa        JMP    PC+offs14                LONG JUMP PC+offs14
+11 1: Long jump
+
+11 1 aaa a aaa aaaa aaaa        JMP    PC+offs15                  JUMP PC+offs15
 
 */
 
