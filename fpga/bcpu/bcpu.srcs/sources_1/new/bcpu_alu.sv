@@ -72,6 +72,16 @@ module bcpu_alu
     
     // alu result output    
     output logic [DATA_WIDTH-1 : 0] ALU_OUT
+
+    , output logic [29:0] debug_dsp_a_in  // 30-bit A data input
+    , output logic [17:0] debug_dsp_b_in  // 18-bit B data input
+    , output logic [47:0] debug_dsp_c_in  // 48-bit C data input
+    , output logic [24:0] debug_dsp_d_in  // 25-bit D data input
+    , output logic [47:0] debug_dsp_p_out // 48-bit P data output
+    , output logic[3:0] debug_dsp_alumode               // 4-bit input: ALU control input
+    , output logic[4:0] debug_dsp_inmode                // 5-bit input: INMODE control input
+    , output logic[6:0] debug_dsp_opmode                // 7-bit input: Operation mode input
+
 );
 
 // alu operation code    
@@ -506,9 +516,14 @@ DSP48E1_inst (
 );
 // End of DSP48E1_inst instantiation
 
-
-
-
+assign debug_dsp_a_in = dsp_a_in;  // 30-bit A data input
+assign debug_dsp_b_in = dsp_b_in;  // 18-bit B data input
+assign debug_dsp_c_in = dsp_c_in;  // 48-bit C data input
+assign debug_dsp_d_in = dsp_d_in;  // 25-bit D data input
+assign debug_dsp_p_out = dsp_p_out;// 48-bit P data output
+assign debug_dsp_alumode = dsp_alumode;// 4-bit input: ALU control input
+assign debug_dsp_inmode = dsp_inmode;  // 5-bit input: INMODE control input
+assign debug_dsp_opmode = dsp_opmode;  // 7-bit input: Operation mode input
 
 
 endmodule

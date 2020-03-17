@@ -69,6 +69,15 @@ logic [3:0] FLAGS_OUT;
 logic [DATA_WIDTH-1 : 0] ALU_OUT;
 
 
+logic [29:0] debug_dsp_a_in;  // 30-bit A data input
+logic [17:0] debug_dsp_b_in;  // 18-bit B data input
+logic [47:0] debug_dsp_c_in;  // 48-bit C data input
+logic [24:0] debug_dsp_d_in;  // 25-bit D data input
+logic [47:0] debug_dsp_p_out; // 48-bit P data output
+logic[3:0] debug_dsp_alumode;               // 4-bit input: ALU control input
+logic[4:0] debug_dsp_inmode;                // 5-bit input: INMODE control input
+logic[6:0] debug_dsp_opmode;                // 7-bit input: Operation mode input
+
 bcpu_alu
 #(
     .DATA_WIDTH(DATA_WIDTH),
@@ -106,6 +115,9 @@ bcpu_alu_inst
     .FLAGS_OUT,
     // alu result output    
     .ALU_OUT
+    
+    
+    , .*
 );
 
 `define assert(signal, value) \
@@ -115,18 +127,18 @@ bcpu_alu_inst
         end
 
 always begin
-    #2 CLK=0;
-    #2 CLK=1;
+    #5 CLK=0;
+    #5 CLK=1;
 end
 
 `define executeOp( opcode, a_in, b_in, flags_in, expected_out, expected_flags) \
-    @(posedge CLK) EN = 1; CE = 1; A_REG_INDEX = 1; A_IN = a_in; B_CONST_OR_REG_INDEX = 3; B_IMM_MODE = 0; B_IN = b_in; ALU_OP = opcode; FLAGS_IN = flags_in; \
-    @(posedge CLK) EN = 0; CE = 1; A_REG_INDEX = 0; A_IN = 0; B_CONST_OR_REG_INDEX = 0; B_IMM_MODE = 0; B_IN = 0; ALU_OP = 0; FLAGS_IN = 4'b0101; \
-    @(posedge CLK) FLAGS_IN = 4'b1010; \
+    @(posedge CLK) #2 EN = 1; CE = 1; A_REG_INDEX = 1; A_IN = a_in; B_CONST_OR_REG_INDEX = 3; B_IMM_MODE = 0; B_IN = b_in; ALU_OP = opcode; FLAGS_IN = flags_in; \
+    @(posedge CLK) #2 EN = 0; CE = 1; A_REG_INDEX = 0; A_IN = 0; B_CONST_OR_REG_INDEX = 0; B_IMM_MODE = 0; B_IN = 0; ALU_OP = 0; FLAGS_IN = 4'b0101; \
+    @(posedge CLK) #2 FLAGS_IN = 4'b1010; \
     @(posedge CLK) #3 $display("ALU op1\t%4b\ta_in\t%d\t%4h\tb_in\t%d\t%4h\tflags_in\t%4b\talu_out\t%d\t%4h\tflags_out\t%4b", \
           opcode, a_in, a_in, b_in, b_in, flags_in, ALU_OUT, ALU_OUT, FLAGS_OUT); \
-    @(posedge CLK) `assert(FLAGS_OUT, 4'b0101); \
-    @(posedge CLK) `assert(FLAGS_OUT, 4'b1010); \
+    @(posedge CLK) #3 `assert(FLAGS_OUT, 4'b0101); \
+    @(posedge CLK) #3 `assert(FLAGS_OUT, 4'b1010); \
     CE = 0;
 
 initial begin
