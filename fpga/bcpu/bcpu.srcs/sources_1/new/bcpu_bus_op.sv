@@ -29,10 +29,10 @@ module bcpu_bus_op
     parameter BUS_ADDR_WIDTH = 4,
     // numbe of bits in bus opcode, higher bit is WR/~RD
     parameter BUS_OP_WIDTH = 3,
-    // size of input bus, in words
-    parameter IBUS_SIZE = 1,
-    // size of output bus, in words
-    parameter OBUS_SIZE = 1
+    // size of input bus, in bits, addressable by DATA_WIDTH words
+    parameter IBUS_BITS = 1,
+    // size of output bus, in bits, addressable by DATA_WIDTH words
+    parameter OBUS_BITS = 1
 )
 (
     // input clock
@@ -71,110 +71,188 @@ module bcpu_bus_op
 
     // bus connections
     // input bus
-    input logic [DATA_WIDTH-1:0] IBUS[IBUS_SIZE],
+    input logic [IBUS_BITS-1:0] IBUS,
     // output bus
-    output logic [DATA_WIDTH-1:0] OBUS[OBUS_SIZE]
+    output logic [OBUS_BITS-1:0] OBUS
     
 );
 
-localparam IBUS_ADDR_WIDTH = IBUS_SIZE <= 1 ? 0
-                           : IBUS_SIZE <= 2 ? 1
-                           : IBUS_SIZE <= 4 ? 2
-                           : IBUS_SIZE <= 8 ? 3
-                           :                  4;
+localparam MAX_BUS_BITS = IBUS_BITS > OBUS_BITS ? IBUS_BITS : OBUS_BITS;
+// if both IBUS and OBUS sizes less than DATA_WIDTH, use reduced INTERNAL_DATA_WIDTH to minimize resources
+localparam INTERNAL_DATA_WIDTH = MAX_BUS_BITS > DATA_WIDTH ? DATA_WIDTH : MAX_BUS_BITS;
 
-localparam OBUS_ADDR_WIDTH = OBUS_SIZE <= 1 ? 0
-                           : OBUS_SIZE <= 2 ? 1
-                           : OBUS_SIZE <= 4 ? 2
-                           : OBUS_SIZE <= 8 ? 3
-                           :                  4;
+localparam IBUS_ADDR_WIDTH = IBUS_BITS <= 16  ? 0
+                           : IBUS_BITS <= 32  ? 1
+                           : IBUS_BITS <= 64  ? 2
+                           : IBUS_BITS <= 128 ? 3
+                           :                    4;
+
+localparam OBUS_ADDR_WIDTH = OBUS_BITS <= 16  ? 0
+                           : OBUS_BITS <= 32  ? 1
+                           : OBUS_BITS <= 64  ? 2
+                           : OBUS_BITS <= 128 ? 3
+                           :                    4;
 
 localparam MAX_BUS_ADDR_WIDTH  = IBUS_ADDR_WIDTH > OBUS_ADDR_WIDTH ? IBUS_ADDR_WIDTH : OBUS_ADDR_WIDTH;
 
-// registers to store values for input bus
-logic [DATA_WIDTH-1:0] ibus_buf[IBUS_SIZE];
-// registers to store values for output bus
-logic [DATA_WIDTH-1:0] obus_buf[OBUS_SIZE];
-// write enable per OBUS word
-logic obus_buf_wren[OBUS_SIZE];
+// slice of address truncated to IBUS size in words
+logic [(IBUS_ADDR_WIDTH > 0 ? IBUS_ADDR_WIDTH-1 : 0) : 0] ibus_addr;
+assign ibus_addr = IBUS_ADDR_WIDTH > 0 ? BUS_ADDR[IBUS_ADDR_WIDTH-1:0] : 'b0;
+// slice of address truncated to OBUS size in words
+logic [(OBUS_ADDR_WIDTH > 0 ? OBUS_ADDR_WIDTH-1 : 0) : 0] obus_addr;
+assign obus_addr = OBUS_ADDR_WIDTH > 0 ? BUS_ADDR[OBUS_ADDR_WIDTH-1:0] : 'b0;
 
+logic [IBUS_BITS-1:0] ibus_regs;
+logic [OBUS_BITS-1:0] obus_regs;
 
-// bus read mux at stage1: both input and output
-logic [DATA_WIDTH-1:0] bus_rd_mux;
+assign OBUS = obus_regs;
+always_ff @(posedge CLK)
+    if (RESET)
+        ibus_regs <= 'b0;
+    else if (CE)
+        ibus_regs <= IBUS;
 
+// input bus register sliced into INTERNAL_DATA_WIDTH words, unused bits are set to 0
+logic [INTERNAL_DATA_WIDTH-1:0] ibus_buf[1<<IBUS_ADDR_WIDTH];
+// address mapping for easy reading if IBUS
+always_comb
+    for (int i = 0; i < (1<<IBUS_ADDR_WIDTH); i++)
+        for (int j = 0; j < INTERNAL_DATA_WIDTH; j++) begin
+            if ((i * INTERNAL_DATA_WIDTH + j) < IBUS_BITS)
+                ibus_buf[i][j] <= ibus_regs[(i * INTERNAL_DATA_WIDTH + j)];
+            else
+                ibus_buf[i][j] <= 'b0;
+        end
+
+// output bus register sliced into INTERNAL_DATA_WIDTH words, unused bits are set to 0
+logic [INTERNAL_DATA_WIDTH-1:0] obus_buf[1<<OBUS_ADDR_WIDTH];
+// address mapping for easy reading if OBUS
+always_comb
+    for (int i = 0; i < (1<<OBUS_ADDR_WIDTH); i++)
+        for (int j = 0; j < INTERNAL_DATA_WIDTH; j++) begin
+            if ((i * INTERNAL_DATA_WIDTH + j) < OBUS_BITS)
+                obus_buf[i][j] <= obus_regs[(i * INTERNAL_DATA_WIDTH + j)];
+            else
+                obus_buf[i][j] <= 'b0;
+        end
+
+// result of bus value update operation
+// will be saved to register and/or to OBUS
+logic [INTERNAL_DATA_WIDTH-1:0] new_value;
 // 1 when op should read value from IBUS, 0 for OBUS
 logic is_obus_stage1;
 // 1 when need to update OBUS
 logic is_write_stage1;
 
-
-
-generate
-    if (MAX_BUS_ADDR_WIDTH > 0) begin
-        genvar j;
-        genvar i;
- 
-        // registers to store values for input bus
-        logic [DATA_WIDTH-1:0] bus_unrolled[2 << MAX_BUS_ADDR_WIDTH];
-        for (i = 0; i < (1<<MAX_BUS_ADDR_WIDTH); i++) begin
-            assign bus_unrolled[i * 2]     = (i < IBUS_SIZE) ? ibus_buf[i] : 'b0;
-            assign bus_unrolled[i * 2 + 1] = (i < OBUS_SIZE) ? obus_buf[i] : 'b0;
-        end
-
-        logic [MAX_BUS_ADDR_WIDTH-1:0] bus_addr_stage1;
-        always_ff @(posedge CLK) begin
-            if (RESET) begin
-                bus_addr_stage1 <= 'b0;
-            end else if (CE) begin
-                bus_addr_stage1 <= BUS_ADDR[MAX_BUS_ADDR_WIDTH-1:0];
+// OBUS write operation
+always_ff @(posedge CLK)
+    for (int i = 0; i < (1<<OBUS_ADDR_WIDTH); i++)
+        for (int j = 0; j < INTERNAL_DATA_WIDTH; j++) begin
+            if ((i * INTERNAL_DATA_WIDTH + j) < OBUS_BITS) begin
+                if (RESET)
+                    obus_regs[i * INTERNAL_DATA_WIDTH + j] <= 'b0;
+                else if (is_write_stage1 && (obus_addr == i)) 
+                    obus_regs[i * INTERNAL_DATA_WIDTH + j] <= new_value[j];
+            end else begin
+                obus_regs[i * INTERNAL_DATA_WIDTH + j] <= 'b0;
             end
         end
-        always_comb bus_rd_mux <= bus_unrolled[{bus_addr_stage1, is_obus_stage1}];
-        // write enable 
-        for (j = 0; j < OBUS_SIZE; j++) begin
-            always_comb obus_buf_wren[j] <= is_write_stage1 & (bus_addr_stage1 == j);
-        end
-    end else begin
-        // simple mux: take either OBUS or IBUS single element
-        //always_comb bus_rd_mux <= bus_unrolled[is_obus_stage1];
-        always_comb bus_rd_mux <= is_obus_stage1 ? obus_buf[0] : ibus_buf[0];
-        // write enable
-        always_comb obus_buf_wren[0] <= is_write_stage1;
-    end
 
+// bus read mux at stage1: both input and output
+logic [INTERNAL_DATA_WIDTH-1:0] bus_rd_mux;
 
-endgenerate
+always_comb bus_rd_mux <= is_obus_stage1 ? obus_buf[obus_addr] : ibus_buf[ibus_addr];
+
 
 // ==============================
 // latch inputs for stage1
 
 // register A operand value
-logic [DATA_WIDTH-1:0] a_value_stage1;
+logic [INTERNAL_DATA_WIDTH-1:0] a_value_stage1;
 // register B operand value or immediate constant
-logic [DATA_WIDTH-1:0] b_value_stage1;
+logic [INTERNAL_DATA_WIDTH-1:0] b_value_stage1;
 // bus operation code
 logic [BUS_OP_WIDTH-1:0] bus_op_stage1;
 // bus operation flag
 logic bus_en_stage1;
 
 
-assign OBUS = obus_buf;
 
-// result of bus value update operation (masked read value or updated write value)
-logic [DATA_WIDTH-1:0] new_value;
 
 logic wait_request_stage1;
 logic zflag_stage1;
 logic save_zflag_stage1;
 logic save_value_stage1;
 
-always_comb wait_request_stage1 <= bus_en_stage1 & zflag_stage1 
-            & (bus_op_stage1 == BUSOP_WAIT_IBUS || bus_op_stage1 == BUSOP_WAIT_OBUS);
+always_comb 
+     case(bus_op_stage1)
+     BUSOP_READ_IBUS:  //       = 3'b000, //  Rdest = (IBUS[addr] & mask),  update ZF
+         begin
+            wait_request_stage1 <= 'b0;
+            save_zflag_stage1   <= bus_en_stage1 & CE;
+            save_value_stage1   <= bus_en_stage1 & CE;
+            is_obus_stage1      <= 'b0;
+            is_write_stage1     <= 'b0;
+         end
+     BUSOP_WAIT_IBUS:  //       = 3'b001, //  Rdest = (IBUS[addr] & mask),  update ZF, wait until ZF=0
+         begin
+            wait_request_stage1 <= bus_en_stage1 & zflag_stage1;
+            save_zflag_stage1   <= bus_en_stage1 & CE;
+            save_value_stage1   <= bus_en_stage1 & CE;
+            is_obus_stage1      <= 'b0;
+            is_write_stage1     <= 'b0;
+         end
+     BUSOP_READ_OBUS:  //       = 3'b010, //  Rdest = (OBUS[addr] & mask),  update ZF
+         begin
+            wait_request_stage1 <= 'b0;
+            save_zflag_stage1   <= bus_en_stage1 & CE;
+            save_value_stage1   <= bus_en_stage1 & CE;
+            is_obus_stage1      <= 'b1;
+            is_write_stage1     <= 'b0;
+         end
+     BUSOP_WAIT_OBUS:  //       = 3'b011, //  Rdest = (OBUS[addr] & mask),  update ZF, wait until ZF=0
+         begin
+            wait_request_stage1 <= bus_en_stage1 & zflag_stage1;
+            save_zflag_stage1   <= bus_en_stage1 & CE;
+            save_value_stage1   <= bus_en_stage1 & CE;
+            is_obus_stage1      <= 'b1;
+            is_write_stage1     <= 'b0;
+         end
+     BUSOP_TOGGLE_OBUS://       = 3'b100, //  OBUS'[addr] =  OBUS[addr] ^ mask, Rdest = (OBUS[addr] & mask) -- read new value
+         begin
+            wait_request_stage1 <= 'b0;
+            save_zflag_stage1   <= 'b0;
+            save_value_stage1   <= 'b0;
+            is_obus_stage1      <= 'b1;
+            is_write_stage1     <= bus_en_stage1 & CE;
+         end
+     BUSOP_SET_OBUS:   //       = 3'b101, //  OBUS'[addr] =  OBUS[addr] | mask, Rdest = (OBUS[addr] & mask) -- read new value
+         begin
+            wait_request_stage1 <= 'b0;
+            save_zflag_stage1   <= 'b0;
+            save_value_stage1   <= 'b0;
+            is_obus_stage1      <= 'b1;
+            is_write_stage1     <= bus_en_stage1 & CE;
+         end
+     BUSOP_RESET_OBUS: //       = 3'b110, //  OBUS'[addr] =  OBUS[addr] & ~mask, Rdest = (OBUS[addr] & mask) -- read new value
+         begin
+            wait_request_stage1 <= 'b0;
+            save_zflag_stage1   <= 'b0;
+            save_value_stage1   <= 'b0;
+            is_obus_stage1      <= 'b1;
+            is_write_stage1     <= bus_en_stage1 & CE;
+         end
+     BUSOP_WRITE_OBUS: //       = 3'b111  //  OBUS'[addr] = (OBUS[addr] & ~mask) | (value & mask)
+         begin
+            wait_request_stage1 <= 'b0;
+            save_zflag_stage1   <= 'b0;
+            save_value_stage1   <= 'b0;
+            is_obus_stage1      <= 'b1;
+            is_write_stage1     <= bus_en_stage1 & CE;
+         end
+     endcase
+
 always_comb zflag_stage1 <= ~(|new_value);
-always_comb save_zflag_stage1 <= bus_en_stage1 & (bus_op_stage1[BUS_OP_WIDTH-1] == 1'b0);
-always_comb save_value_stage1 <= bus_en_stage1 & (bus_op_stage1 != BUSOP_WRITE_OBUS);
-always_comb is_obus_stage1 = (bus_op_stage1 != BUSOP_READ_IBUS) & (bus_op_stage1 != BUSOP_WAIT_IBUS);
-always_comb is_write_stage1 = bus_op_stage1[BUS_OP_WIDTH-1] & bus_en_stage1 & CE;
 
 
 always_ff @(posedge CLK) begin
@@ -187,27 +265,21 @@ always_ff @(posedge CLK) begin
         a_value_stage1 <= 'b0;
         // register B operand value or immediate constant
         b_value_stage1 <= 'b0;
-        // initialize output bus with zero on reset
-        for (int i = 0; i < OBUS_SIZE; i++)
-            ibus_buf[i] <= 'b0;
     end else if (CE) begin
         // bus opcode
         bus_op_stage1 <= BUS_OP;
         // bus operation flag
         bus_en_stage1 <= BUS_EN;
         // register A operand value
-        a_value_stage1 <= A_VALUE;
+        a_value_stage1 <= A_VALUE[INTERNAL_DATA_WIDTH-1:0];
         // register B operand value or immediate constant
-        b_value_stage1 <= B_VALUE;
-        // initialize output bus with zero on reset
-        for (int i = 0; i < IBUS_SIZE; i++)
-            ibus_buf[i] <= IBUS[i];
+        b_value_stage1 <= B_VALUE[INTERNAL_DATA_WIDTH-1:0];
     end
 end
 
 
 // stage2 for OUT_VALUE - to be written to register
-logic [DATA_WIDTH-1:0] out_value_stage2;
+logic [INTERNAL_DATA_WIDTH-1:0] out_value_stage2;
 
 always_ff @(posedge CLK) begin
     if (RESET | ~save_value_stage1)
@@ -220,7 +292,7 @@ end
 bcpu_bus_op_eval
 #(
     // data width
-    .DATA_WIDTH(DATA_WIDTH),
+    .DATA_WIDTH(INTERNAL_DATA_WIDTH),
     // numbe of bits in bus opcode, higher bit is WR/~RD
     .BUS_OP_WIDTH(BUS_OP_WIDTH)
 )
@@ -235,25 +307,13 @@ bcpu_bus_op_eval_inst
 );
 
 
-always_ff @(posedge CLK) begin
-    if (RESET) begin
-        // initialize output bus with zero on reset
-        for (int i = 0; i < OBUS_SIZE; i++)
-            obus_buf[i] <= 'b0;
-    end else begin
-        for (int i = 0; i < OBUS_SIZE; i++)
-            if (obus_buf_wren[i])
-                obus_buf[i] <= new_value;
-    end
-end
-
 logic zflag_stage2;
 logic save_zflag_stage2;
 logic save_value_stage2;
 logic wait_request_stage2;
 
 // stage3 for OUT_VALUE - to be written to register
-logic [DATA_WIDTH-1:0] out_value_stage3;
+logic [INTERNAL_DATA_WIDTH-1:0] out_value_stage3;
 assign OUT_VALUE = out_value_stage3;
 
 
