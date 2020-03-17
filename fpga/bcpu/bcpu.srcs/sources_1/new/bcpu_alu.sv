@@ -67,7 +67,7 @@ module bcpu_alu
     // input flags {V, S, Z, C}
     input logic [3:0] FLAGS_IN,
     
-    // input flags {V, S, Z, C}
+    // output flags {V, S, Z, C}
     output logic [3:0] FLAGS_OUT,
     
     // alu result output    

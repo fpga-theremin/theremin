@@ -41,11 +41,20 @@ module bcpu_instr_decoder
     // when PC_WIDTH < ADDR_WIDTH, higher address space can be used for shared mem of two 4-core CPUs
     //      and for higher level integration in multicore CPU
     parameter ADDR_WIDTH = 10,
+
     // register file address width, 3 + 2 == 8 registers * 4 threads
     parameter REG_ADDR_WIDTH = 5,  // (1<<REG_ADDR_WIDTH) values: 32 values for addr width 5
-    // when 1, 2 bits from offset are used for immediate mode to allow using constant table value instead of register
+    
+    // bus address width
+    parameter BUS_ADDR_WIDTH = 4,
+    // number of bits in bus opcode, see bus_op_t in bcpu_defs
+    parameter BUS_OP_WIDTH = 3,
+    
+    // when 1, two bits from offset are used for immediate mode to allow using constant table value instead of register
     //         Reduces offset range from 8 to 6 bits, but allows simple addressing of address (1<<n)+(0..63)   
-    parameter USE_IMM_MODE_FOR_BASE_ADDRESS = 1 
+    parameter USE_IMM_MODE_FOR_BASE_ADDRESS = 1,
+    // when 1, offset for R_imm+offs (non-PC) address formats is signed (+31..-32 or +127..-128), when 0 - unsigned offset
+    parameter USE_SIGNED_REG_BASE_OFFSET = 1
 )
 (
     // INPUTS
@@ -58,7 +67,7 @@ module bcpu_instr_decoder
     // input flags {V, S, Z, C}
     input logic [3:0] FLAGS_IN,
 
-    // decoded ALU operation
+    // ALU operation code (valid if ALU_EN==1)
     output logic [3:0] ALU_OP,
     
     output logic [1:0] IMM_MODE,
@@ -68,6 +77,11 @@ module bcpu_instr_decoder
     // register B or immediate index, e.g. for ALU 
     output logic [2:0] B_INDEX,
 
+    // BUS operation code (valid if BUS_EN==1)
+    output logic [BUS_OP_WIDTH-1:0] BUS_OP,
+    // BUS address (valid if BUS_EN==1)
+    output logic [BUS_ADDR_WIDTH-1:0] BUS_ADDR,
+
     // register A operand value, e.g. for ALU operand A, write data for memory, or mask for WAIT
     output logic [DATA_WIDTH-1:0] A_VALUE,
     // register B or immediate operand value, e.g. for ALU operand B
@@ -75,27 +89,24 @@ module bcpu_instr_decoder
 
     // 1 to enable ALU operation
     output logic ALU_EN,
+    // 1 if instruction is BUS operation
+    output logic BUS_EN,
     // 1 if instruction is LOAD operation
     output logic LOAD_EN,
     // 1 if instruction is STORE operation
     output logic STORE_EN,
-    // 1 if instruction is JUMP, CALL or conditional jump operation
-    output logic JMP_EN,
-    // 1 if instruction is CALL operation and we need to know return address
-    output logic CALL_EN,
-    // 1 if instruction is memory WAIT operation
-    output logic WAIT_EN,
     // 1 if instruction is LOAD_OP, STORE_OP, or WAIT_OP
     output logic MEMORY_EN,
-    // 1 if instruction is PERIPHERIAL operation
-    output logic PERIPH_EN,
+    // 1 if instruction is JUMP, CALL or conditional jump operation
+    output logic JMP_EN,
+    // 1 if instruction is CALL operation and we need to save return address
+    output logic CALL_EN,
 
     // memory or jump address calculated as base+offset
     output logic [ADDR_WIDTH-1:0] ADDR_VALUE,
 
     // dest reg address, xx000 to disable writing
     output logic [REG_ADDR_WIDTH-1:0] DEST_REG_ADDR,
-   
 
     //=========================================
     // REGISTER FILE READ ACCESS
@@ -124,10 +135,17 @@ module bcpu_instr_decoder
         iiii ALU OP
         ddd destination register index (0: don't write)
     
+
+    00 1: Bus operations
     
-    00 1: Peripherials
-    
-    00 1 rrr x bbb mmxx xaaa
+    00 1 rrr i bbb mmii aaaa
+
+        rrr  destination register for read operations
+             write value register for write operation
+        bbb  RB
+        mm   RB mode (00=reg, 01=consts, 10,11: single bit)
+		iii  BUS operation code
+		aaaa BUS address
     
     
     01 0: LOAD
@@ -150,10 +168,9 @@ module bcpu_instr_decoder
     11 0 rrr 0 bbb mmaa aaaa        CALL   R, Rbase+offs6
     11 0 rrr 1 aaa aaaa aaaa        CALL   R, PC + offs11     
     
-    11 1: WAIT and log jump
+    11 1: Long jump
     
-    11 1 rrr 0 bbb mmaa aaaa        WAIT   R, Rbase+offs6           memory based wait: wait until mem(Rbase+offs8) & R != 0, then put mem(Rbase+offs8) & R to register R
-    11 1 aaa 1 aaa aaaa aaaa        JMP    PC+offs14                LONG JUMP PC+offs14
+    11 1 aaa a aaa aaaa aaaa        JMP    PC+offs15                  JUMP PC+offs15
 */
 
 logic[2:0] instr_category;
@@ -235,42 +252,58 @@ bcpu_imm_table_inst
 
 // 1 if base addr is PC (use signed offset), 0 if b_value (unsigned offset)
 logic base_addr_pc;
-assign base_addr_pc = INSTR_IN[11];
 
-logic is_long_jmp = ((instr_category == INSTR_JMP_WAIT) & base_addr_pc);
-logic is_wait = ((instr_category == INSTR_JMP_WAIT) & ~base_addr_pc);
+logic is_long_jmp = (instr_category == INSTR_JMP);
+assign base_addr_pc = INSTR_IN[11] | is_long_jmp;
 
 // address offset sign extension value
 logic offset_sign_ex;
 // long PC based address:
-//    11 1 aaa 1 aaa aaaa aaaa        JMP    PC+offs14                LONG JUMP PC+offs14
+//    11 1 aaa a aaa aaaa aaaa        JMP    PC+offs14                LONG JUMP PC+offs14
 // short PC based address example:
 //    01 1 rrr 1 aaa aaaa aaaa        STORE R, PC + offs11
 // non-PC based address example:
 //    11 0 rrr 0 bbb mmaa aaaa        CALL   R, Rbase+offs6
-assign offset_sign_ex = 
-        is_long_jmp ? INSTR_IN[14] : INSTR_IN[10];
 // using DATA_WIDTH instead of ADDR_WIDTH to simplify slicing
-logic [DATA_WIDTH-1:0] offset_value; // fill more bits than needed, then take only useful part from it 
+
+if (USE_SIGNED_REG_BASE_OFFSET == 1) begin
+    assign offset_sign_ex = 
+        is_long_jmp 
+            ? INSTR_IN[14]         // for long jump 
+            : (base_addr_pc 
+                ? INSTR_IN[10]     // short PC based
+                : ((USE_IMM_MODE_FOR_BASE_ADDRESS == 1) // short REG based -- unsigned extension, pad with 0
+                   ? INSTR_IN[5]   // with imm mode field
+                   : INSTR_IN[7])  // w/o imm mode field
+              );
+end else begin
+    assign offset_sign_ex = 
+        is_long_jmp 
+            ? INSTR_IN[14]         // for long jump 
+            : (base_addr_pc 
+                ? INSTR_IN[10]     // short PC based
+                : 1'b0             // short REG based -- unsigned extension, pad with 0
+              );
+end
+
+logic [DATA_WIDTH-1:0] offset_value; // fill more bits than needed, then take only useful part from it
 if (USE_IMM_MODE_FOR_BASE_ADDRESS == 1) begin
     // using IMM MODE code: we have 6 bits in first chunk
     assign offset_value[5:0] = INSTR_IN[5:0];
-    assign offset_value[10:6] = base_addr_pc ? INSTR_IN[10:6] : 5'b00000; // fill with 0 for non-PC -- unsigned
-    assign offset_value[13:11] = base_addr_pc 
-                    ? (((instr_category == INSTR_JMP_WAIT) & base_addr_pc)   
-                             ? INSTR_IN[10:6]                               // long PC address format
-                             : {3{offset_sign_ex}})                         // short PC address: fill with sign
-                    :  3'b000; // fill with 0 for non-PC -- unsigned
+    assign offset_value[10:6] = (base_addr_pc | is_long_jmp) 
+                              ? INSTR_IN[10:6]  // address field bits - RB and IMM position
+                              : 5'b00000; // fill with 0 for non-PC -- unsigned
 end else begin
     // no IMM MODE code: we have 8 bits in first chunk
     assign offset_value[7:0] = INSTR_IN[7:0];
-    assign offset_value[12:8] = base_addr_pc ? INSTR_IN[10:6] : 5'b00000; // fill with 0 for non-PC -- unsigned
-    assign offset_value[15:13] = base_addr_pc 
-                    ? (((instr_category == INSTR_JMP_WAIT) & base_addr_pc)   
-                             ? INSTR_IN[10:6]                               // long PC address format
-                             : {3{offset_sign_ex}})                         // short PC address: fill with sign
-                    :  3'b000; // fill with 0 for non-PC -- unsigned
+    assign offset_value[10:8] = base_addr_pc
+                              ? INSTR_IN[10:8]  // address field bits - RB position
+                              : 3'b000;         // fill with 0 for non-PC -- unsigned
 end
+assign offset_value[14:11] = is_long_jmp   
+                           ? INSTR_IN[14:11]         // long PC address format
+                           : {4{offset_sign_ex}};    // short PC address: fill with sign
+assign offset_value[DATA_WIDTH-1:15] = {DATA_WIDTH-15{ offset_sign_ex }}; 
 
 // base for address calculation
 logic [DATA_WIDTH-1:0] base_value; 
@@ -297,43 +330,62 @@ assign dst_reg_index = (instr_category == INSTR_ALU) ? INSTR_IN[2:0] // for ALU 
                       
 //======================================================================
 // Conditions for conditional jumps
-logic [3:0] condition_code = (instr_category == INSTR_CONDJMP1 || instr_category == INSTR_CONDJMP2) 
-                        ? INSTR_IN[15:12]
-                        : 4'b0000;
-logic condition_result;
+logic [3:0] condition_code = INSTR_IN[15:12];
+                        
+logic jump_enabled;
+logic condition_result_raw;
+
+always_comb jump_enabled <= (instr_category == INSTR_CONDJMP1 || instr_category == INSTR_CONDJMP2)
+                          ? condition_result_raw
+                          : (instr_category == INSTR_JMP || instr_category == INSTR_CALL);
+
 always_comb case(condition_code)
-    COND_NONE: condition_result <= 1'b1;              // 0000 jmp  1                 unconditional
+    COND_NONE: condition_result_raw <= 1'b1;              // 0000 jmp  1                 unconditional
     
-    COND_NC:   condition_result <= ~FLAGS_IN[FLAG_C]; // 0001 jnc  c = 0
-    COND_NZ:   condition_result <= ~FLAGS_IN[FLAG_Z]; // 0010 jnz  z = 0             jne
-    COND_Z:    condition_result <=  FLAGS_IN[FLAG_Z]; // 0011 jz   z = 1             je
+    COND_NC:   condition_result_raw <= ~FLAGS_IN[FLAG_C]; // 0001 jnc  c = 0
+    COND_NZ:   condition_result_raw <= ~FLAGS_IN[FLAG_Z]; // 0010 jnz  z = 0             jne
+    COND_Z:    condition_result_raw <=  FLAGS_IN[FLAG_Z]; // 0011 jz   z = 1             je
 
-    COND_NS:   condition_result <= ~FLAGS_IN[FLAG_S]; // 0100 jns  s = 0
-    COND_S:    condition_result <=  FLAGS_IN[FLAG_S]; // 0101 js   s = 1
-    COND_NO:   condition_result <= ~FLAGS_IN[FLAG_V]; // 0100 jno  v = 0
-    COND_O:    condition_result <=  FLAGS_IN[FLAG_V]; // 0101 jo   v = 1
+    COND_NS:   condition_result_raw <= ~FLAGS_IN[FLAG_S]; // 0100 jns  s = 0
+    COND_S:    condition_result_raw <=  FLAGS_IN[FLAG_S]; // 0101 js   s = 1
+    COND_NO:   condition_result_raw <= ~FLAGS_IN[FLAG_V]; // 0100 jno  v = 0
+    COND_O:    condition_result_raw <=  FLAGS_IN[FLAG_V]; // 0101 jo   v = 1
 
-    COND_A:    condition_result <= (~FLAGS_IN[FLAG_C] & ~FLAGS_IN[FLAG_Z]);    // 1000 ja   c = 0 & z = 0     above (unsigned compare)            !jbe
-    COND_AE:   condition_result <= (~FLAGS_IN[FLAG_C] & FLAGS_IN[FLAG_Z]);     // 1001 jae  c = 0 | z = 1     above or equal (unsigned compare)
-    COND_B:    condition_result <=  FLAGS_IN[FLAG_C];                          // 1010 jb   c = 1             below (unsigned compare)            jc
-    COND_BE:   condition_result <= (FLAGS_IN[FLAG_C] | FLAGS_IN[FLAG_Z]);      // 1011 jbe  c = 1 | z = 1     below or equal (unsigned compare)   !ja
+    COND_A:    condition_result_raw <= (~FLAGS_IN[FLAG_C] & ~FLAGS_IN[FLAG_Z]);    // 1000 ja   c = 0 & z = 0     above (unsigned compare)            !jbe
+    COND_AE:   condition_result_raw <= (~FLAGS_IN[FLAG_C] & FLAGS_IN[FLAG_Z]);     // 1001 jae  c = 0 | z = 1     above or equal (unsigned compare)
+    COND_B:    condition_result_raw <=  FLAGS_IN[FLAG_C];                          // 1010 jb   c = 1             below (unsigned compare)            jc
+    COND_BE:   condition_result_raw <= (FLAGS_IN[FLAG_C] | FLAGS_IN[FLAG_Z]);      // 1011 jbe  c = 1 | z = 1     below or equal (unsigned compare)   !ja
 
-    COND_L:    condition_result <= (FLAGS_IN[FLAG_V] != FLAGS_IN[FLAG_S]);                     // 1100 jl   v != s            less (signed compare)
-    COND_LE:   condition_result <= (FLAGS_IN[FLAG_V] != FLAGS_IN[FLAG_S]) | FLAGS_IN[FLAG_Z];  // 1101 jle  v != s | z = 1    less or equal (signed compare)      !jg
-    COND_G:    condition_result <= (FLAGS_IN[FLAG_V] == FLAGS_IN[FLAG_S]) & ~FLAGS_IN[FLAG_Z]; // 1110 jg   v = s & z = 0     greater (signed compare)            !jle
-    COND_GE:   condition_result <= (FLAGS_IN[FLAG_V] == FLAGS_IN[FLAG_S]) | FLAGS_IN[FLAG_Z];  // 1111 jge  v = s | z = 1     less or equal (signed compare)
+    COND_L:    condition_result_raw <= (FLAGS_IN[FLAG_V] != FLAGS_IN[FLAG_S]);                     // 1100 jl   v != s            less (signed compare)
+    COND_LE:   condition_result_raw <= (FLAGS_IN[FLAG_V] != FLAGS_IN[FLAG_S]) | FLAGS_IN[FLAG_Z];  // 1101 jle  v != s | z = 1    less or equal (signed compare)      !jg
+    COND_G:    condition_result_raw <= (FLAGS_IN[FLAG_V] == FLAGS_IN[FLAG_S]) & ~FLAGS_IN[FLAG_Z]; // 1110 jg   v = s & z = 0     greater (signed compare)            !jle
+    COND_GE:   condition_result_raw <= (FLAGS_IN[FLAG_V] == FLAGS_IN[FLAG_S]) | FLAGS_IN[FLAG_Z];  // 1111 jge  v = s | z = 1     less or equal (signed compare)
 endcase;
 
 //======================================================================
 // Types of operations
 assign LOAD_EN   = (instr_category == INSTR_LOAD);
 assign STORE_EN  = (instr_category == INSTR_STORE);
-assign JMP_EN    = (instr_category[2] & ~is_wait) & condition_result;
-assign WAIT_EN   =  is_wait;
-assign PERIPH_EN = (instr_category == INSTR_PERIPH);
-assign MEMORY_EN = (instr_category == INSTR_LOAD) | (instr_category == INSTR_STORE) | is_wait;
+assign JMP_EN    = jump_enabled;
+assign BUS_EN    = (instr_category == INSTR_BUS);
+assign MEMORY_EN = (instr_category == INSTR_LOAD) | (instr_category == INSTR_STORE);
 assign ALU_EN    = (instr_category == INSTR_ALU);
 assign CALL_EN   = (instr_category == INSTR_CALL);
+
+/*
+    00 1: Bus operations
+    
+    00 1 rrr i bbb mmii aaaa
+
+         rrr destination register for read operations
+             write value register for write operation
+        bbb RB
+        mm  RB mode (00=reg, 01=consts, 10,11: single bit)
+		iii  BUS operation code
+		aaaa BUS address
+*/
+assign BUS_ADDR  = INSTR_IN[3:0];
+assign BUS_OP    = { INSTR_IN[11], INSTR_IN[5:4] };
 
 
 endmodule

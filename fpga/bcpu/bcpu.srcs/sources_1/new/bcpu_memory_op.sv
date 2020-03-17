@@ -10,7 +10,8 @@
 // Target Devices: 
 // Tool Versions: 
 // Description: 
-// 
+//     BCPU memory interface: Load and Store implementation, instruction fetch, shared memory support
+//
 // Dependencies: 
 // 
 // Revision:
@@ -49,19 +50,14 @@ module bcpu_memory_op
     input logic LOAD_EN,
     // 1 if instruction is STORE
     input logic STORE_EN,
-    // 1 if instruction is memory WAIT operation
-    input logic WAIT_EN,
 
     // memory or jump address calculated as base+offset
-    input logic [ADDR_WIDTH-1:0] ADDR_VALUE,
+    input logic [ADDR_WIDTH-1:0] ADDR,
 
-    // register A operand value: write data for STORE, mask for WAIT
-    input logic [DATA_WIDTH-1:0] A_VALUE,
+    // register A operand value: write data for STORE
+    input logic [DATA_WIDTH-1:0] WR_DATA,
 
-    // set to 1 for initiate repeating of current instruction - wait for data change 
-    output logic WAIT_REQUEST_STAGE2,
-    
-    // value read from memory, 0 if not a LOAD or WAIT operation 
+    // value read from memory, 0 if not a LOAD operation 
     output logic [DATA_WIDTH-1:0] RD_VALUE_STAGE3,
 
     // address of instruction to read (always enabled when CE=1)
@@ -71,62 +67,64 @@ module bcpu_memory_op
 
 );
 
+// stage 1 registers: latch address, data, and operation
+logic [ADDR_WIDTH-1:0] addr_stage1;
+logic [DATA_WIDTH-1:0] wrdata_stage1;
+logic store_en_stage1;
+logic load_en_stage1;
 
-logic [DATA_WIDTH-1:0] rd_value_stage2;
+always_ff @(posedge CLK) begin
+    if (RESET) begin
+        addr_stage1 <= 'b0;
+        wrdata_stage1 <= 'b0;
+        store_en_stage1 <= 'b0;
+        load_en_stage1 <= 'b0;
+    end else if (CE) begin
+        addr_stage1 <= ADDR;
+        wrdata_stage1 <= WR_DATA;
+        store_en_stage1 <= STORE_EN;
+        load_en_stage1 <= LOAD_EN;
+    end
+end
+
+
+logic [DATA_WIDTH-1:0] local_rd_value_stage3;
 
 localparam HAS_EXT_MEM = (ADDR_WIDTH > PC_WIDTH) ? 1 : 0;
 logic is_local_addr;
 if (HAS_EXT_MEM == 1)
-    always_comb is_local_addr <= ~ (&ADDR_VALUE[ADDR_WIDTH-1 : INSTR_WIDTH]);
+    always_comb is_local_addr <= ~ (&addr_stage1[ADDR_WIDTH-1 : INSTR_WIDTH]); // local == zeroes at higher bits
 else
-    always_comb is_local_addr <= 1'b1;
+    always_comb is_local_addr <= 1'b1;                                         // only local addresses
 
 logic mem_op;
 logic local_mem_op;
 logic local_mem_store_op;
-always_comb mem_op <= LOAD_EN | STORE_EN | WAIT_EN;
+logic local_mem_load_op;
+always_comb mem_op <= store_en_stage1 | load_en_stage1;
 always_comb local_mem_op <= mem_op & is_local_addr;
-always_comb local_mem_store_op <= STORE_EN & is_local_addr;
+always_comb local_mem_store_op <= store_en_stage1 & is_local_addr;
+always_comb local_mem_load_op <= load_en_stage1 & is_local_addr;
 
-logic wait_op_stage1;
-logic wait_op_stage2;
-
-logic [DATA_WIDTH-1:0] a_value_stage1;
-logic [DATA_WIDTH-1:0] a_value_stage2;
-
-logic local_mem_op_stage1;
-logic local_mem_op_stage2;
-
-logic wait_compare_matched;
-always_comb wait_compare_matched <= (|(a_value_stage2 & rd_value_stage2));
-always_comb WAIT_REQUEST_STAGE2 <= wait_op_stage2 & ~wait_compare_matched;
+logic local_mem_load_op_stage2;
 
 always_ff @(posedge CLK) begin
     if (RESET) begin
-        local_mem_op_stage2 <= 'b0;
-        local_mem_op_stage1 <= 'b0;
-        a_value_stage2 <=  'b0;
-        a_value_stage1 <=  'b0;
-        wait_op_stage2 <= 'b0;
-        wait_op_stage1 <= 'b0;
+        local_mem_load_op_stage2 <= 'b0;
     end else if (CE) begin
-        local_mem_op_stage1 <= local_mem_op;
-        local_mem_op_stage2 <= local_mem_op_stage1;
-        a_value_stage2 <= a_value_stage1;
-        a_value_stage1 <= A_VALUE;
-        wait_op_stage2 <= wait_op_stage1;
-        wait_op_stage1 <= WAIT_EN;
+        local_mem_load_op_stage2 <= local_mem_load_op;
     end
 end
 
-// output value pipeline
-always_ff @(posedge CLK) begin
-    if (RESET || (CE & ~local_mem_op_stage2)) begin
-        RD_VALUE_STAGE3 <= 'b0;
-    end else if (CE) begin
-        RD_VALUE_STAGE3 <= rd_value_stage2;
-    end
-end
+//// output value pipeline
+//always_ff @(posedge CLK) begin
+//    if (RESET || (CE & ~local_mem_load_op)) begin
+//        RD_VALUE_STAGE3 <= 'b0;
+//    end else if (CE) begin
+//    end
+//end
+// TODO: add external memory support
+assign RD_VALUE_STAGE3 = local_rd_value_stage3;
 
 //====================================
 // Port A    
@@ -153,12 +151,12 @@ logic [INSTR_WIDTH-1:0] PORT_B_WRDATA;
 // port B read data 
 logic [INSTR_WIDTH-1:0] PORT_B_RDDATA;
 
-
+// port A is for data read/write
 assign PORT_A_EN = local_mem_op;
 assign PORT_A_WREN = local_mem_store_op;
-assign PORT_A_WRDATA = { {INSTR_WIDTH-DATA_WIDTH{1'b0}}, A_VALUE };
+assign PORT_A_WRDATA = { {INSTR_WIDTH-DATA_WIDTH{1'b0}}, wrdata_stage1 }; // padding with 0s
 
-
+// port B is for instruction read only
 assign PORT_B_EN = 1'b1;
 assign PORT_B_WREN = 1'b0;
 assign PORT_B_WRDATA = {INSTR_WIDTH{1'b0}};
@@ -168,7 +166,7 @@ assign PORT_B_ADDR = INSTR_READ_ADDR;
 // instruction read from memory, delayed by 2 clock cycles with CE=1 
 assign INSTR_READ_DATA = PORT_B_RDDATA;
 
-assign rd_value_stage2 = PORT_A_RDDATA[DATA_WIDTH-1:0];
+assign local_rd_value_stage3 = PORT_A_RDDATA[DATA_WIDTH-1:0];
 
 
 bcpu_dualport_bram

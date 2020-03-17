@@ -27,12 +27,12 @@ module bcpu_bus_op
     parameter DATA_WIDTH = 16,
     // bus address width
     parameter BUS_ADDR_WIDTH = 4,
-    // numbe of bits in bus opcode, higher bit is WR/~RD
+    // number of bits in bus opcode, see bus_op_t in bcpu_defs
     parameter BUS_OP_WIDTH = 3,
     // size of input bus, in bits, addressable by DATA_WIDTH words
-    parameter IBUS_BITS = 1,
+    parameter IBUS_BITS = 4,
     // size of output bus, in bits, addressable by DATA_WIDTH words
-    parameter OBUS_BITS = 1
+    parameter OBUS_BITS = 4
 )
 (
     // input clock
@@ -47,7 +47,7 @@ module bcpu_bus_op
     input logic BUS_EN,
     // bus operation code
     input logic [BUS_OP_WIDTH-1:0] BUS_OP,
-    // bus operation code
+    // ibus or obus address
     input logic [BUS_ADDR_WIDTH-1:0] BUS_ADDR,
     
     // register A operand value
@@ -95,12 +95,21 @@ localparam OBUS_ADDR_WIDTH = OBUS_BITS <= 16  ? 0
 
 localparam MAX_BUS_ADDR_WIDTH  = IBUS_ADDR_WIDTH > OBUS_ADDR_WIDTH ? IBUS_ADDR_WIDTH : OBUS_ADDR_WIDTH;
 
+logic [(MAX_BUS_ADDR_WIDTH > 0 ? MAX_BUS_ADDR_WIDTH-1 : 0):0] bus_addr_stage1;
+
+always_ff @(posedge CLK)
+    if (RESET)
+        bus_addr_stage1 <= 'b0;
+    else if (CE)
+        bus_addr_stage1 <= MAX_BUS_ADDR_WIDTH > 0 ? BUS_ADDR[MAX_BUS_ADDR_WIDTH-1:0] : 'b0;
+
+
 // slice of address truncated to IBUS size in words
 logic [(IBUS_ADDR_WIDTH > 0 ? IBUS_ADDR_WIDTH-1 : 0) : 0] ibus_addr;
-assign ibus_addr = IBUS_ADDR_WIDTH > 0 ? BUS_ADDR[IBUS_ADDR_WIDTH-1:0] : 'b0;
+assign ibus_addr = IBUS_ADDR_WIDTH > 0 ? bus_addr_stage1[IBUS_ADDR_WIDTH-1:0] : 'b0;
 // slice of address truncated to OBUS size in words
 logic [(OBUS_ADDR_WIDTH > 0 ? OBUS_ADDR_WIDTH-1 : 0) : 0] obus_addr;
-assign obus_addr = OBUS_ADDR_WIDTH > 0 ? BUS_ADDR[OBUS_ADDR_WIDTH-1:0] : 'b0;
+assign obus_addr = OBUS_ADDR_WIDTH > 0 ? bus_addr_stage1[OBUS_ADDR_WIDTH-1:0] : 'b0;
 
 logic [IBUS_BITS-1:0] ibus_regs;
 logic [OBUS_BITS-1:0] obus_regs;
@@ -328,6 +337,7 @@ assign SAVE_ZFLAG = save_zflag_stage3;
 assign SAVE_VALUE = save_value_stage3;
 assign WAIT_REQUEST = wait_request_stage2;
 
+// output pipeline
 always_ff @(posedge CLK) begin
     if (RESET) begin
     

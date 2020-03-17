@@ -71,6 +71,17 @@ module bcpu_dualport_bram
     output logic [DATA_WIDTH-1:0] PORT_B_RDDATA 
 );
 
+logic port_a_read_stage1;
+logic port_b_read_stage1;
+always_ff @(posedge CLK)
+    if (RESET) begin
+        port_a_read_stage1 <= 'b0;
+        port_b_read_stage1 <= 'b0;
+    end else if (CE) begin
+        port_a_read_stage1 <= PORT_A_EN & ~PORT_A_WREN;
+        port_b_read_stage1 <= PORT_B_EN & ~PORT_B_WREN;
+    end
+
 localparam MEMSIZE = 1 << ADDR_WIDTH;
 logic [DATA_WIDTH-1:0] memory[MEMSIZE];
 
@@ -92,7 +103,6 @@ endgenerate
 logic [DATA_WIDTH-1:0] port_a_rddata;
 logic [DATA_WIDTH-1:0] port_b_rddata;
 
-
 always_ff @(posedge CLK)
     if (CE & PORT_A_EN) begin
         port_a_rddata <= memory[PORT_A_ADDR];
@@ -110,7 +120,7 @@ always_ff @(posedge CLK)
 generate
     if (USE_PORTA_REG == 1) begin
         always_ff @(posedge CLK)
-            if (RESET)
+            if (RESET | (CE & ~port_a_read_stage1))
                 PORT_A_RDDATA <= 'b0;
             else if (CE)
                 PORT_A_RDDATA <= port_a_rddata;
@@ -120,7 +130,7 @@ generate
 
     if (USE_PORTB_REG == 1) begin
         always_ff @(posedge CLK)
-            if (RESET)
+            if (RESET | (CE & ~port_b_read_stage1))
                 PORT_B_RDDATA <= 'b0;
             else if (CE)
                 PORT_B_RDDATA <= port_b_rddata;
