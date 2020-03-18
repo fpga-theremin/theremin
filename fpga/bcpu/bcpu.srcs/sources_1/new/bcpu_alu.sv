@@ -81,6 +81,7 @@ module bcpu_alu
     , output logic[3:0] debug_dsp_alumode               // 4-bit input: ALU control input
     , output logic[4:0] debug_dsp_inmode                // 5-bit input: INMODE control input
     , output logic[6:0] debug_dsp_opmode                // 7-bit input: Operation mode input
+    , output logic debug_dsp_carryout
 
 );
 
@@ -223,7 +224,8 @@ always_comb dsp_ce <= CE;
 // carry input
 logic dsp_carry_in;
 // Carry IN value processing
-always_comb dsp_carry_in <= ((alu_op_stage1 == ALUOP_ADDC || alu_op_stage1 == ALUOP_SUBC) ? flags_in_stage1[FLAG_C]
+always_comb dsp_carry_in <= ((alu_op_stage1 == ALUOP_ADDC || alu_op_stage1 == ALUOP_SUBC)
+                          ? flags_in_stage1[FLAG_C]
                           : 1'b0) & alu_en_stage1;
 
 
@@ -389,32 +391,32 @@ assign alu_out_mux = ( {16{out_mode_stage3[1]}} & dsp_p_out[DATA_WIDTH*2-1:DATA_
 
 logic [DATA_WIDTH-1:0] alu_out_stage3;
 always_comb alu_out_stage3 <= { 
-        is_rcr_stage2 ? flags_in_stage2[FLAG_C] : alu_out_mux[DATA_WIDTH-1],  // override for ROTATEC
+        is_rcr_stage3 ? flags_in_stage3[FLAG_C] : alu_out_mux[DATA_WIDTH-1],  // override for ROTATEC
         alu_out_mux[DATA_WIDTH-2:1],
-        is_rcl_stage2 ? flags_in_stage2[FLAG_C] : alu_out_mux[0]     // override for ROTATEC
+        is_rcl_stage3 ? flags_in_stage3[FLAG_C] : alu_out_mux[0]     // override for ROTATEC
 };
 
 logic [3:0] new_flags;
 
 always_comb new_flags[FLAG_C] <=
-          is_left_shift_stage2 ? dsp_p_out[DATA_WIDTH] 
-        : is_right_shift_stage2 ? dsp_p_out[DATA_WIDTH-1]
-        : dsp_carryout;
+          is_left_shift_stage3 ? dsp_p_out[DATA_WIDTH] 
+        : is_right_shift_stage3 ? dsp_p_out[DATA_WIDTH-1]
+        : dsp_carryout[3];
 
 always_comb new_flags[FLAG_Z] <= ~(|alu_out_stage3);
-always_comb new_flags[FLAG_S] <= alu_out_mux[DATA_WIDTH-1];
-always_comb new_flags[FLAG_V] <= dsp_carryout != alu_out_mux[DATA_WIDTH-1];
+always_comb new_flags[FLAG_S] <= alu_out_stage3[DATA_WIDTH-1];
+always_comb new_flags[FLAG_V] <= dsp_carryout[3] != alu_out_stage3[DATA_WIDTH-1];
 
-logic [3:0] flags_stage2;
-always_comb flags_stage2 <= (flags_in_stage2 & ~flags_mask_stage2) | (new_flags & flags_mask_stage2);
-
-// result flags
 logic [3:0] flags_stage3;
-always_ff @(posedge CLK)
-    if (RESET)
-        flags_stage3 <= 'b0;
-    else if (CE)
-        flags_stage3 <= flags_stage2;
+always_comb flags_stage3 <= (flags_in_stage3 & ~flags_mask_stage3) | (new_flags & flags_mask_stage3);
+
+//// result flags
+//logic [3:0] flags_stage3;
+//always_ff @(posedge CLK)
+//    if (RESET)
+//        flags_stage3 <= 'b0;
+//    else if (CE)
+//        flags_stage3 <= flags_stage2;
         
 assign FLAGS_OUT = flags_stage3;
 
@@ -524,6 +526,6 @@ assign debug_dsp_p_out = dsp_p_out;// 48-bit P data output
 assign debug_dsp_alumode = dsp_alumode;// 4-bit input: ALU control input
 assign debug_dsp_inmode = dsp_inmode;  // 5-bit input: INMODE control input
 assign debug_dsp_opmode = dsp_opmode;  // 7-bit input: Operation mode input
-
+assign debug_dsp_carryout = dsp_carryout[3]; //
 
 endmodule
