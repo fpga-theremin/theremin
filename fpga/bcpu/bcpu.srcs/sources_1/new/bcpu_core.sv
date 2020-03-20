@@ -456,8 +456,7 @@ logic [DATA_WIDTH-1 : 0] alu_out_value;
 
 bcpu_alu
 #(
-    .DATA_WIDTH(DATA_WIDTH),
-    .EMBEDDED_IMMEDIATE_TABLE(0)
+    .DATA_WIDTH(DATA_WIDTH)
 )
 bcpu_alu_inst
 (
@@ -482,10 +481,10 @@ bcpu_alu_inst
     
     // B_CONST_OR_REG_INDEX and B_IMM_MODE are needed to implement special cases for shifts and MOV
     // this is actually register index from instruction, unused with IMM_MODE == 00; for reg index 000 force ouput to 0
-    .B_CONST_OR_REG_INDEX(b_index),
+    //.B_CONST_OR_REG_INDEX(b_index),
     // immediate mode from instruction: 00 for bypassing B_VALUE_IN, 01,10,11: replace value with immediate constant from table
     // when B_IMM_MODE == 00 and B_CONST_OR_REG_INDEX == 000, use 0 instead of B_IN as operand B value
-    .B_IMM_MODE(imm_mode),
+    //.B_IMM_MODE(imm_mode),
     // operand B input
     .B_IN(b_value),
 
@@ -494,6 +493,10 @@ bcpu_alu_inst
     
     // input flags {V, S, Z, C}
     .FLAGS_IN(flags_stage0),
+    // 1 to override Z flags on stage2
+    .FLAG_Z_OVERRIDE_STAGE2(bus_zflag),
+    // Z flags value to use in case of override == 1
+    .FLAG_Z_OVERRIDE_VALUE_STAGE2(bus_zflag),
     
     // input flags {V, S, Z, C}
     .FLAGS_OUT(flags_stage3),
@@ -502,19 +505,19 @@ bcpu_alu_inst
     .ALU_OUT(alu_out_value)
 );
 
-// input flags {V, S, Z, C}
-logic [3:0] new_flags_stage3;
+//// input flags {V, S, Z, C}
+//logic [3:0] new_flags_stage3;
 
-assign new_flags_stage3[FLAG_V] = flags_stage3[FLAG_V];
-assign new_flags_stage3[FLAG_S] = flags_stage3[FLAG_S];
-assign new_flags_stage3[FLAG_Z] = bus_save_zflag ? bus_zflag : flags_stage3[FLAG_Z];
-assign new_flags_stage3[FLAG_C] = flags_stage3[FLAG_C];
+//assign new_flags_stage3[FLAG_V] = flags_stage3[FLAG_V];
+//assign new_flags_stage3[FLAG_S] = flags_stage3[FLAG_S];
+//assign new_flags_stage3[FLAG_Z] = bus_save_zflag ? bus_zflag : flags_stage3[FLAG_Z];
+//assign new_flags_stage3[FLAG_C] = flags_stage3[FLAG_C];
 
 always_ff @(posedge CLK)
     if (RESET)
         flags_stage0 <= 'b0;
     else if (CE)
-        flags_stage0 <= new_flags_stage3;
+        flags_stage0 <= flags_stage3;
 
 logic [REG_ADDR_WIDTH-1:0] dest_reg_addr_stage1;
 logic [REG_ADDR_WIDTH-1:0] dest_reg_addr_stage2;

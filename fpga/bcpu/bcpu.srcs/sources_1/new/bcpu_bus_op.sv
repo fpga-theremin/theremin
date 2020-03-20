@@ -64,9 +64,9 @@ module bcpu_bus_op
     output logic [DATA_WIDTH-1:0] OUT_VALUE,
     // 1 to write OUT_VALUE to register
     //output logic SAVE_VALUE,
-    // Z flag value output
+    // Z flag value output at stage2
     output logic OUT_ZFLAG,
-    // 1 to replace ALU's Z flag with OUT_ZFLAG 
+    // 1 to replace ALU's Z flag with OUT_ZFLAG at stage2 
     output logic SAVE_ZFLAG,
 
     // bus connections
@@ -327,13 +327,11 @@ assign OUT_VALUE = out_value_stage3;
 
 
 logic zflag_stage3;
-logic save_zflag_stage3;
-logic save_value_stage3;
 
 
 
-assign OUT_ZFLAG = zflag_stage3;
-assign SAVE_ZFLAG = save_zflag_stage3;
+assign OUT_ZFLAG = zflag_stage2;
+assign SAVE_ZFLAG = save_zflag_stage2;
 //assign SAVE_VALUE = save_value_stage3;
 assign WAIT_REQUEST = wait_request_stage2;
 
@@ -342,8 +340,6 @@ always_ff @(posedge CLK) begin
     if (RESET) begin
     
         zflag_stage3 <= 'b0;
-        save_zflag_stage3 <= 'b0;
-        save_value_stage3 <= 'b0;
         out_value_stage3 <= 'b0;
         
         zflag_stage2 <= 'b0;
@@ -354,8 +350,6 @@ always_ff @(posedge CLK) begin
     end else if (CE) begin
     
         zflag_stage3 <= zflag_stage2;
-        save_zflag_stage3 <= save_zflag_stage2;
-        save_value_stage3 <= save_value_stage2;
         out_value_stage3 <= out_value_stage2;
 
         wait_request_stage2 <= wait_request_stage1;

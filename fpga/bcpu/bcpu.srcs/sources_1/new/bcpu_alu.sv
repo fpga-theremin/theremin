@@ -29,8 +29,7 @@ import bcpu_defs::*;
 
 module bcpu_alu
 #(
-    parameter DATA_WIDTH = 16,
-    parameter EMBEDDED_IMMEDIATE_TABLE = 0
+    parameter DATA_WIDTH = 16
 )
 (
     // input clock
@@ -54,10 +53,10 @@ module bcpu_alu
     
     // B_CONST_OR_REG_INDEX and B_IMM_MODE are needed to implement special cases for shifts and MOV
     // this is actually register index from instruction, unused with IMM_MODE == 00; for reg index 000 force ouput to 0
-    input logic [2:0] B_CONST_OR_REG_INDEX,
+    //input logic [2:0] B_CONST_OR_REG_INDEX,
     // immediate mode from instruction: 00 for bypassing B_VALUE_IN, 01,10,11: replace value with immediate constant from table
     // when B_IMM_MODE == 00 and B_CONST_OR_REG_INDEX == 000, use 0 instead of B_IN as operand B value
-    input logic [1:0] B_IMM_MODE,
+    //input logic [1:0] B_IMM_MODE,
     // operand B input
     input logic [DATA_WIDTH-1 : 0] B_IN,
 
@@ -67,21 +66,26 @@ module bcpu_alu
     // input flags {V, S, Z, C}
     input logic [3:0] FLAGS_IN,
     
+    // 1 to override Z flags on stage2
+    input logic FLAG_Z_OVERRIDE_STAGE2,
+    // Z flags value to use in case of override == 1
+    input logic FLAG_Z_OVERRIDE_VALUE_STAGE2,
+    
     // output flags {V, S, Z, C}
     output logic [3:0] FLAGS_OUT,
     
     // alu result output    
     output logic [DATA_WIDTH-1 : 0] ALU_OUT
 
-    , output logic [29:0] debug_dsp_a_in  // 30-bit A data input
-    , output logic [17:0] debug_dsp_b_in  // 18-bit B data input
-    , output logic [47:0] debug_dsp_c_in  // 48-bit C data input
-    , output logic [24:0] debug_dsp_d_in  // 25-bit D data input
-    , output logic [47:0] debug_dsp_p_out // 48-bit P data output
-    , output logic[3:0] debug_dsp_alumode               // 4-bit input: ALU control input
-    , output logic[4:0] debug_dsp_inmode                // 5-bit input: INMODE control input
-    , output logic[6:0] debug_dsp_opmode                // 7-bit input: Operation mode input
-    , output logic debug_dsp_carryout
+//    , output logic [29:0] debug_dsp_a_in  // 30-bit A data input
+//    , output logic [17:0] debug_dsp_b_in  // 18-bit B data input
+//    , output logic [47:0] debug_dsp_c_in  // 48-bit C data input
+//    , output logic [24:0] debug_dsp_d_in  // 25-bit D data input
+//    , output logic [47:0] debug_dsp_p_out // 48-bit P data output
+//    , output logic[3:0] debug_dsp_alumode               // 4-bit input: ALU control input
+//    , output logic[4:0] debug_dsp_inmode                // 5-bit input: INMODE control input
+//    , output logic[6:0] debug_dsp_opmode                // 7-bit input: Operation mode input
+//    , output logic debug_dsp_carryout
 
 );
 
@@ -132,28 +136,38 @@ always_ff @(posedge CLK)
         flags_in_stage2 <= 'b0;
         flags_in_stage3 <= 'b0;
     end else if (CE) begin
-        flags_in_stage3 <= flags_in_stage2;
+        flags_in_stage3[FLAG_C] <= flags_in_stage2[FLAG_C];
+        flags_in_stage3[FLAG_S] <= flags_in_stage2[FLAG_S];
+        flags_in_stage3[FLAG_V] <= flags_in_stage2[FLAG_V];
+        flags_in_stage3[FLAG_Z] <= FLAG_Z_OVERRIDE_STAGE2 
+                                ? FLAG_Z_OVERRIDE_VALUE_STAGE2 
+                                : flags_in_stage2[FLAG_Z];
         flags_in_stage2 <= flags_in_stage1;
         flags_in_stage1 <= FLAGS_IN;
     end
 
 typedef enum logic[1:0] {
     FLAGS_MASK_NONE =  2'b00,    // don't update flags
-    OUT_MODE_ZS     =  2'b01,    // update Z and S flags only
-    OUT_MODE_ALL    =  2'b11     // update all flags (C, Z, S, V)
+    FLAGS_MASK_ZS     =  2'b01,    // update Z and S flags only
+    FLAGS_MASK_ALL    =  2'b11     // update all flags (C, Z, S, V)
 } flags_mask_t;
 
 // flags update mask decoding
 flags_mask_t flags_mask;
-always_comb flags_mask <= (alu_op_stage1 == ALUOP_ADD || alu_op_stage1 == ALUOP_ADDC || alu_op_stage1 == ALUOP_SUB || alu_op_stage1 == ALUOP_SUBC)
-                        ? OUT_MODE_ALL  // all flags - for ADD/SUB/ADDC/SUBC only 
-                        : OUT_MODE_ZS;  // Z and S for all other ops
+always_comb flags_mask <= 
+                disable_flags_update_stage1
+                ? FLAGS_MASK_NONE 
+                : ( 
+                        (alu_op_stage1 == ALUOP_ADD || alu_op_stage1 == ALUOP_ADDC || alu_op_stage1 == ALUOP_SUB || alu_op_stage1 == ALUOP_SUBC)
+                            ? FLAGS_MASK_ALL  // all flags - for ADD/SUB/ADDC/SUBC only 
+                            : FLAGS_MASK_ZS   // Z and S for all other ops
+                   ); 
 
 // flags update mask pipelining
 flags_mask_t flags_mask_stage2;
 flags_mask_t flags_mask_stage3;
 always_ff @(posedge CLK)
-    if (disable_flags_update_stage1 | RESET) begin
+    if (RESET) begin
         flags_mask_stage2 <= FLAGS_MASK_NONE;
     end else if (CE) begin
         flags_mask_stage2 <= flags_mask;
@@ -472,14 +486,14 @@ DSP48E1_inst (
 );
 // End of DSP48E1_inst instantiation
 
-assign debug_dsp_a_in = dsp_a_in;  // 30-bit A data input
-assign debug_dsp_b_in = dsp_b_in;  // 18-bit B data input
-assign debug_dsp_c_in = dsp_c_in;  // 48-bit C data input
-assign debug_dsp_d_in = dsp_d_in;  // 25-bit D data input
-assign debug_dsp_p_out = dsp_p_out;// 48-bit P data output
-assign debug_dsp_alumode = dsp_alumode;// 4-bit input: ALU control input
-assign debug_dsp_inmode = dsp_inmode;  // 5-bit input: INMODE control input
-assign debug_dsp_opmode = dsp_opmode;  // 7-bit input: Operation mode input
-assign debug_dsp_carryout = dsp_carryout[3]; //
+//assign debug_dsp_a_in = dsp_a_in;  // 30-bit A data input
+//assign debug_dsp_b_in = dsp_b_in;  // 18-bit B data input
+//assign debug_dsp_c_in = dsp_c_in;  // 48-bit C data input
+//assign debug_dsp_d_in = dsp_d_in;  // 25-bit D data input
+//assign debug_dsp_p_out = dsp_p_out;// 48-bit P data output
+//assign debug_dsp_alumode = dsp_alumode;// 4-bit input: ALU control input
+//assign debug_dsp_inmode = dsp_inmode;  // 5-bit input: INMODE control input
+//assign debug_dsp_opmode = dsp_opmode;  // 7-bit input: Operation mode input
+//assign debug_dsp_carryout = dsp_carryout[3]; //
 
 endmodule
