@@ -55,9 +55,9 @@ typedef enum logic[3:0] {
 	ALUOP_SUBC       = 4'b0111, //   RC = RA - RB - CF                            VSZC       CMPC
 	
 	ALUOP_AND        = 4'b1000, //   RC = RA & RB                                 .SZ.
-	ALUOP_ANDN       = 4'b1001, //   RC = RA & ~RB                                .SZ.
+	ALUOP_XOR        = 4'b1001, //   RC = RA ^ RB                                 .SZ.
 	ALUOP_OR         = 4'b1010, //   RC = RA | RB                                 .SZ.
-	ALUOP_XOR        = 4'b1011, //   RC = RA ^ RB                                 .SZ.
+	ALUOP_ANDN       = 4'b1011, //   RC = RA & ~RB                                .SZ.
 	
 	ALUOP_MUL        = 4'b1100, //   RC = low(RA * RB)                            .SZc       SHL, SAL
 	ALUOP_MULHUU     = 4'b1101, //   RC = high(unsigned RA * unsigned RB)         .SZc       SHR

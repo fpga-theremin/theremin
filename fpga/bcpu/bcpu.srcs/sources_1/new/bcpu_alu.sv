@@ -89,7 +89,7 @@ module bcpu_alu
 logic [3:0] alu_op_stage1;
 logic alu_en_stage1;
 logic [DATA_WIDTH-1 : 0] a_in_stage1;
-logic [1:0] b_imm_mode_stage1;
+//logic [1:0] b_imm_mode_stage1;
 logic disable_flags_update_stage1;
 
 always_ff @(posedge CLK) begin
@@ -97,7 +97,7 @@ always_ff @(posedge CLK) begin
         alu_op_stage1 <= 'b0;
         alu_en_stage1 <= 'b0;
         a_in_stage1 <= 'b0;
-        b_imm_mode_stage1 <= 'b0;
+        //b_imm_mode_stage1 <= 'b0;
         disable_flags_update_stage1 <= 'b0;
     end else if (CE) begin
         // special case: INC RC, R0, RB_imm    (RC=0+RB_imm) is treated as MOV operation, w/o flags
@@ -105,7 +105,7 @@ always_ff @(posedge CLK) begin
         alu_op_stage1 <= ALU_OP;
         alu_en_stage1 <= EN;
         a_in_stage1 <= A_IN;
-        b_imm_mode_stage1 <= B_IMM_MODE;
+        //b_imm_mode_stage1 <= B_IMM_MODE;
     end
 end
 
@@ -137,45 +137,30 @@ always_ff @(posedge CLK)
         flags_in_stage1 <= FLAGS_IN;
     end
 
-
-
-// shifts support, C flag generation
-// is multiplier operation which can be treated as left shift - for shifted out C flag generation
-logic is_left_shift;
-always_comb is_left_shift  <= ((ALU_OP == ALUOP_MUL) && B_IMM_MODE[1]) // any MUL with single bit immediate
-                           || ((ALU_OP == ALUOP_ROTATE || ALU_OP == ALUOP_ROTATEC) && B_IMM_MODE == 2'b10); // rotations with single bit < 1<<8
-logic is_right_shift;
-always_comb is_right_shift <= ((ALU_OP == ALUOP_MULHUU || ALU_OP == ALUOP_MULHSU)  && B_IMM_MODE[1])         // any MULH with single bit immediate
-                           || ((ALU_OP == ALUOP_ROTATE || ALU_OP == ALUOP_ROTATEC) && B_IMM_MODE == 2'b11); // rotations with single bit >= 1<<8
-
-// shifts support, shifting in C flag with rotation (ROTATEC: RCL, RCR)
-// rotate left through C: need to replace lower bit with C_in
-logic is_rcl;
-// rotate right through C: need to replace upper bit with C_in
-logic is_rcr;
-always_comb is_rcl <= (ALU_OP == ALUOP_ROTATEC) & (B_IMM_MODE == 2'b10); // ROTATEC with single bit imm < 1<<8
-always_comb is_rcr <= (ALU_OP == ALUOP_ROTATEC) & (B_IMM_MODE == 2'b11); // ROTATEC with single bit imm >= 1<<8
-
+typedef enum logic[1:0] {
+    FLAGS_MASK_NONE =  2'b00,    // don't update flags
+    OUT_MODE_ZS     =  2'b01,    // update Z and S flags only
+    OUT_MODE_ALL    =  2'b11     // update all flags (C, Z, S, V)
+} flags_mask_t;
 
 // flags update mask decoding
-logic [3:0] flags_mask;
-always_comb flags_mask[FLAG_V] <= (alu_op_stage1 == ALUOP_ADD || alu_op_stage1 == ALUOP_ADDC || alu_op_stage1 == ALUOP_SUB || alu_op_stage1 == ALUOP_SUBC);
-always_comb flags_mask[FLAG_S] <= 'b1;
-always_comb flags_mask[FLAG_Z] <= 'b1;
-always_comb flags_mask[FLAG_C] <= (alu_op_stage1 == ALUOP_ADD || alu_op_stage1 == ALUOP_ADDC || alu_op_stage1 == ALUOP_SUB || alu_op_stage1 == ALUOP_SUBC);
+flags_mask_t flags_mask;
+always_comb flags_mask <= (alu_op_stage1 == ALUOP_ADD || alu_op_stage1 == ALUOP_ADDC || alu_op_stage1 == ALUOP_SUB || alu_op_stage1 == ALUOP_SUBC)
+                        ? OUT_MODE_ALL  // all flags - for ADD/SUB/ADDC/SUBC only 
+                        : OUT_MODE_ZS;  // Z and S for all other ops
 
 // flags update mask pipelining
-logic [3:0] flags_mask_stage2;
-logic [3:0] flags_mask_stage3;
+flags_mask_t flags_mask_stage2;
+flags_mask_t flags_mask_stage3;
 always_ff @(posedge CLK)
     if (disable_flags_update_stage1 | RESET) begin
-        flags_mask_stage2 <= 'b0;
+        flags_mask_stage2 <= FLAGS_MASK_NONE;
     end else if (CE) begin
         flags_mask_stage2 <= flags_mask;
     end
 always_ff @(posedge CLK)
     if (RESET) begin
-        flags_mask_stage3 <= 'b0;
+        flags_mask_stage3 <= FLAGS_MASK_NONE;
     end else if (CE) begin
         flags_mask_stage3 <= flags_mask_stage2;
     end
@@ -205,55 +190,6 @@ always_comb dsp_carry_in <= (
                           ) & alu_en_stage1;
 
 
-// shift options pipeline
-//logic is_left_shift_stage1;
-//logic is_left_shift_stage2;
-//logic is_left_shift_stage3;
-//logic is_right_shift_stage1;
-//logic is_right_shift_stage2;
-//logic is_right_shift_stage3;
-//logic is_rcl_stage1;
-//logic is_rcl_stage2;
-//logic is_rcl_stage3;
-//logic is_rcr_stage1;
-//logic is_rcr_stage2;
-//logic is_rcr_stage3;
-//always_ff @(posedge CLK)
-//    if (RESET | (CE & ~EN)) begin
-//        is_left_shift_stage1 <= 'b0;
-//        is_right_shift_stage1 <= 'b0;
-//        is_rcl_stage1 <= 'b0;
-//        is_rcr_stage1 <= 'b0;
-//    end else if (CE) begin
-//        is_left_shift_stage1 <= is_left_shift;
-//        is_right_shift_stage1 <= is_right_shift;
-//        is_rcl_stage1 <= is_rcl;
-//        is_rcr_stage1 <= is_rcr;
-//    end
-
-//always_ff @(posedge CLK)
-//    if (RESET) begin
-//        is_left_shift_stage3 <= 'b0;
-//        is_right_shift_stage3 <= 'b0;
-//        is_rcl_stage3 <= 'b0;
-//        is_rcr_stage3 <= 'b0;
-
-//        is_left_shift_stage2 <= 'b0;
-//        is_right_shift_stage2 <= 'b0;
-//        is_rcl_stage2 <= 'b0;
-//        is_rcr_stage2 <= 'b0;
-//    end else if (CE) begin
-//        is_left_shift_stage3 <= is_left_shift_stage2;
-//        is_right_shift_stage3 <= is_right_shift_stage2;
-//        is_rcl_stage3 <= is_rcl_stage2;
-//        is_rcr_stage3 <= is_rcr_stage2;
-
-//        is_left_shift_stage2 <= is_left_shift_stage1;
-//        is_right_shift_stage2 <= is_right_shift_stage1;
-//        is_rcl_stage2 <= is_rcl_stage1;
-//        is_rcr_stage2 <= is_rcr_stage1;
-//    end
-
 // data inputs
 logic [29:0] dsp_a_in; // 30-bit A data input
 logic [17:0] dsp_b_in; // 18-bit B data input
@@ -275,7 +211,7 @@ typedef enum logic[3:0] {
     DSP_ALUMODE_ADD     = 4'b0000,  // Z + X + Y + CIN
     DSP_ALUMODE_SUB     = 4'b0011,  // Z - (X + Y + CIN)
     DSP_ALUMODE_AND_OR  = 4'b1100,  // Z & X   -- OR requires opmode[3:2]=10 (DSP_OPMODE_XAB_YFF_ZC)
-    DSP_ALUMODE_XOR     = 4'b0101,  // Z ^ X  // requires opmode[3:2]=10 (DSP_OPMODE_XAB_YFF_ZC)
+    DSP_ALUMODE_XOR     = 4'b0100,  // Z ^ X  // requires opmode[3:2]=10 (DSP_OPMODE_XAB_YFF_ZC)
     DSP_ALUMODE_ANDN    = 4'b1111   // Z & ~X // requires opmode[3:2]=10 (DSP_OPMODE_XAB_YFF_ZC)
 } dsp_alumode_t;
 
@@ -380,9 +316,9 @@ always_comb
         ALUOP_DEC:    begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_SUB;    out_mode <= OUT_MODE_L;  end
 
         ALUOP_AND:    begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_AND_OR; out_mode <= OUT_MODE_L;  end
+        ALUOP_XOR:    begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC ;   dsp_alumode <= DSP_ALUMODE_XOR;    out_mode <= OUT_MODE_L;  end
         ALUOP_ANDN:   begin    dsp_opmode <= DSP_OPMODE_XAB_YFF_ZC;   dsp_alumode <= DSP_ALUMODE_ANDN;   out_mode <= OUT_MODE_L;  end
         ALUOP_OR:     begin    dsp_opmode <= DSP_OPMODE_XAB_YFF_ZC;   dsp_alumode <= DSP_ALUMODE_AND_OR; out_mode <= OUT_MODE_L;  end
-        ALUOP_XOR:    begin    dsp_opmode <= DSP_OPMODE_XAB_YFF_ZC;   dsp_alumode <= DSP_ALUMODE_XOR;    out_mode <= OUT_MODE_L;  end
 
         // rotate
         ALUOP_ROTATE:  begin    dsp_opmode <= DSP_OPMODE_XM_YM_Z0;    dsp_alumode <= DSP_ALUMODE_ADD;    out_mode <= OUT_MODE_L; end
@@ -424,27 +360,18 @@ always_comb alu_out_stage3 <= alu_out_mux;
 
 logic [3:0] new_flags;
 
-always_comb new_flags[FLAG_C] <=
-        //  is_left_shift_stage3 ? dsp_p_out[DATA_WIDTH] 
-        //: is_right_shift_stage3 ? dsp_p_out[DATA_WIDTH-1]
-        //: 
-        dsp_carryout[3];
-
+always_comb new_flags[FLAG_C] <= dsp_carryout[3];
 always_comb new_flags[FLAG_Z] <= ~(|alu_out_stage3);
 always_comb new_flags[FLAG_S] <= alu_out_stage3[DATA_WIDTH-1];
 always_comb new_flags[FLAG_V] <= dsp_carryout[3] != alu_out_stage3[DATA_WIDTH-1];
 
 logic [3:0] flags_stage3;
-always_comb flags_stage3 <= (flags_in_stage3 & ~flags_mask_stage3) | (new_flags & flags_mask_stage3);
+always_comb flags_stage3[FLAG_C] <= flags_mask_stage3[1] ? new_flags[FLAG_C] : flags_in_stage3[FLAG_C]; 
+always_comb flags_stage3[FLAG_Z] <= flags_mask_stage3[0] ? new_flags[FLAG_Z] : flags_in_stage3[FLAG_Z]; 
+always_comb flags_stage3[FLAG_S] <= flags_mask_stage3[0] ? new_flags[FLAG_S] : flags_in_stage3[FLAG_S]; 
+always_comb flags_stage3[FLAG_V] <= flags_mask_stage3[1] ? new_flags[FLAG_V] : flags_in_stage3[FLAG_V]; 
 
-//// result flags
-//logic [3:0] flags_stage3;
-//always_ff @(posedge CLK)
-//    if (RESET)
-//        flags_stage3 <= 'b0;
-//    else if (CE)
-//        flags_stage3 <= flags_stage2;
-        
+
 assign FLAGS_OUT = flags_stage3;
 
 assign ALU_OUT = alu_out_stage3;

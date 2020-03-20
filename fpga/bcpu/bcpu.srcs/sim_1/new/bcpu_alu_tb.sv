@@ -178,10 +178,13 @@ initial begin
     `executeOp(ALUOP_ANDN,  16'hf5ac, 16'h3458, 4'b0101, 16'hf5ac & ~16'h3458, 4'b0101);    
     `executeOp(ALUOP_OR,  16'hf5ac, 16'h3458, 4'b1100, 16'hf5ac | 16'h3458, 4'b1100);    
     `executeOp(ALUOP_XOR,  16'hf5ac, 16'h3458, 4'b0100, 16'hf5ac ^ 16'h3458, 4'b0100);    
+    `executeOp(ALUOP_XOR,  16'haaaa, 16'haaaa, 4'b0100, 16'haaaa ^ 16'haaaa, 4'b0010);    
+    `executeOp(ALUOP_XOR,  16'haaaa, 16'h5555, 4'b1101, 16'haaaa ^ 16'h5555, 4'b1101);    
     `executeOp(ALUOP_SUB, 7, 3, 4'b0100, 7-3, 4'b1001);    
     `executeOp(ALUOP_SUB, 7, 8, 4'b0010, 16'hffff, 4'b1100);    
     `executeOp(ALUOP_SUB, 12345, 12345, 4'b0000, 0, 4'b1011);    
     `executeOp(ALUOP_MUL, 123, 456, 4'b0000, 123*456, 4'b0100);    
+    `executeOp(ALUOP_MULHUU, 16'h1234, 16'h1000, 4'b1111, 16'h0123, 4'b1001);    
 
     `startOp(ALUOP_ADD,   123, 456, 4'b1111, 123+456,    4'b0000);    
     `startOp(ALUOP_ADDC,  123, 456, 4'b1111, 123+456+1,  4'b0000);    
