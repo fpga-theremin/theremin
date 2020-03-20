@@ -124,7 +124,8 @@ bcpu_alu_inst
 
 `define assert(signal, value) \
         if (signal !== value) begin \
-            $display("ASSERTION FAILED in %m: signal != value (%h != %h)   dec (%d != %d)", signal, value, signal, value); \
+            $display("ASSERTION FAILED in %m: signal != value (%h != %h)   dec (%d != %d)   bin (%b != %b)", \
+            signal, value, signal, value, signal, value ); \
             $finish; \
         end
 
@@ -133,14 +134,19 @@ always begin
     #5 CLK=1;
 end
 
+typedef logic[15:0] data_t;
+ 
+
 `define executeOp( opcode, a_in, b_in, flags_in, expected_out, expected_flags) \
     @(posedge CLK) #2 EN = 1; CE = 1; A_REG_INDEX = 1; A_IN = a_in; B_CONST_OR_REG_INDEX = 3; B_IMM_MODE = 0; B_IN = b_in; ALU_OP = opcode; FLAGS_IN = flags_in; \
     @(posedge CLK) #2 EN = 0; CE = 1; A_REG_INDEX = 0; A_IN = 0; B_CONST_OR_REG_INDEX = 0; B_IMM_MODE = 0; B_IN = 0; ALU_OP = ALUOP_INC; FLAGS_IN = 4'b0101; \
     @(posedge CLK) #2 FLAGS_IN = 4'b1010; \
-    @(posedge CLK) #3 $display("ALU op1\t%4b\ta_in\t%d\t%4h\tb_in\t%d\t%4h\tflags_in\t%4b\talu_out\t%d\t%4h\tflags_out\t%4b\texpected\t%d\t%4h\tfl\t%4b", \
-          opcode, a_in, a_in, b_in, b_in, flags_in, \
+    @(posedge CLK) #3 $display("%s\ta_in\t%5d\t%4h\tb_in\t%5d\t%4h\tflags_in\t%4b\talu_out\t%5d\t%4h\tflags_out\t%4b\texpected\t%d\t%4h\tfl\t%4b", \
+          opcode.name, a_in, a_in, b_in, b_in, flags_in, \
           ALU_OUT, ALU_OUT, FLAGS_OUT, \
-          expected_out, expected_out, expected_flags); \
+          data_t'(expected_out), data_t'(expected_out), expected_flags); \
+          `assert(ALU_OUT, data_t'(expected_out)); \
+          `assert(FLAGS_OUT, expected_flags); \
     @(posedge CLK) #3 `assert(FLAGS_OUT, 4'b0101); \
     @(posedge CLK) #3 `assert(FLAGS_OUT, 4'b1010); \
     CE = 0;
@@ -164,9 +170,18 @@ initial begin
     #120 RESET = 0;
     `executeOp(ALUOP_ADD, 3, 5, 4'b0001, 3+5, 4'b0000);    
     `executeOp(ALUOP_ADD, 7, 8, 4'b1000, 7+8, 4'b0000);    
-    `executeOp(ALUOP_SUB, 7, 3, 4'b0100, 7-3, 4'b0000);    
-    `executeOp(ALUOP_SUB, 7, 8, 4'b0010, 16'hffff, 4'b0000);    
-    `executeOp(ALUOP_SUB, 12345, 12345, 4'b0000, 0, 4'b0010);    
+    `executeOp(ALUOP_INC, 3, 5, 4'b0101, 3+5, 4'b0001);    
+    `executeOp(ALUOP_INC, 7, 8, 4'b1010, 7+8, 4'b1000);    
+    `executeOp(ALUOP_ADDC, 3, 5, 4'b0001, 3+5+1, 4'b0000);    
+    `executeOp(ALUOP_ADDC, 7, 8, 4'b1001, 7+8+1, 4'b0000);    
+    `executeOp(ALUOP_AND,  16'hf5ac, 16'h3458, 4'b0100, 16'hf5ac & 16'h3458, 4'b0000);    
+    `executeOp(ALUOP_ANDN,  16'hf5ac, 16'h3458, 4'b0101, 16'hf5ac & ~16'h3458, 4'b0101);    
+    `executeOp(ALUOP_OR,  16'hf5ac, 16'h3458, 4'b1100, 16'hf5ac | 16'h3458, 4'b1100);    
+    `executeOp(ALUOP_XOR,  16'hf5ac, 16'h3458, 4'b0100, 16'hf5ac ^ 16'h3458, 4'b0100);    
+    `executeOp(ALUOP_SUB, 7, 3, 4'b0100, 7-3, 4'b1001);    
+    `executeOp(ALUOP_SUB, 7, 8, 4'b0010, 16'hffff, 4'b1100);    
+    `executeOp(ALUOP_SUB, 12345, 12345, 4'b0000, 0, 4'b1011);    
+    `executeOp(ALUOP_MUL, 123, 456, 4'b0000, 123*456, 4'b0100);    
 
     `startOp(ALUOP_ADD,   123, 456, 4'b1111, 123+456,    4'b0000);    
     `startOp(ALUOP_ADDC,  123, 456, 4'b1111, 123+456+1,  4'b0000);    
