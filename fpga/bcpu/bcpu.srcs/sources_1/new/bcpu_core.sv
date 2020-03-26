@@ -276,7 +276,7 @@ bcpu_instr_decoder_inst
     // 1 if instruction is BUS operation
     .BUS_EN(bus_en),
     // 1 if instruction is LOAD operation
-    .MEM_EN(mem_en),
+    .MEM_EN(memory_en),
     // 1 if instruction is STORE operation
     .STORE_EN(store_en),
     // 1 if instruction is JUMP, CALL or conditional jump operation
@@ -378,9 +378,9 @@ bcpu_program_counter_inst
     // jmp address (valid only if JMP_EN_STAGE0 == 1)
     .JMP_ADDRESS_STAGE1(addr_value[PC_WIDTH-1:0]),
     // 1 if need to jump to new address (JMP, CALL, or conditional JMP with TRUE condition) 
-    .JMP_EN_STAGE0(jmp_en),
+    .JMP_EN_STAGE1(jmp_en),
     // 1 if instruction is CALL operation and we need to know return address
-    .CALL_EN_STAGE0(call_en),
+    .CALL_EN_STAGE1(call_en),
     
     // 1 if we are going to reexecute current instruction, don't increase instruction address
     // can be done only at stage 2, because latency of instruction fetch from memory is 2 cycles

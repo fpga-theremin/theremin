@@ -404,19 +404,21 @@ endcase;
 
 //======================================================================
 // Types of operations
-assign JMP_EN    = jump_enabled;
 assign ALU_EN    = (instr_category == INSTR_ALU);
-assign CALL_EN   = (instr_category == INSTR_CALL);
 
 always_ff @(posedge CLK) begin
     if (RESET) begin
         BUS_EN    <= 'b0;
         MEM_EN    <= 'b0;
         STORE_EN  <= 'b0;
+        CALL_EN   <= 'b0;
+        JMP_EN    <= 'b0;
     end else if (CE) begin
         BUS_EN    <= (instr_category == INSTR_BUS);
         MEM_EN    <= (instr_category == INSTR_LOAD) | (instr_category == INSTR_STORE);
         STORE_EN  <= (instr_category == INSTR_STORE);
+        CALL_EN   <= (instr_category == INSTR_CALL);
+        JMP_EN    <= jump_enabled;
     end
 end
 
