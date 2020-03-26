@@ -103,8 +103,8 @@ module bcpu_instr_decoder
     output logic ALU_EN,
     // 1 if instruction is BUS operation (stage1)
     output logic BUS_EN,
-    // 1 if instruction is LOAD operation (stage1)
-    output logic LOAD_EN,
+    // 1 if instruction is LOAD or STORE operation (stage1)
+    output logic MEM_EN,
     // 1 if instruction is STORE operation (stage1)
     output logic STORE_EN,
     // 1 if instruction is JUMP, CALL or conditional jump operation
@@ -117,6 +117,8 @@ module bcpu_instr_decoder
 
     // dest reg address, xx000 to disable writing
     output logic [REG_ADDR_WIDTH-1:0] DEST_REG_ADDR,
+    // register bank write mux source index: REG_WRITE_FROM_ALU, _BUS, _MEM, _JMP (stage3)
+    output logic [1:0] DEST_REG_SOURCE_STAGE3,
 
     //=========================================
     // REGISTER FILE READ ACCESS
@@ -219,6 +221,21 @@ assign reg_b_index = INSTR_IN[10:8];    // register B or immediate index
         ddd destination register index (0: don't write)
 */
 assign ALU_OP = {INSTR_IN[11], INSTR_IN[5:3]}; // iiii from instruction
+
+logic [1:0] dst_reg_source;
+logic [1:0] dest_reg_source_stage1;
+logic [1:0] dest_reg_source_stage2;
+always_ff @(posedge CLK)
+    if (RESET) begin
+        DEST_REG_SOURCE_STAGE3 <= 'b0;
+        dest_reg_source_stage2 <= 'b0;
+        dest_reg_source_stage1 <= 'b0;
+    end else if (CE) begin
+        DEST_REG_SOURCE_STAGE3 <= dest_reg_source_stage2;
+        dest_reg_source_stage2 <= dest_reg_source_stage1;
+        dest_reg_source_stage1 <= dst_reg_source;
+    end
+
 
 assign DEST_REG_ADDR[2:0] = dst_reg_index;
 assign RD_REG_ADDR_A[2:0] = reg_a_index;    // register A index 
@@ -394,14 +411,25 @@ assign CALL_EN   = (instr_category == INSTR_CALL);
 always_ff @(posedge CLK) begin
     if (RESET) begin
         BUS_EN    <= 'b0;
-        LOAD_EN   <= 'b0;
+        MEM_EN    <= 'b0;
         STORE_EN  <= 'b0;
     end else if (CE) begin
         BUS_EN    <= (instr_category == INSTR_BUS);
-        LOAD_EN   <= (instr_category == INSTR_LOAD);
+        MEM_EN    <= (instr_category == INSTR_LOAD) | (instr_category == INSTR_STORE);
         STORE_EN  <= (instr_category == INSTR_STORE);
     end
 end
+
+always_comb case(instr_category)
+        INSTR_ALU:      dst_reg_source <= REG_WRITE_FROM_ALU;
+	    INSTR_BUS:      dst_reg_source <= REG_WRITE_FROM_BUS;
+	    INSTR_LOAD:     dst_reg_source <= REG_WRITE_FROM_MEM;
+	    INSTR_STORE:    dst_reg_source <= REG_WRITE_FROM_MEM;
+        INSTR_CONDJMP1: dst_reg_source <= REG_WRITE_FROM_JMP;
+        INSTR_CONDJMP2: dst_reg_source <= REG_WRITE_FROM_JMP;
+        INSTR_CALL:     dst_reg_source <= REG_WRITE_FROM_JMP;
+        INSTR_JMP:      dst_reg_source <= REG_WRITE_FROM_JMP;
+    endcase
 
 /*
     00 1: Bus operations

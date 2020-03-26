@@ -77,8 +77,6 @@ module bcpu_core
 logic alu_en;
 // 1 if instruction is BUS operation
 logic bus_en;
-// 1 if instruction is LOAD operation
-logic load_en;
 // 1 if instruction is STORE operation
 logic store_en;
 // 1 if instruction is LOAD_OP, STORE_OP, or WAIT_OP
@@ -131,7 +129,7 @@ bcpu_memory_op_inst
     // reset signal, active 1
     .RESET,
     // 1 if instruction is LOAD operation
-    .LOAD_EN(load_en),
+    .MEM_EN(memory_en),
     // 1 if instruction is STORE
     .STORE_EN(store_en),
     // memory or jump address calculated as base+offset
@@ -196,6 +194,8 @@ logic [DATA_WIDTH-1:0] RD_REG_DATA_A;
 logic [REG_ADDR_WIDTH-1:0] RD_REG_ADDR_B;
 logic [DATA_WIDTH-1:0] RD_REG_DATA_B;
 
+// register bank write mux source index: REG_WRITE_FROM_ALU, _BUS, _MEM, _JMP (stage1)
+logic [1:0] DEST_REG_SOURCE_STAGE3;
 
 bcpu_instr_decoder
 #(
@@ -276,7 +276,7 @@ bcpu_instr_decoder_inst
     // 1 if instruction is BUS operation
     .BUS_EN(bus_en),
     // 1 if instruction is LOAD operation
-    .LOAD_EN(load_en),
+    .MEM_EN(mem_en),
     // 1 if instruction is STORE operation
     .STORE_EN(store_en),
     // 1 if instruction is JUMP, CALL or conditional jump operation
@@ -289,6 +289,8 @@ bcpu_instr_decoder_inst
 
     // dest reg address, xx000 to disable writing
     .DEST_REG_ADDR(dest_reg_addr),
+    // register bank write mux source index: REG_WRITE_FROM_ALU, _BUS, _MEM, _JMP (stage3)
+    .DEST_REG_SOURCE_STAGE3,
 
     //=========================================
     // REGISTER FILE READ ACCESS
@@ -556,8 +558,13 @@ always_ff @(posedge CLK)
 
 assign reg_wr_en_stage3 = (dest_reg_addr_stage3[2:0] != 3'b000) & CE;
 assign reg_wr_addr_stage3 = dest_reg_addr_stage3;
-assign reg_wr_data_stage3 = 
-            alu_out_value | bus_read_value | return_address_stage3 | mem_read_data;
+always_comb 
+        case(DEST_REG_SOURCE_STAGE3)
+            REG_WRITE_FROM_ALU: reg_wr_data_stage3 <= alu_out_value; 
+            REG_WRITE_FROM_BUS: reg_wr_data_stage3 <= bus_read_value;
+            REG_WRITE_FROM_MEM: reg_wr_data_stage3 <= mem_read_data;
+            REG_WRITE_FROM_JMP: reg_wr_data_stage3 <= return_address_stage3;
+        endcase
 
 /*
 dest_reg_addr

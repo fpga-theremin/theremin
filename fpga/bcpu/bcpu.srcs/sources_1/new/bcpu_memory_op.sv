@@ -46,8 +46,8 @@ module bcpu_memory_op
     // reset signal, active 1
     input logic RESET,
 
-    // 1 if instruction is LOAD operation (stage1)
-    input logic LOAD_EN,
+    // 1 if instruction is LOAD or STORE operation (stage1)
+    input logic MEM_EN,
     // 1 if instruction is STORE (stage1)
     input logic STORE_EN,
 
@@ -67,44 +67,23 @@ module bcpu_memory_op
 
 );
 
-// stage 1 registers: latch address, data, and operation
-logic [ADDR_WIDTH-1:0] addr_stage1;
-logic [DATA_WIDTH-1:0] wrdata_stage1;
-logic store_en_stage1;
-logic load_en_stage1;
-
-always_comb addr_stage1 <= ADDR;
-always_comb wrdata_stage1 <= WR_DATA;
-always_comb store_en_stage1 <= STORE_EN;
-always_comb load_en_stage1 <= LOAD_EN;
 
 logic [DATA_WIDTH-1:0] local_rd_value_stage3;
+logic local_mem_op;
+logic local_mem_store_op;
 
 localparam HAS_EXT_MEM = (ADDR_WIDTH > PC_WIDTH) ? 1 : 0;
 logic is_local_addr;
-if (HAS_EXT_MEM == 1)
-    always_comb is_local_addr <= ~ (&addr_stage1[ADDR_WIDTH-1 : INSTR_WIDTH]); // local == zeroes at higher bits
-else
+if (HAS_EXT_MEM == 1) begin
+    always_comb is_local_addr <= ~ (&ADDR[ADDR_WIDTH-1 : INSTR_WIDTH]); // local == zeroes at higher bits
+    always_comb local_mem_op <= MEM_EN & is_local_addr;
+    always_comb local_mem_store_op <= STORE_EN & is_local_addr;
+end else begin
     always_comb is_local_addr <= 1'b1;                                         // only local addresses
-
-logic mem_op;
-logic local_mem_op;
-logic local_mem_store_op;
-logic local_mem_load_op;
-always_comb mem_op <= store_en_stage1 | load_en_stage1;
-always_comb local_mem_op <= mem_op & is_local_addr;
-always_comb local_mem_store_op <= store_en_stage1 & is_local_addr;
-always_comb local_mem_load_op <= load_en_stage1 & is_local_addr;
-
-logic local_mem_load_op_stage2;
-
-always_ff @(posedge CLK) begin
-    if (RESET) begin
-        local_mem_load_op_stage2 <= 'b0;
-    end else if (CE) begin
-        local_mem_load_op_stage2 <= local_mem_load_op;
-    end
+    always_comb local_mem_op <= MEM_EN;
+    always_comb local_mem_store_op <= STORE_EN;
 end
+
 
 //// output value pipeline
 //always_ff @(posedge CLK) begin
@@ -144,7 +123,8 @@ logic [INSTR_WIDTH-1:0] PORT_B_RDDATA;
 // port A is for data read/write
 assign PORT_A_EN = local_mem_op;
 assign PORT_A_WREN = local_mem_store_op;
-assign PORT_A_WRDATA = { {INSTR_WIDTH-DATA_WIDTH{1'b0}}, wrdata_stage1 }; // padding with 0s
+assign PORT_A_WRDATA = { {INSTR_WIDTH-DATA_WIDTH{1'b0}}, WR_DATA }; // padding with 0s
+assign PORT_A_ADDR = ADDR;
 
 // port B is for instruction read only
 assign PORT_B_EN = 1'b1;
@@ -207,6 +187,5 @@ localmem_bcpu_dualport_bram_ins
     .PORT_B_RDDATA 
 );
 
-assign PORT_A_ADDR = addr_stage1;
 
 endmodule

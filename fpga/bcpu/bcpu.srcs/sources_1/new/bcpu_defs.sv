@@ -41,6 +41,15 @@ typedef enum logic {
 	BASEADDR_PC      = 1'b1     //   PC (program counter) is used as base address          (PC+offs)
 } base_address_t;
 
+// Register write MUX control - source indexes
+typedef enum logic [1:0] {
+    // name                 index      
+	REG_WRITE_FROM_ALU  = 2'b00,    //   Write to register from ALU
+	REG_WRITE_FROM_BUS  = 2'b01,    //   Write to register from BUS
+	REG_WRITE_FROM_MEM  = 2'b10,    //   Write to register from MEM
+	REG_WRITE_FROM_JMP  = 2'b11     //   Write to register from JMP
+} reg_write_source_t;
+
 // ALU opcodes
 typedef enum logic[3:0] {
 //  mnemonic             opcode                                                   flags      mapped
