@@ -101,6 +101,8 @@ module bcpu_instr_decoder
 
     // 1 to enable ALU operation
     output logic ALU_EN,
+    // 1 if modification of flags based on ALU OP is allowed (ALU OP is not MOV)
+    output logic ALU_ENABLE_FLAGS_UPDATE_STAGE1,
     // 1 if instruction is BUS operation (stage1)
     output logic BUS_EN,
     // 1 if instruction is LOAD or STORE operation (stage1)
@@ -219,8 +221,9 @@ assign reg_b_index = INSTR_IN[10:8];    // register B or immediate index
         mm  RB mode (00=reg, 01=consts, 10,11: single bit)
         iiii ALU OP
         ddd destination register index (0: don't write)
+
 */
-assign ALU_OP = {INSTR_IN[11], INSTR_IN[5:3]}; // iiii from instruction
+
 
 logic [1:0] dst_reg_source;
 logic [1:0] dest_reg_source_stage1;
@@ -404,7 +407,6 @@ endcase;
 
 //======================================================================
 // Types of operations
-assign ALU_EN    = (instr_category == INSTR_ALU);
 
 always_ff @(posedge CLK) begin
     if (RESET) begin
@@ -413,14 +415,35 @@ always_ff @(posedge CLK) begin
         STORE_EN  <= 'b0;
         CALL_EN   <= 'b0;
         JMP_EN    <= 'b0;
+        ALU_EN    <= 'b0;
     end else if (CE) begin
         BUS_EN    <= (instr_category == INSTR_BUS);
         MEM_EN    <= (instr_category == INSTR_LOAD) | (instr_category == INSTR_STORE);
         STORE_EN  <= (instr_category == INSTR_STORE);
         CALL_EN   <= (instr_category == INSTR_CALL);
         JMP_EN    <= jump_enabled;
+        ALU_EN    <= (instr_category == INSTR_ALU);
     end
 end
+
+logic [3:0] alu_op;
+assign alu_op = {INSTR_IN[11], INSTR_IN[5:3]}; // iiii from instruction
+
+always_ff @(posedge CLK)
+    if (RESET)
+        ALU_OP <= 'b0;
+    else if (CE)
+        ALU_OP <= alu_op;
+
+// 1 if modification of flags based on ALU OP is allowed (ALU OP is not MOV)
+always_ff @(posedge CLK)
+    if (RESET)
+        ALU_ENABLE_FLAGS_UPDATE_STAGE1 <= 'b0;
+    else if (CE)
+        ALU_ENABLE_FLAGS_UPDATE_STAGE1 <= ~((alu_op == ALUOP_INC) & (reg_a_index == 3'b000)) // not INC RC, R0, ... 
+                                          & (instr_category == INSTR_ALU); 
+
+
 
 always_comb case(instr_category)
         INSTR_ALU:      dst_reg_source <= REG_WRITE_FROM_ALU;

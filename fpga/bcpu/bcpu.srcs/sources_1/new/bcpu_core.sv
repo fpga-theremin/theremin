@@ -197,6 +197,10 @@ logic [DATA_WIDTH-1:0] RD_REG_DATA_B;
 // register bank write mux source index: REG_WRITE_FROM_ALU, _BUS, _MEM, _JMP (stage1)
 logic [1:0] DEST_REG_SOURCE_STAGE3;
 
+// 1 if modification of flags based on ALU OP is allowed
+logic ALU_ENABLE_FLAGS_UPDATE_STAGE1;
+
+
 bcpu_instr_decoder
 #(
     // data width
@@ -248,6 +252,7 @@ bcpu_instr_decoder_inst
 
     // ALU operation code (valid if ALU_EN==1)
     .ALU_OP(alu_op),
+    .ALU_ENABLE_FLAGS_UPDATE_STAGE1,
     
     .IMM_MODE(imm_mode),
 
@@ -487,17 +492,17 @@ bcpu_alu_inst
     // reset signal, active 1
     .RESET,
     // enable ALU (when disabled it should force output to 0 and flags should be kept unchanged)
-    .EN(alu_en),
+    .ALU_EN(alu_en),
 
 
     // Operand A inputs:
     
-    // when A_REG_INDEX==000 (RA is R0), use 0 instead of A_IN for operand A
-    .A_REG_INDEX(a_index),
     // operand A input
     .A_IN(a_value),
     // operand A input
     .A_IN_STAGE1(a_value_stage1),
+    // 1 is alu op and not MOV
+    .ALU_ENABLE_FLAGS_UPDATE_STAGE1,
 
     // Operand B inputs:
     
@@ -510,7 +515,7 @@ bcpu_alu_inst
     // operand B input
     .B_IN(b_value),
 
-    // alu operation code    
+    // alu operation code (stage1)    
     .ALU_OP(alu_op),
     
     // input flags {V, S, Z, C}

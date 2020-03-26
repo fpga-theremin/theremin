@@ -38,18 +38,18 @@ module bcpu_alu
     input logic CE,
     // reset signal, active 1
     input logic RESET,
-    // enable ALU (when disabled it should force output to 0 and flags should be kept unchanged)
-    input logic EN,
+    // enable ALU (when disabled it should force output to 0 and flags should be kept unchanged) (stage1)
+    input logic ALU_EN,
 
 
     // Operand A inputs:
     
-    // when A_REG_INDEX==000 (RA is R0), use 0 instead of A_IN for operand A
-    input logic[2:0] A_REG_INDEX,
     // operand A input (stage0)
     input logic [DATA_WIDTH-1 : 0] A_IN,
     // operand A input (stage1) -- delayed by 1 clk cycle
     input logic [DATA_WIDTH-1 : 0] A_IN_STAGE1,
+    // 1 if modification of flags based on ALU OP is allowed
+    input logic ALU_ENABLE_FLAGS_UPDATE_STAGE1,
 
     // Operand B inputs:
     
@@ -62,7 +62,7 @@ module bcpu_alu
     // operand B input
     input logic [DATA_WIDTH-1 : 0] B_IN,
 
-    // alu operation code    
+    // alu operation code (stage1) 
     input logic [3:0] ALU_OP,
     
     // input flags {V, S, Z, C}
@@ -91,39 +91,6 @@ module bcpu_alu
 
 );
 
-// alu operation code    
-logic [3:0] alu_op_stage1;
-logic alu_en_stage1;
-//logic [1:0] b_imm_mode_stage1;
-logic disable_flags_update_stage1;
-
-always_ff @(posedge CLK) begin
-    if (RESET) begin
-        alu_op_stage1 <= 'b0;
-        alu_en_stage1 <= 'b0;
-        //b_imm_mode_stage1 <= 'b0;
-        disable_flags_update_stage1 <= 'b0;
-    end else if (CE) begin
-        // special case: INC RC, R0, RB_imm    (RC=0+RB_imm) is treated as MOV operation, w/o flags
-        disable_flags_update_stage1 <= ((ALU_OP == ALUOP_INC) & (A_REG_INDEX == 3'b000)) | ~EN;
-        alu_op_stage1 <= ALU_OP;
-        alu_en_stage1 <= EN;
-        //b_imm_mode_stage1 <= B_IMM_MODE;
-    end
-end
-
-
-// EN signal pipelining
-logic en_stage1;
-logic en_stage2;
-always_ff @(posedge CLK)
-    if (RESET) begin
-        en_stage1 <= 'b0;
-        en_stage2 <= 'b0;
-    end else if (CE) begin
-        en_stage2 <= en_stage1;
-        en_stage1 <= EN;
-    end
 
 // input flags pipelining
 logic [3:0] flags_in_stage1;
@@ -154,13 +121,14 @@ typedef enum logic[1:0] {
 // flags update mask decoding
 flags_mask_t flags_mask;
 always_comb flags_mask <= 
-                disable_flags_update_stage1
-                ? FLAGS_MASK_NONE 
-                : ( 
-                        (alu_op_stage1 == ALUOP_ADD || alu_op_stage1 == ALUOP_ADDC || alu_op_stage1 == ALUOP_SUB || alu_op_stage1 == ALUOP_SUBC)
+                ALU_ENABLE_FLAGS_UPDATE_STAGE1
+                ? ( 
+                        (ALU_OP == ALUOP_ADD || ALU_OP == ALUOP_ADDC || ALU_OP == ALUOP_SUB || ALU_OP == ALUOP_SUBC)
                             ? FLAGS_MASK_ALL  // all flags - for ADD/SUB/ADDC/SUBC only 
                             : FLAGS_MASK_ZS   // Z and S for all other ops
-                   ); 
+                   )
+                : FLAGS_MASK_NONE; 
+ 
 
 // flags update mask pipelining
 flags_mask_t flags_mask_stage2;
@@ -185,8 +153,7 @@ logic dsp_reset_a;
 // 1 to reset DSP input
 logic dsp_reset_out;
 
-always_comb dsp_reset_a <= RESET;                       // set dsp A to 0 when ALU is disabled
-                         
+always_comb dsp_reset_a <= RESET;
 always_comb dsp_reset_in <= RESET;
 always_comb dsp_reset_out <= RESET;
 
@@ -197,10 +164,10 @@ always_comb dsp_ce <= CE;
 logic dsp_carry_in;
 // Carry IN value processing
 always_comb dsp_carry_in <= (
-                                (alu_op_stage1 == ALUOP_ADDC) ? flags_in_stage1[FLAG_C]
-                              : (alu_op_stage1 == ALUOP_SUBC) ? ~flags_in_stage1[FLAG_C]
+                                (ALU_OP == ALUOP_ADDC) ? ALU_OP[FLAG_C]
+                              : (ALU_OP == ALUOP_SUBC) ? ~ALU_OP[FLAG_C]
                               : 1'b0
-                          ) & alu_en_stage1;
+                          ) & ALU_EN;
 
 
 // data inputs
@@ -319,7 +286,7 @@ always_comb
 assign dsp_inmode = DSP_INMODE_B1_D;
 
 always_comb 
-    case(alu_op_stage1)
+    case(ALU_OP)
         ALUOP_ADD:    begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_ADD;    out_mode <= OUT_MODE_L;  end
         ALUOP_ADDC:   begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_ADD;    out_mode <= OUT_MODE_L;  end
         ALUOP_SUB:    begin    dsp_opmode <= DSP_OPMODE_XAB_Y0_ZC;    dsp_alumode <= DSP_ALUMODE_SUB;    out_mode <= OUT_MODE_L;  end

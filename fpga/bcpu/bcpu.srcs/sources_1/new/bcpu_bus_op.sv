@@ -266,7 +266,7 @@ assign b_value_stage1 = B_VALUE[INTERNAL_DATA_WIDTH-1:0];
 logic [INTERNAL_DATA_WIDTH-1:0] out_value_stage2;
 
 always_ff @(posedge CLK) begin
-    if (RESET | ~save_value_stage1)
+    if (RESET)
         out_value_stage2 <= 'b0;
     else if (CE) begin
         out_value_stage2 <= new_value;
