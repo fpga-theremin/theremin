@@ -44,7 +44,7 @@ module bcpu_program_counter
 
     // Jump/Call controls from instruction decoder
     // jmp address (valid only if JMP_EN_STAGE0 == 1)
-    input logic [PC_WIDTH-1:0] JMP_ADDRESS_STAGE0,
+    input logic [PC_WIDTH-1:0] JMP_ADDRESS_STAGE1,
     // 1 if need to jump to new address (JMP, CALL, or conditional JMP with TRUE condition) 
     input logic JMP_EN_STAGE0,
     // 1 if instruction is CALL operation and we need to know return address
@@ -107,7 +107,6 @@ logic ready_stage3;
 
 // Delay jump control information by 2 cycles
 // jmp address from instruction decoder
-logic [PC_WIDTH-1:0] jmp_address_stage1;
 logic [PC_WIDTH-1:0] jmp_address_stage2;
 // 1 if need to jump to new address -- from instruction decoder
 logic jmp_en_stage1;
@@ -145,14 +144,12 @@ always_comb PROGRAM_MEM_ADDR <= next_pc_value;
 always_ff @(posedge CLK) begin
     if (RESET) begin
         jmp_address_stage2 <= 'b0;
-        jmp_address_stage1 <= 'b0;
         jmp_en_stage2 <= 'b0;
         jmp_en_stage1 <= 'b0;
         call_en_stage2 <= 'b0;
         call_en_stage1 <= 'b0;
     end else if (CE) begin
-        jmp_address_stage2 <= jmp_address_stage1;
-        jmp_address_stage1 <= JMP_ADDRESS_STAGE0;
+        jmp_address_stage2 <= JMP_ADDRESS_STAGE1;
         jmp_en_stage2 <= jmp_en_stage1;
         jmp_en_stage1 <= JMP_EN_STAGE0;
         call_en_stage2 <= call_en_stage1;

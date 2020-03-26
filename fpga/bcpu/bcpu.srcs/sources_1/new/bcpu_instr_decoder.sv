@@ -57,8 +57,16 @@ module bcpu_instr_decoder
     parameter USE_SIGNED_REG_BASE_OFFSET = 1
 )
 (
+    // CLOCK AND RESET
+    // input clock
+    input logic CLK,
+    // when 1, enable pipeline step, when 0 pipeline is paused
+    input logic CE,
+    // reset signal, active 1
+    input logic RESET,
+    
     // INPUTS
-    // instruction to decode
+    // instruction to decode - from program memory
     input logic [INSTR_WIDTH-1:0] INSTR_IN,
     // current program counter (address of this instruction)
     input logic [PC_WIDTH-1:0] PC_IN,
@@ -77,33 +85,35 @@ module bcpu_instr_decoder
     // register B or immediate index, e.g. for ALU 
     output logic [2:0] B_INDEX,
 
-    // BUS operation code (valid if BUS_EN==1)
+    // BUS operation code (valid if BUS_EN==1) (stage1)
     output logic [BUS_OP_WIDTH-1:0] BUS_OP,
-    // BUS address (valid if BUS_EN==1)
+    // BUS address (valid if BUS_EN==1) (stage1)
     output logic [BUS_ADDR_WIDTH-1:0] BUS_ADDR,
 
-    // register A operand value, e.g. for ALU operand A, write data for memory, or mask for WAIT
+    // register A operand value, e.g. for ALU operand A, write data for memory, or mask for WAIT (stage0)
     output logic [DATA_WIDTH-1:0] A_VALUE,
-    // register B or immediate operand value, e.g. for ALU operand B
+    // register A operand value, delayed by 1 clk cycle (stage1)
+    output logic [DATA_WIDTH-1:0] A_VALUE_STAGE1,
+    // register B or immediate operand value, e.g. for ALU operand B (stage0)
     output logic [DATA_WIDTH-1:0] B_VALUE,
+    // register B or immediate operand value, e.g. for ALU operand B (stage1)
+    output logic [DATA_WIDTH-1:0] B_VALUE_STAGE1,
 
     // 1 to enable ALU operation
     output logic ALU_EN,
-    // 1 if instruction is BUS operation
+    // 1 if instruction is BUS operation (stage1)
     output logic BUS_EN,
-    // 1 if instruction is LOAD operation
+    // 1 if instruction is LOAD operation (stage1)
     output logic LOAD_EN,
-    // 1 if instruction is STORE operation
+    // 1 if instruction is STORE operation (stage1)
     output logic STORE_EN,
-    // 1 if instruction is LOAD_OP, STORE_OP, or WAIT_OP
-    output logic MEMORY_EN,
     // 1 if instruction is JUMP, CALL or conditional jump operation
     output logic JMP_EN,
     // 1 if instruction is CALL operation and we need to save return address
     output logic CALL_EN,
 
     // memory or jump address calculated as base+offset
-    output logic [ADDR_WIDTH-1:0] ADDR_VALUE,
+    output logic [ADDR_WIDTH-1:0] ADDR_VALUE_STAGE1,
 
     // dest reg address, xx000 to disable writing
     output logic [REG_ADDR_WIDTH-1:0] DEST_REG_ADDR,
@@ -226,7 +236,20 @@ assign a_value = RD_REG_DATA_A;
 // register B value should be processed by immediate constants table to allow overriding it with const 
 logic [DATA_WIDTH-1:0] b_value;
 
+always_ff @(posedge CLK) begin
+    if (RESET) begin
+        A_VALUE_STAGE1 <= 'b0;
+        B_VALUE_STAGE1 <= 'b0;
+    end else if (CE) begin
+        A_VALUE_STAGE1 <= a_value;
+        B_VALUE_STAGE1 <= b_value;
+    end
+end
+
+
+
 assign A_VALUE = a_value;
+
 assign B_VALUE = b_value;
 assign A_INDEX = reg_a_index;
 assign B_INDEX = reg_b_index;
@@ -314,10 +337,6 @@ assign base_value = base_addr_pc
                                  ? b_value        // imm mode enabled:  use output of immediate decoder which can replace register B value with constant 
                                  : RD_REG_DATA_B  // imm mode disabled: use register B value directly
                           };
-// effective address for instruction (base + offset)
-logic [ADDR_WIDTH-1:0] addr_value;
-always_comb addr_value <= base_value[ADDR_WIDTH-1:0] + offset_value[ADDR_WIDTH-1:0];
-assign ADDR_VALUE = addr_value;
 
 
 //======================================================================
@@ -368,13 +387,21 @@ endcase;
 
 //======================================================================
 // Types of operations
-assign LOAD_EN   = (instr_category == INSTR_LOAD);
-assign STORE_EN  = (instr_category == INSTR_STORE);
 assign JMP_EN    = jump_enabled;
-assign BUS_EN    = (instr_category == INSTR_BUS);
-assign MEMORY_EN = (instr_category == INSTR_LOAD) | (instr_category == INSTR_STORE);
 assign ALU_EN    = (instr_category == INSTR_ALU);
 assign CALL_EN   = (instr_category == INSTR_CALL);
+
+always_ff @(posedge CLK) begin
+    if (RESET) begin
+        BUS_EN    <= 'b0;
+        LOAD_EN   <= 'b0;
+        STORE_EN  <= 'b0;
+    end else if (CE) begin
+        BUS_EN    <= (instr_category == INSTR_BUS);
+        LOAD_EN   <= (instr_category == INSTR_LOAD);
+        STORE_EN  <= (instr_category == INSTR_STORE);
+    end
+end
 
 /*
     00 1: Bus operations
@@ -388,8 +415,36 @@ assign CALL_EN   = (instr_category == INSTR_CALL);
 		iii  BUS operation code
 		aaaa BUS address
 */
-assign BUS_ADDR  = INSTR_IN[3:0];
-assign BUS_OP    = { INSTR_IN[11], INSTR_IN[5:4] };
+always_ff @(posedge CLK) begin
+    if (RESET) begin
+        BUS_ADDR  <= 'b0;
+        BUS_OP    <= 'b0;
+    end else if (CE) begin
+        BUS_ADDR  <= INSTR_IN[3:0];
+        BUS_OP    <= { INSTR_IN[11], INSTR_IN[5:4] };
+    end
+end
+
+// memory or jump address calculated as base+offset
+logic [ADDR_WIDTH-1:0] addr_base;
+// memory or jump address calculated as base+offset
+logic [ADDR_WIDTH-1:0] addr_offset;
+always_ff @(posedge CLK) begin
+    if (RESET) begin
+        addr_base <= 'b0;
+        addr_offset <= 'b0;
+    end else if (CE) begin
+        addr_base <= base_value[ADDR_WIDTH-1:0];
+        addr_offset <= offset_value[ADDR_WIDTH-1:0];
+    end
+end
+
+// effective address for instruction (base + offset)
+logic [ADDR_WIDTH-1:0] addr_value;
+always_comb addr_value <= addr_base + addr_offset;
+
+assign ADDR_VALUE_STAGE1 = addr_value;
+
 
 
 endmodule

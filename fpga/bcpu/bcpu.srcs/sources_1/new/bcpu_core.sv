@@ -104,6 +104,7 @@ logic [PC_WIDTH-1:0] instr_read_addr;
 // instruction read from memory, delayed by 2 clock cycles with CE=1 
 logic [INSTR_WIDTH-1:0] instr_read_data;
 
+
 bcpu_memory_op
 #(
     // data width
@@ -165,10 +166,16 @@ logic [BUS_OP_WIDTH-1:0] bus_op;
 // BUS address (valid if BUS_EN==1)
 logic [BUS_ADDR_WIDTH-1:0] bus_addr;
 
-// register A operand value, e.g. for ALU operand A, write data for memory, or mask for WAIT
+// register A operand value, e.g. for ALU operand A, write data for memory, or mask for WAIT (stage0)
 logic [DATA_WIDTH-1:0] a_value;
-// register B or immediate operand value, e.g. for ALU operand B
+// register A operand value, e.g. for ALU operand A, write data for memory, or mask for WAIT (stage1)
+logic [DATA_WIDTH-1:0] a_value_stage1;
+// register B or immediate operand value, e.g. for ALU operand B (stage0)
 logic [DATA_WIDTH-1:0] b_value;
+// register B or immediate operand value, e.g. for ALU operand B (stage1)
+logic [DATA_WIDTH-1:0] b_value_stage1;
+
+assign mem_write_data = a_value_stage1;
 
 // memory or jump address calculated as base+offset
 logic [ADDR_WIDTH-1:0] addr_value;
@@ -221,6 +228,14 @@ bcpu_instr_decoder
 )
 bcpu_instr_decoder_inst
 (
+    // CLOCK AND RESET
+    // input clock
+    .CLK,
+    // when 1, enable pipeline step, when 0 pipeline is paused
+    .CE,
+    // reset signal, active 1
+    .RESET,
+
     // INPUTS
     // instruction to decode
     .INSTR_IN(instr_read_data),
@@ -246,10 +261,15 @@ bcpu_instr_decoder_inst
     // BUS address (valid if BUS_EN==1)
     .BUS_ADDR(bus_addr),
 
-    // register A operand value, e.g. for ALU operand A, write data for memory, or mask for WAIT
+    // register A operand value, e.g. for ALU operand A, write data for memory, or mask for WAIT (stage0)
     .A_VALUE(a_value),
-    // register B or immediate operand value, e.g. for ALU operand B
+    // register A operand value, delayed by 1 clk cycle (stage1)
+    .A_VALUE_STAGE1(a_value_stage1),
+    
+    // register B or immediate operand value, e.g. for ALU operand B (stage0)
     .B_VALUE(b_value),
+    // register B or immediate operand value, e.g. for ALU operand B (stage1)
+    .B_VALUE_STAGE1(b_value_stage1),
 
     // 1 to enable ALU operation
     .ALU_EN(alu_en),
@@ -259,15 +279,13 @@ bcpu_instr_decoder_inst
     .LOAD_EN(load_en),
     // 1 if instruction is STORE operation
     .STORE_EN(store_en),
-    // 1 if instruction is LOAD_OP, STORE_OP, or WAIT_OP
-    .MEMORY_EN(memory_en),
     // 1 if instruction is JUMP, CALL or conditional jump operation
     .JMP_EN(jmp_en),
     // 1 if instruction is CALL operation and we need to save return address
     .CALL_EN(call_en),
 
     // memory or jump address calculated as base+offset
-    .ADDR_VALUE(addr_value),
+    .ADDR_VALUE_STAGE1(addr_value),
 
     // dest reg address, xx000 to disable writing
     .DEST_REG_ADDR(dest_reg_addr),
@@ -356,7 +374,7 @@ bcpu_program_counter_inst
 
     // Jump/Call controls from instruction decoder
     // jmp address (valid only if JMP_EN_STAGE0 == 1)
-    .JMP_ADDRESS_STAGE0(addr_value[PC_WIDTH-1:0]),
+    .JMP_ADDRESS_STAGE1(addr_value[PC_WIDTH-1:0]),
     // 1 if need to jump to new address (JMP, CALL, or conditional JMP with TRUE condition) 
     .JMP_EN_STAGE0(jmp_en),
     // 1 if instruction is CALL operation and we need to know return address
@@ -412,17 +430,17 @@ bcpu_bus_op_inst
     .RESET,
 
     // stage0 inputs
-    // 1 if instruction is BUS operation
+    // 1 if instruction is BUS operation (stage1)
     .BUS_EN(bus_en),
-    // bus operation code
+    // bus operation code (stage1)
     .BUS_OP(bus_op),
-    // ibus or obus address
+    // ibus or obus address (stage1)
     .BUS_ADDR(bus_addr),
     
     // register A operand value
-    .A_VALUE(a_value),
+    .A_VALUE(a_value_stage1),
     // register B operand value or immediate constant
-    .B_VALUE(b_value),
+    .B_VALUE(b_value_stage1),
 
     // stage2 output
     // 1 to repeat current instruction, 0 to allow moving to next instruction
@@ -476,6 +494,8 @@ bcpu_alu_inst
     .A_REG_INDEX(a_index),
     // operand A input
     .A_IN(a_value),
+    // operand A input
+    .A_IN_STAGE1(a_value_stage1),
 
     // Operand B inputs:
     
@@ -549,6 +569,8 @@ logic [DATA_WIDTH-1:0] bus_read_value;
 // 1 to write OUT_VALUE to register
 logic bus_save_value;
 */
+
+assign mem_addr = addr_value;
 
 
 endmodule

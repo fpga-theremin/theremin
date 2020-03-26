@@ -43,16 +43,16 @@ module bcpu_bus_op
     input logic RESET,
 
     // stage0 inputs
-    // 1 if instruction is BUS operation
+    // 1 if instruction is BUS operation (stage1)
     input logic BUS_EN,
-    // bus operation code
+    // bus operation code (stage1)
     input logic [BUS_OP_WIDTH-1:0] BUS_OP,
-    // ibus or obus address
+    // ibus or obus address (stage1)
     input logic [BUS_ADDR_WIDTH-1:0] BUS_ADDR,
     
-    // register A operand value
+    // register A operand value (stage1)
     input logic [DATA_WIDTH-1:0] A_VALUE,
-    // register B operand value or immediate constant
+    // register B operand value or immediate constant (stage1)
     input logic [DATA_WIDTH-1:0] B_VALUE,
 
     // stage2 output
@@ -96,12 +96,7 @@ localparam OBUS_ADDR_WIDTH = OBUS_BITS <= 16  ? 0
 localparam MAX_BUS_ADDR_WIDTH  = IBUS_ADDR_WIDTH > OBUS_ADDR_WIDTH ? IBUS_ADDR_WIDTH : OBUS_ADDR_WIDTH;
 
 logic [(MAX_BUS_ADDR_WIDTH > 0 ? MAX_BUS_ADDR_WIDTH-1 : 0):0] bus_addr_stage1;
-
-always_ff @(posedge CLK)
-    if (RESET)
-        bus_addr_stage1 <= 'b0;
-    else if (CE)
-        bus_addr_stage1 <= MAX_BUS_ADDR_WIDTH > 0 ? BUS_ADDR[MAX_BUS_ADDR_WIDTH-1:0] : 'b0;
+always_comb bus_addr_stage1 <= MAX_BUS_ADDR_WIDTH > 0 ? BUS_ADDR[MAX_BUS_ADDR_WIDTH-1:0] : 'b0;
 
 
 // slice of address truncated to IBUS size in words
@@ -162,8 +157,6 @@ always_ff @(posedge CLK)
                     obus_regs[i * INTERNAL_DATA_WIDTH + j] <= 'b0;
                 else if (is_write_stage1 && (obus_addr == i)) 
                     obus_regs[i * INTERNAL_DATA_WIDTH + j] <= new_value[j];
-            end else begin
-                obus_regs[i * INTERNAL_DATA_WIDTH + j] <= 'b0;
             end
         end
 
@@ -262,29 +255,11 @@ always_comb
      endcase
 
 always_comb zflag_stage1 <= ~(|new_value);
+assign bus_en_stage1 = BUS_EN;
+assign bus_op_stage1 = BUS_OP;
+assign a_value_stage1 = A_VALUE[INTERNAL_DATA_WIDTH-1:0];
+assign b_value_stage1 = B_VALUE[INTERNAL_DATA_WIDTH-1:0];
 
-
-always_ff @(posedge CLK) begin
-    if (RESET) begin
-        // bus opcode
-        bus_op_stage1 <= 'b0;
-        // bus operation flag
-        bus_en_stage1 <= 'b0;
-        // register A operand value
-        a_value_stage1 <= 'b0;
-        // register B operand value or immediate constant
-        b_value_stage1 <= 'b0;
-    end else if (CE) begin
-        // bus opcode
-        bus_op_stage1 <= BUS_OP;
-        // bus operation flag
-        bus_en_stage1 <= BUS_EN;
-        // register A operand value
-        a_value_stage1 <= A_VALUE[INTERNAL_DATA_WIDTH-1:0];
-        // register B operand value or immediate constant
-        b_value_stage1 <= B_VALUE[INTERNAL_DATA_WIDTH-1:0];
-    end
-end
 
 
 // stage2 for OUT_VALUE - to be written to register

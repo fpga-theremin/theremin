@@ -46,15 +46,15 @@ module bcpu_memory_op
     // reset signal, active 1
     input logic RESET,
 
-    // 1 if instruction is LOAD operation
+    // 1 if instruction is LOAD operation (stage1)
     input logic LOAD_EN,
-    // 1 if instruction is STORE
+    // 1 if instruction is STORE (stage1)
     input logic STORE_EN,
 
-    // memory or jump address calculated as base+offset
+    // memory or jump address calculated as base+offset (stage1)
     input logic [ADDR_WIDTH-1:0] ADDR,
 
-    // register A operand value: write data for STORE
+    // register A operand value: write data for STORE (stage1)
     input logic [DATA_WIDTH-1:0] WR_DATA,
 
     // value read from memory, 0 if not a LOAD operation 
@@ -73,20 +73,10 @@ logic [DATA_WIDTH-1:0] wrdata_stage1;
 logic store_en_stage1;
 logic load_en_stage1;
 
-always_ff @(posedge CLK) begin
-    if (RESET) begin
-        addr_stage1 <= 'b0;
-        wrdata_stage1 <= 'b0;
-        store_en_stage1 <= 'b0;
-        load_en_stage1 <= 'b0;
-    end else if (CE) begin
-        addr_stage1 <= ADDR;
-        wrdata_stage1 <= WR_DATA;
-        store_en_stage1 <= STORE_EN;
-        load_en_stage1 <= LOAD_EN;
-    end
-end
-
+always_comb addr_stage1 <= ADDR;
+always_comb wrdata_stage1 <= WR_DATA;
+always_comb store_en_stage1 <= STORE_EN;
+always_comb load_en_stage1 <= LOAD_EN;
 
 logic [DATA_WIDTH-1:0] local_rd_value_stage3;
 
@@ -216,5 +206,7 @@ localmem_bcpu_dualport_bram_ins
     // port B read data 
     .PORT_B_RDDATA 
 );
+
+assign PORT_A_ADDR = addr_stage1;
 
 endmodule

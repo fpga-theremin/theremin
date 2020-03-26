@@ -46,8 +46,10 @@ module bcpu_alu
     
     // when A_REG_INDEX==000 (RA is R0), use 0 instead of A_IN for operand A
     input logic[2:0] A_REG_INDEX,
-    // operand A input
+    // operand A input (stage0)
     input logic [DATA_WIDTH-1 : 0] A_IN,
+    // operand A input (stage1) -- delayed by 1 clk cycle
+    input logic [DATA_WIDTH-1 : 0] A_IN_STAGE1,
 
     // Operand B inputs:
     
@@ -92,7 +94,6 @@ module bcpu_alu
 // alu operation code    
 logic [3:0] alu_op_stage1;
 logic alu_en_stage1;
-logic [DATA_WIDTH-1 : 0] a_in_stage1;
 //logic [1:0] b_imm_mode_stage1;
 logic disable_flags_update_stage1;
 
@@ -100,7 +101,6 @@ always_ff @(posedge CLK) begin
     if (RESET) begin
         alu_op_stage1 <= 'b0;
         alu_en_stage1 <= 'b0;
-        a_in_stage1 <= 'b0;
         //b_imm_mode_stage1 <= 'b0;
         disable_flags_update_stage1 <= 'b0;
     end else if (CE) begin
@@ -108,7 +108,6 @@ always_ff @(posedge CLK) begin
         disable_flags_update_stage1 <= ((ALU_OP == ALUOP_INC) & (A_REG_INDEX == 3'b000)) | ~EN;
         alu_op_stage1 <= ALU_OP;
         alu_en_stage1 <= EN;
-        a_in_stage1 <= A_IN;
         //b_imm_mode_stage1 <= B_IMM_MODE;
     end
 end
@@ -147,7 +146,7 @@ always_ff @(posedge CLK)
     end
 
 typedef enum logic[1:0] {
-    FLAGS_MASK_NONE =  2'b00,    // don't update flags
+    FLAGS_MASK_NONE   =  2'b00,    // don't update flags
     FLAGS_MASK_ZS     =  2'b01,    // update Z and S flags only
     FLAGS_MASK_ALL    =  2'b11     // update all flags (C, Z, S, V)
 } flags_mask_t;
@@ -349,7 +348,7 @@ always_comb
     endcase 
 
 
-assign dsp_c_in = { {48-DATA_WIDTH{a_signex_stage1}},   a_in_stage1};     // add/subtract operand 1 C
+assign dsp_c_in = { {48-DATA_WIDTH{a_signex_stage1}},   A_IN_STAGE1};     // add/subtract operand 1 C
 assign dsp_d_in = { {25-DATA_WIDTH{a_signex}},          A_IN};            // multiplier 1
 assign dsp_b_in = { {18-DATA_WIDTH{b_signex}},          B_IN};            // multiplier 2, A:B add/subtract operand 2
 assign dsp_a_in = {30{b_signex}};                                         // sign only: top part of A:B for add/subtract operand 2  
