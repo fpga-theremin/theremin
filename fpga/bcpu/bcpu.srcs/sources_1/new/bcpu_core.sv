@@ -153,6 +153,9 @@ logic [3:0] flags_stage0;
 
 // ALU operation code (valid if ALU_EN==1)
 logic [3:0] alu_op;
+// alu operation code (stage0) 
+logic [3:0] ALU_OP_STAGE0;
+
 logic [1:0] imm_mode;
 // register A index, e.g. for ALU 
 logic [2:0] a_index;
@@ -252,6 +255,7 @@ bcpu_instr_decoder_inst
 
     // ALU operation code (valid if ALU_EN==1)
     .ALU_OP(alu_op),
+    .ALU_OP_STAGE0,
     .ALU_ENABLE_FLAGS_UPDATE_STAGE1,
     
     .IMM_MODE(imm_mode),
@@ -517,6 +521,7 @@ bcpu_alu_inst
 
     // alu operation code (stage1)    
     .ALU_OP(alu_op),
+    .ALU_OP_STAGE0,
     
     // input flags {V, S, Z, C}
     .FLAGS_IN(flags_stage0),

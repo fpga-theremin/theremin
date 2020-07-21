@@ -64,6 +64,8 @@ module bcpu_alu
 
     // alu operation code (stage1) 
     input logic [3:0] ALU_OP,
+    // alu operation code (stage0) 
+    input logic [3:0] ALU_OP_STAGE0,
     
     // input flags {V, S, Z, C}
     input logic [3:0] FLAGS_IN,
@@ -239,48 +241,58 @@ end
 always_comb dsp_carryinsel <= 'b000; // CARRYIN
 
 logic a_sign;
+logic a_sign_stage1;
 logic b_sign;
 assign a_sign = A_IN[DATA_WIDTH-1];
+assign a_sign_stage1 = A_IN_STAGE1[DATA_WIDTH-1];
 assign b_sign = B_IN[DATA_WIDTH-1];
 
 logic a_signex;
+logic d_signex; // same as a_signex for mult only
 logic b_signex;
 logic a_signex_stage1;
-always_ff @(posedge CLK)
-    if (RESET)
-        a_signex_stage1 <= 'b0;
-    else if (CE)
-        a_signex_stage1 <= a_signex;
 
-always_comb 
-    case(ALU_OP)
-        ALUOP_ADD:    begin    a_signex <= a_sign;    b_signex = b_sign;  end
-        ALUOP_ADDC:   begin    a_signex <= a_sign;    b_signex = b_sign;  end
-        ALUOP_SUB:    begin    a_signex <= a_sign;    b_signex = b_sign;  end
-        ALUOP_SUBC:   begin    a_signex <= a_sign;    b_signex = b_sign;  end
+//assign a_signex = a_sign; 
+
+//always_ff @(posedge CLK)
+//    if (RESET)
+//        a_signex_stage1 <= 'b0;
+//    else if (CE)
+//        a_signex_stage1 <= a_signex;
+
+//always_comb 
+//    case(ALU_OP)
+//        ALUOP_ADD:    begin    a_signex <= a_sign;    b_signex = b_sign;  end
+//        ALUOP_ADDC:   begin    a_signex <= a_sign;    b_signex = b_sign;  end
+//        ALUOP_SUB:    begin    a_signex <= a_sign;    b_signex = b_sign;  end
+//        ALUOP_SUBC:   begin    a_signex <= a_sign;    b_signex = b_sign;  end
         
-        ALUOP_INC:    begin    a_signex <= a_sign;    b_signex = b_sign;  end
-        ALUOP_DEC:    begin    a_signex <= a_sign;    b_signex = b_sign;  end
+//        ALUOP_INC:    begin    a_signex <= a_sign;    b_signex = b_sign;  end
+//        ALUOP_DEC:    begin    a_signex <= a_sign;    b_signex = b_sign;  end
 
-        ALUOP_AND:    begin    a_signex <= 1'b0;      b_signex = 1'b0;    end
-        ALUOP_ANDN:   begin    a_signex <= 1'b0;      b_signex = 1'b0;    end
-        ALUOP_OR:     begin    a_signex <= 1'b0;      b_signex = 1'b0;    end
-        ALUOP_XOR:    begin    a_signex <= 1'b0;      b_signex = 1'b0;    end
+//        ALUOP_AND:    begin    a_signex <= 1'b0;      b_signex = 1'b0;    end
+//        ALUOP_ANDN:   begin    a_signex <= 1'b0;      b_signex = 1'b0;    end
+//        ALUOP_OR:     begin    a_signex <= 1'b0;      b_signex = 1'b0;    end
+//        ALUOP_XOR:    begin    a_signex <= 1'b0;      b_signex = 1'b0;    end
 
-        // rotate
-        ALUOP_ROTATE:  begin    a_signex <= 1'b0;     b_signex = 1'b0;    end
-        // rotate with shifting in carry flag bit 0 or bit DATA_WIDTH-1 of result will be replaced with carry_in value
-        ALUOP_ROTATEC: begin    a_signex <= 1'b0;     b_signex = 1'b0;    end
+//        // rotate
+//        ALUOP_ROTATE:  begin    a_signex <= 1'b0;     b_signex = 1'b0;    end
+//        // rotate with shifting in carry flag bit 0 or bit DATA_WIDTH-1 of result will be replaced with carry_in value
+//        ALUOP_ROTATEC: begin    a_signex <= 1'b0;     b_signex = 1'b0;    end
         
-        // unsigned*unsigned mul low part, arithmetic shift left, logic shift left, take carry_out from p[16]         
-        ALUOP_MUL:     begin    a_signex <= 1'b0;     b_signex = 1'b0;    end
-        // unsigned*unsigned mul high part, logic shift right  
-        ALUOP_MULHUU:  begin    a_signex <= 1'b0;     b_signex = 1'b0;    end
-        ALUOP_MULHSS:  begin    a_signex <= a_sign;   b_signex = b_sign;  end
-        // signed*unsigned mul high part, arithmetic shift right
-        ALUOP_MULHSU:  begin    a_signex <= a_sign;   b_signex = 1'b0;    end
-    endcase 
+//        // unsigned*unsigned mul low part, arithmetic shift left, logic shift left, take carry_out from p[16]         
+//        ALUOP_MUL:     begin    a_signex <= 1'b0;     b_signex = 1'b0;    end
+//        // unsigned*unsigned mul high part, logic shift right  
+//        ALUOP_MULHUU:  begin    a_signex <= 1'b0;     b_signex = 1'b0;    end
+//        ALUOP_MULHSS:  begin    a_signex <= a_sign;   b_signex = b_sign;  end
+//        // signed*unsigned mul high part, arithmetic shift right
+//        ALUOP_MULHSU:  begin    a_signex <= a_sign;   b_signex = 1'b0;    end
+//    endcase 
 
+always_comb a_signex <= a_sign;  
+always_comb a_signex_stage1 <= a_sign_stage1;  
+always_comb d_signex <= a_sign & (ALU_OP_STAGE0 == ALUOP_MULHSS || ALU_OP_STAGE0 == ALUOP_MULHSU);  
+always_comb b_signex <= b_sign & (ALU_OP_STAGE0 == ALUOP_MULHSS);  
 
 // multiplier inputs
 assign dsp_inmode = DSP_INMODE_B1_D;
@@ -316,7 +328,7 @@ always_comb
 
 
 assign dsp_c_in = { {48-DATA_WIDTH{a_signex_stage1}},   A_IN_STAGE1};     // add/subtract operand 1 C
-assign dsp_d_in = { {25-DATA_WIDTH{a_signex}},          A_IN};            // multiplier 1
+assign dsp_d_in = { {25-DATA_WIDTH{d_signex}},          A_IN};            // multiplier 1
 assign dsp_b_in = { {18-DATA_WIDTH{b_signex}},          B_IN};            // multiplier 2, A:B add/subtract operand 2
 assign dsp_a_in = {30{b_signex}};                                         // sign only: top part of A:B for add/subtract operand 2  
 
@@ -427,14 +439,14 @@ DSP48E1_inst (
     // Reset/Clock Enable: 1-bit (each) input: Reset/Clock Enable Inputs
     .CEA1(dsp_ce),                         // 1-bit input: Clock enable input for 1st stage AREG
     .CEA2(dsp_ce),                         // 1-bit input: Clock enable input for 2nd stage AREG
-    .CEAD(1'b0),                           // 1-bit input: Clock enable input for ADREG
+    .CEAD(),                         // 1-bit input: Clock enable input for ADREG
     .CEALUMODE(dsp_ce),                    // 1-bit input: Clock enable input for ALUMODE
     .CEB1(dsp_ce),                         // 1-bit input: Clock enable input for 1st stage BREG
     .CEB2(dsp_ce),                         // 1-bit input: Clock enable input for 2nd stage BREG
     .CEC(dsp_ce),                          // 1-bit input: Clock enable input for CREG
     .CECARRYIN(dsp_ce),                    // 1-bit input: Clock enable input for CARRYINREG
     .CECTRL(dsp_ce),                       // 1-bit input: Clock enable input for OPMODEREG and CARRYINSELREG
-    .CED(dsp_ce),                          // 1-bit input: Clock enable input for DREG
+    .CED(dsp_ce),                                // 1-bit input: Clock enable input for DREG
     .CEINMODE(),                           // 1-bit input: Clock enable input for INMODEREG
     .CEM(dsp_ce),                          // 1-bit input: Clock enable input for MREG
     .CEP(dsp_ce),                          // 1-bit input: Clock enable input for PREG

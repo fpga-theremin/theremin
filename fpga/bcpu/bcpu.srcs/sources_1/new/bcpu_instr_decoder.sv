@@ -77,6 +77,8 @@ module bcpu_instr_decoder
 
     // ALU operation code (valid if ALU_EN==1)
     output logic [3:0] ALU_OP,
+    // alu operation code (stage0) 
+    output logic [3:0] ALU_OP_STAGE0,
     
     output logic [1:0] IMM_MODE,
 
@@ -428,6 +430,8 @@ end
 
 logic [3:0] alu_op;
 assign alu_op = {INSTR_IN[11], INSTR_IN[5:3]}; // iiii from instruction
+
+assign ALU_OP_STAGE0 = alu_op;
 
 always_ff @(posedge CLK)
     if (RESET)
