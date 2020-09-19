@@ -1,0 +1,22 @@
+.subckt 74AHC1G04 in out vcc gnd
+d1 gnd in dio
+d2 in vcc dio
+.model dio d cjo=3p
+mp1 2 in vcc vcc lvp w=88u l=2u ad=290p as=550p pd=10u ps=100u
+mn1 2 in gnd gnd lvn w=56u l=2u ad=162p as=550p pd=10u ps=75u
+rf1 2 gnd 100Meg
+mp2 3 2 vcc vcc lvp w=364u l=2u ad=500p as=500p pd=10u ps=430u
+mn2 3 2 gnd gnd lvn w=184u l=2u ad=275p as=275p pd=10u ps=270u
+rf2 3 gnd 100Meg
+mp3 out 3 vcc vcc lvpo w=1080u l=2u ad=1200p as=1200p pd=30u ps=540u
+mn3 out 3 gnd gnd lvno w=420u l=2u ad=600p as=600p pd=30u ps=390u
+cout out gnd 2p Rpar=100Meg
+.model lvn nmos level=3 kp=65u vto=0.8 tox=30n nsub=2.8e15 gamma=0.94 phi=0.65 vmax=150k
++ xj=0.11e-6 ld=0.4e-6 theta=0.054
+.model lvp pmos level=3 kp=20.3u vto=-0.8 tox=30n nsub=3.3e16 gamma=0.92 phi=0.65 vmax=970k
++ xj=0.63e-6 ld=0.15e-6 theta=0.108
+.model lvno nmos level=3 kp=65u vto=0.8 tox=30n nsub=2.8e15 gamma=0.94 phi=0.65 vmax=150k
++ rs=10 rd=10 xj=0.11e-6 ld=0.4e-6 theta=0.054
+.model lvpo pmos level=3 kp=20.3u vto=-0.8 tox=30n nsub=3.3e16 gamma=0.92 phi=0.65 vmax=970k
++ rs=20 rd=20 xj=0.63e-6 ld=0.15e-6 theta=0.108
+.ends 74AHC1G04

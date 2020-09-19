@@ -1,0 +1,23 @@
+{
+    "name": "FreqMasureDMA",
+    "description": "Measure frequency using DMA",
+    "keywords": "frequency, measurement",
+    "authors": [
+        {
+            "name": "Vadim Lopatin",
+            "url": "https://github.com/fpga-theremin/theremin/tree/master/teensy4theremin",
+            "maintainer": true
+        }
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/fpga-theremin/theremin/tree/master/teensy4theremin"
+    },
+    "version": "0.1",
+    "downloadUrl": "https://github.com/fpga-theremin/theremin/tree/master/teensy4theremin",
+    "homepage": "https://github.com/fpga-theremin/theremin/tree/master/teensy4theremin",
+    "frameworks": "Arduino",
+    "examples": [
+        "examples/*/*.pde"
+    ]
+}

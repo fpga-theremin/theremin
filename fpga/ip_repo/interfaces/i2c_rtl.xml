@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<spirit:abstractionDefinition xmlns:xilinx="http://www.xilinx.com" xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1685-2009" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <spirit:vendor>coolreader.org</spirit:vendor>
+  <spirit:library>user</spirit:library>
+  <spirit:name>i2c_rtl</spirit:name>
+  <spirit:version>1.0</spirit:version>
+  <spirit:busType spirit:vendor="coolreader.org" spirit:library="user" spirit:name="i2c" spirit:version="1.0"/>
+  <spirit:ports>
+    <spirit:port>
+      <spirit:logicalName>SDA</spirit:logicalName>
+      <spirit:description>I2C Data</spirit:description>
+      <spirit:wire>
+        <spirit:qualifier>
+          <spirit:isData>true</spirit:isData>
+        </spirit:qualifier>
+        <spirit:onMaster>
+          <spirit:presence>required</spirit:presence>
+          <spirit:width>1</spirit:width>
+          <spirit:direction>inout</spirit:direction>
+        </spirit:onMaster>
+        <spirit:onSlave>
+          <spirit:presence>required</spirit:presence>
+          <spirit:width>1</spirit:width>
+          <spirit:direction>inout</spirit:direction>
+        </spirit:onSlave>
+        <spirit:defaultValue>1</spirit:defaultValue>
+      </spirit:wire>
+      <spirit:vendorExtensions>
+        <xilinx:abstractionDefinitionPortInfo>
+          <xilinx:tristate_role>tristate</xilinx:tristate_role>
+        </xilinx:abstractionDefinitionPortInfo>
+      </spirit:vendorExtensions>
+    </spirit:port>
+    <spirit:port>
+      <spirit:logicalName>SCL</spirit:logicalName>
+      <spirit:description>I2C Clock</spirit:description>
+      <spirit:wire>
+        <spirit:qualifier>
+          <spirit:isClock>true</spirit:isClock>
+        </spirit:qualifier>
+        <spirit:onMaster>
+          <spirit:presence>required</spirit:presence>
+          <spirit:width>1</spirit:width>
+          <spirit:direction>inout</spirit:direction>
+        </spirit:onMaster>
+        <spirit:onSlave>
+          <spirit:presence>required</spirit:presence>
+          <spirit:width>1</spirit:width>
+          <spirit:direction>inout</spirit:direction>
+        </spirit:onSlave>
+        <spirit:defaultValue>1</spirit:defaultValue>
+      </spirit:wire>
+      <spirit:vendorExtensions>
+        <xilinx:abstractionDefinitionPortInfo>
+          <xilinx:tristate_role>tristate</xilinx:tristate_role>
+        </xilinx:abstractionDefinitionPortInfo>
+      </spirit:vendorExtensions>
+    </spirit:port>
+  </spirit:ports>
+</spirit:abstractionDefinition>

@@ -1,39 +1,35 @@
-## Welcome to GitHub Pages
+# FPGA based theremin
 
-You can use the [editor on GitHub](https://github.com/fpga-theremin/theremin/edit/gh-pages/README.md) to maintain and preview the content for your website in Markdown files.
+Open source digital FPGA based theremin project.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+Hardware design and build instructions can be found on [FPGA Theremin Project Page](https://fpga-theremin.github.io/theremin/)
 
-### Markdown
+[Theremin](https://en.wikipedia.org/wiki/Theremin) is an electronic musical instrument controlled without physical contact by the thereminist (performer).
+It is named after the Westernized name of its Soviet inventor, Léon Theremin (Лев Термéн), who patented the device in 1928. 
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+FPGA Theremin project is attempt to build modern digital theremin with rich set of features.
 
-```markdown
-Syntax highlighted code block
+## License 
+FPGA Theremin is open source hardware and software project.
 
-# Header 1
-## Header 2
-### Header 3
+All hardware designed for this project 
+is published under [TAPR Open Hardware License](https://www.tapr.org/TAPR_Open_Hardware_License_v1.0.txt)
 
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/fpga-theremin/theremin/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+All software (including both HDL and C/C++ code) 
+is published under [GNU GENERAL PUBLIC LICENSE Version 2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.txt)
 
 
+## HDL sources
+
+Modules are written in SystemVerilog.
+
+Some of modules use Xilinx Series 7 specific hardware blocks.
+
+HLD code for modules:
+
+* [theremin_sensor](https://github.com/fpga-theremin/theremin/tree/master/fpga/ip_repo/theremin_ip/src/theremin_sensor) - double channel high precision frequency meter
+* [encoders_board](https://github.com/fpga-theremin/theremin/tree/master/fpga/ip_repo/theremin_ip/src/encoders_board) - interfacing to 5 incremental encoders with buttons and one tact button
+* [lcd_controller](https://github.com/fpga-theremin/theremin/tree/master/fpga/ip_repo/theremin_ip/src/lcd_controller) - LCD controller with RGB interface and DMA
+* [audio_io](https://github.com/fpga-theremin/theremin/tree/master/fpga/ip_repo/theremin_ip/src/audio_io) - audio out 2 * stereo * 24bit * 48KHz I2S outputs and one stereo * 24bit * 48KHz I2S input
+* [theremin_i2c](https://github.com/fpga-theremin/theremin/tree/master/fpga/ip_repo/theremin_ip/src/theremin_i2c) - I2C support
+* [theremin_io](https://github.com/fpga-theremin/theremin/tree/master/fpga/ip_repo/theremin_ip/src/theremin_io) - Top Level Module combining all theremin peripherials
