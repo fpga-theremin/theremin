@@ -122,7 +122,7 @@ Wire Wire Line
 Wire Wire Line
 	7600 2650 7600 2750
 Wire Wire Line
-	7600 2750 7950 2750
+	7600 2750 7800 2750
 Wire Wire Line
 	7950 2850 7700 2850
 Wire Wire Line
@@ -151,4 +151,51 @@ F 3 "" H 6850 3700 50  0001 C CNN
 	1    6850 3650
 	1    0    0    -1  
 $EndComp
+$Comp
+L Connector:AudioJack3 J8
+U 1 1 5F771708
+P 8150 4150
+F 0 "J8" H 8132 4475 50  0000 C CNN
+F 1 "AudioJack3" H 8132 4384 50  0000 C CNN
+F 2 "Connector_Audio:Jack_6.35mm_ST_008G_04" H 8150 4150 50  0001 C CNN
+F 3 "~" H 8150 4150 50  0001 C CNN
+	1    8150 4150
+	-1   0    0    1   
+$EndComp
+$Comp
+L Connector:AudioJack3 J7
+U 1 1 5F7723C9
+P 8150 3450
+F 0 "J7" H 8132 3775 50  0000 C CNN
+F 1 "AudioJack3" H 8132 3684 50  0000 C CNN
+F 2 "Connector_Audio:Jack_3.5mm_CUI_SJ1-3533NG_Horizontal" H 8150 3450 50  0001 C CNN
+F 3 "~" H 8150 3450 50  0001 C CNN
+	1    8150 3450
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	7950 3550 7500 3550
+Wire Wire Line
+	7500 3550 7500 2950
+Connection ~ 7500 2950
+Wire Wire Line
+	7950 3450 7700 3450
+Wire Wire Line
+	7700 3450 7700 2850
+Connection ~ 7700 2850
+Wire Wire Line
+	7950 3350 7800 3350
+Wire Wire Line
+	7800 3350 7800 2750
+Connection ~ 7800 2750
+Wire Wire Line
+	7800 2750 7950 2750
+NoConn ~ 7350 2950
+NoConn ~ 7350 3050
+NoConn ~ 7350 3150
+NoConn ~ 6350 2950
+NoConn ~ 6350 2850
+NoConn ~ 6350 2750
+NoConn ~ 6350 2650
+NoConn ~ 6350 2550
 $EndSCHEMATC
