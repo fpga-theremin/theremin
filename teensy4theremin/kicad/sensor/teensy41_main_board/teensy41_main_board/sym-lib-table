@@ -1,0 +1,7 @@
+(sym_lib_table
+  (lib (name teensy41_main_board-rescue)(type Legacy)(uri ${KIPRJMOD}/teensy41_main_board-rescue.lib)(options "")(descr ""))
+  (lib (name teensy41-mcu_module)(type Legacy)(uri C:/projects/fpga/theremin-source/teensy4theremin/kicad/libraries/teensy41-mcu_module.lib)(options "")(descr ""))
+  (lib (name teensyaudiod-mcu_module)(type Legacy)(uri C:/projects/fpga/theremin-source/teensy4theremin/kicad/libraries/teensyaudiod-mcu_module.lib)(options "")(descr ""))
+  (lib (name teensylcd)(type Legacy)(uri C:/projects/fpga/theremin-source/teensy4theremin/kicad/libraries/teensylcd.lib)(options "")(descr ""))
+  (lib (name plt133t10w)(type Legacy)(uri C:/projects/fpga/theremin-source/teensy4theremin/kicad/libraries/plt133t10w.lib)(options "")(descr ""))
+)
