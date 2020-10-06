@@ -4,10 +4,10 @@ EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
 Sheet 1 1
-Title ""
-Date ""
-Rev ""
-Comp ""
+Title "Teensy 4.1 Theremin Main Board"
+Date "2020-10-06"
+Rev "0.1"
+Comp "(c) Vadim Lopatin, 2020"
 Comment1 ""
 Comment2 ""
 Comment3 ""
@@ -1436,7 +1436,7 @@ U 1 1 6033F9B7
 P 3100 7200
 F 0 "J13" H 3208 7381 50  0000 C CNN
 F 1 "ProtoGrid" H 3208 7290 50  0000 C CNN
-F 2 "" H 3100 7200 50  0001 C CNN
+F 2 "Module:Teensy41ThereminProtoGrid" H 3100 7200 50  0001 C CNN
 F 3 "~" H 3100 7200 50  0001 C CNN
 	1    3100 7200
 	1    0    0    -1  
