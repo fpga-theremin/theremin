@@ -40,6 +40,8 @@ module bcpu_program_counter
     output logic [PC_WIDTH-1:0] PC_STAGE0,
     // id of current thread in barrel CPU
     output logic [1:0] THREAD_ID_STAGE0,
+    // THREAD_ID_STAGE0 delayed by 3 clock cycles
+    output logic [1:0] THREAD_ID_STAGE3,
     
 
     // Jump/Call controls from instruction decoder
@@ -147,6 +149,7 @@ end
 
 assign PC_STAGE0 = pc_stage0;
 assign THREAD_ID_STAGE0 = thread_id_stage0;
+assign THREAD_ID_STAGE3 = thread_id_stage3;
 
 always_ff @(posedge CLK) begin
     if (RESET) begin

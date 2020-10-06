@@ -72,7 +72,15 @@ module bcpu_instr_decoder
     // when PC_WIDTH == ADDR_WIDTH, no shared mem extension of number of threads is supported
     // when PC_WIDTH < ADDR_WIDTH, higher address space can be used for shared mem of two 4-core CPUs
     //      and for higher level integration in multicore CPU
-    parameter ADDR_WIDTH = 10
+    parameter ADDR_WIDTH = 10,
+    // bus address width
+    parameter BUS_ADDR_WIDTH = 5,
+    // number of bits in bus opcode, see bus_op_t in bcpu_defs
+    parameter BUS_OP_WIDTH = 2,
+    // number of bits in ALU opcode
+    parameter ALU_OP_WIDTH = 4,
+    // number of bits in register index (number of registers is 1<<REG_INDEX_WIDTH)
+    parameter REG_INDEX_WIDTH = 3
 )
 (
     // INPUTS
@@ -85,9 +93,9 @@ module bcpu_instr_decoder
 
     // decoded instruction outputs
     // register A index : to register file
-    output logic [2:0] A_INDEX,
+    output logic [REG_INDEX_WIDTH-1:0] A_INDEX,
     // register B or immediate index : to register file 
-    output logic [2:0] B_INDEX,
+    output logic [REG_INDEX_WIDTH-1:0] B_INDEX,
     
     // register B value from register file -- for address and ALU operand calculations 
     input logic [DATA_WIDTH-1:0] B_VALUE_IN,
@@ -98,7 +106,7 @@ module bcpu_instr_decoder
     output logic [ADDR_WIDTH-1:0] ADDR_VALUE,
 
     // destination register index
-    output logic [2:0] DST_REG_INDEX,
+    output logic [REG_INDEX_WIDTH-1:0] DST_REG_INDEX,
     // data source mux index for writing to register
     output logic [1:0] DST_REG_SOURCE,
     // 1 to enable writing of operation result to destination register
@@ -118,26 +126,26 @@ module bcpu_instr_decoder
     output logic JMP_EN,
 
     // ALU operation code (valid if ALU_EN==1)
-    output logic [3:0] ALU_OP,
+    output logic [ALU_OP_WIDTH-1:0] ALU_OP,
 
     // bus operation
-    output logic [1:0] BUS_OP,
+    output logic [BUS_OP_WIDTH-1:0] BUS_OP,
     // bus address
-    output logic [4:0] BUS_ADDR
+    output logic [BUS_ADDR_WIDTH-1:0] BUS_ADDR
 
 
 );
 
 // instruction parts
-logic [2:0] ra_index;
-logic [2:0] rb_index;
+logic [REG_INDEX_WIDTH-1:0] ra_index;
+logic [REG_INDEX_WIDTH-1:0] rb_index;
 logic [3:0] jmp_cond;
 logic [1:0] imm_mode;
 logic addr_mode;
 logic [10:0] addr_offset;
-logic [3:0] alu_op;
-logic [1:0] bus_op;
-logic [4:0] bus_addr;
+logic [ALU_OP_WIDTH-1:0] alu_op;
+logic [BUS_OP_WIDTH-1:0] bus_op;
+logic [BUS_ADDR_WIDTH-1:0] bus_addr;
 
 // 1 if condition is met
 logic cond_result;

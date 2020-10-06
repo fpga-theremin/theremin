@@ -74,23 +74,6 @@ typedef enum logic[3:0] {
 	ALUOP_MULHSU     = 4'b1111  //   RC = high(signed RA * unsigned RB)           .SZ.       SAR
 } aluop_t;
 
-/*
-    Additional ops mapping
-    alias op                 mapped to                   behavior change comparing to original op    
-    NOP                  <=  INC R0, R0, 0               -- disable ALL flags update
-    MOV RC, RB           <=  INC RC, R0, RB              -- disable ALL flags update
-    TEST RA, RB          <=  AND R0, RA, RB              -- only flags updated
-    CMP RA, RB           <=  SUB R0, RA, RB              -- only flags updated
-    CMPC RA, RB          <=  SUBC R0, RA, RB             -- only flags updated
-    SHL RC, RA, n        <=  MUL RC, RA, (1<<n)          -- enable C flag, CF=p[16]
-    SAL RC, RA, n        <=  MUL RC, RA, (1<<n)          -- enable C flag, CF=p[16]
-    SHR RC, RA, n        <=  MULUU RC, RA, (1<<(16-n))   -- enable C flag, CF=p[15]
-    SAR RC, RA, n        <=  MULSU RC, RA, (1<<(16-n))   -- enable C flag, CF=p[15]
-    ROL RC, RA, n        <=  ROTATE RC, RA, (1<<n)       -- enable C flag, CF=p[16]
-    RCL RC, RA, n        <=  ROTATE RC, RA, (1<<n)       -- enable C flag, CF=p[16], result[0]=CF_in
-    ROR RC, RA, n        <=  ROTATE RC, RA, (1<<(16-n))  -- enable C flag, CF=p[15]
-    RCR RC, RA, n        <=  ROTATE RC, RA, (1<<(16-n))  -- enable C flag, CF=p[15], result[15]=CF_in
-*/
 
 // flag indexes
 typedef enum logic[1:0] {
@@ -126,74 +109,21 @@ typedef enum logic[3:0] {
 } jmp_condition_t;
 
 
-// BUS operation codes (operands: RB_imm is mask, RA is value to write)
-typedef enum logic[2:0] {
-    BUSOP_READ_IBUS        = 3'b000, //  Rdest = (IBUS[addr] & mask),  update ZF
-    BUSOP_WAIT_IBUS        = 3'b001, //  Rdest = (IBUS[addr] & mask),  update ZF, wait until ZF=0
-    BUSOP_READ_OBUS        = 3'b010, //  Rdest = (OBUS[addr] & mask),  update ZF
-    BUSOP_WAIT_OBUS        = 3'b011, //  Rdest = (OBUS[addr] & mask),  update ZF, wait until ZF=0
-    BUSOP_TOGGLE_OBUS      = 3'b100, //  OBUS'[addr] =  OBUS[addr] ^ mask, Rdest = (OBUS[addr] & mask) -- read new value
-    BUSOP_SET_OBUS         = 3'b101, //  OBUS'[addr] =  OBUS[addr] | mask, Rdest = (OBUS[addr] & mask) -- read new value
-    BUSOP_RESET_OBUS       = 3'b110, //  OBUS'[addr] =  OBUS[addr] & ~mask, Rdest = (OBUS[addr] & mask) -- read new value
-    BUSOP_WRITE_OBUS       = 3'b111  //  OBUS'[addr] = (OBUS[addr] & ~mask) | (value & mask)
-} bus_op_t;
+// BUS operation codes (operands: RB_imm is mask, RA is destination register for result)
+typedef enum logic[1:0] {
+    BUSOP_IBUSREAD         = 2'b00, //  Rdest = (IBUS[addr] & mask),  update ZF
+    BUSOP_IBUSWAIT0        = 2'b01, //  Rdest = (IBUS[addr] & mask),  update ZF, wait until ZF=1
+    BUSOP_IBUSWAIT1        = 2'b10, //  Rdest = (IBUS[addr] & mask),  update ZF, wait until ZF=0
+    BUSOP_RESERVED         = 2'b11  //  reserved 
+} bus_rd_op_t;
 
-/*
-Instruction set planning:
-
-18 bit instructions
-
-00 0: ALU ops
-
-00 0 rrr i bbb mmii iddd
-     
-	rrr RA
-	bbb RB
-	mm  RB mode (00=reg, 01=consts, 10,11: single bit)
-	iiii ALU OP
-	ddd destination register index (0: don't write)
-
-
-00 1: Bus operations
-
-00 1 rrr i bbb mmii aaaa
-
-    rrr  destination register for read operations
-         write value register for write operation
-    bbb  RB
-    mm   RB mode (00=reg, 01=consts, 10,11: single bit)
-    iii  BUS operation code
-    aaaa BUS address
-
-01 0: LOAD
-
-01 0 rrr 0 bbb mmaa aaaa        LOAD R, Rbase + offs6
-01 0 rrr 1 aaa aaaa aaaa        LOAD R, PC + offs11
-
-01 1: STORE
-
-01 1 rrr 0 bbb mmaa aaaa        STORE R, Rbase + offs6
-01 1 rrr 1 aaa aaaa aaaa        STORE R, PC + offs11
-
-10 x: Conditional jumps
-
-10  cccc 0 bbb mmaa aaaa        JMP   Cond1, Rbase+offs6          cond jumps to reg, cond returns, returns, 
-10  cccc 1 aaa aaaa aaaa        JMP   Cond1, PC+offs11            cond and uncond relative jumps
-
-    cccc : condition, see table below
-    
-11 0: Calls
-
-11 0 rrr 0 bbb mmaa aaaa        CALL   R, Rbase+offs6
-11 0 rrr 1 aaa aaaa aaaa        CALL   R, PC + offs11     
-
-11 1: WAIT and log jump
-
-11 1: Long jump
-
-11 1 aaa a aaa aaaa aaaa        JMP    PC+offs15                  JUMP PC+offs15
-
-*/
+// BUS operation codes (operands: RB_imm is mask, RA is destination register for result)
+typedef enum logic[1:0] {
+    BUSOP_OBUSWRITE        = 2'b00, //  OBUS[addr] = (OBUS[addr] & ~mask) | (Rsrc & mask)
+    BUSOP_OBUSSET          = 2'b01, //  OBUS[addr] = OBUS[addr] | mask
+    BUSOP_OBUSRESET        = 2'b10, //  OBUS[addr] = OBUS[addr] & ~mask
+    BUSOP_OBUSINVERT       = 2'b11  //  OBUS[addr] = OBUS[addr] ^ mask
+} bus_wr_op_t;
 
 
 endpackage
