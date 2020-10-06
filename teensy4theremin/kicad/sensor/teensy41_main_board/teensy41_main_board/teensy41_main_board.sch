@@ -1403,6 +1403,45 @@ Text Label 4450 6650 0    50   ~ 0
 3V3
 NoConn ~ 5000 5850
 NoConn ~ 5000 5950
+Text Label 4450 7350 0    50   ~ 0
+SPDIF_OUT
+Text Label 4450 7250 0    50   ~ 0
+SPDIF_IN
+Text Label 4450 6350 0    50   ~ 0
+SPDIF_OUT
+Text Label 4450 6250 0    50   ~ 0
+SPDIF_IN
+Text Label 6500 5750 0    50   ~ 0
+SPDIF_IN
+$Comp
+L Connector:Conn_01x01_Male J11
+U 1 1 6032987F
+P 2650 1300
+F 0 "J11" H 2758 1481 50  0000 C CNN
+F 1 "Grounding" H 2758 1390 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical" H 2650 1300 50  0001 C CNN
+F 3 "~" H 2650 1300 50  0001 C CNN
+	1    2650 1300
+	1    0    0    -1  
+$EndComp
+Entry Wire Line
+	3600 1300 3700 1400
+Wire Wire Line
+	2850 1300 3600 1300
+Text Label 3250 1300 0    50   ~ 0
+GND
+$Comp
+L Connector:Conn_01x01_Male J13
+U 1 1 6033F9B7
+P 3100 7200
+F 0 "J13" H 3208 7381 50  0000 C CNN
+F 1 "ProtoGrid" H 3208 7290 50  0000 C CNN
+F 2 "" H 3100 7200 50  0001 C CNN
+F 3 "~" H 3100 7200 50  0001 C CNN
+	1    3100 7200
+	1    0    0    -1  
+$EndComp
+NoConn ~ 3300 7200
 Wire Bus Line
 	9250 950  9250 2000
 Wire Bus Line
@@ -1417,14 +1456,4 @@ Wire Bus Line
 	6750 1050 6750 4200
 Wire Bus Line
 	4300 1050 4300 7500
-Text Label 4450 7350 0    50   ~ 0
-SPDIF_OUT
-Text Label 4450 7250 0    50   ~ 0
-SPDIF_IN
-Text Label 4450 6350 0    50   ~ 0
-SPDIF_OUT
-Text Label 4450 6250 0    50   ~ 0
-SPDIF_IN
-Text Label 6500 5750 0    50   ~ 0
-SPDIF_IN
 $EndSCHEMATC
