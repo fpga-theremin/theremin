@@ -1,4 +1,4 @@
-update=2/19/2020 5:41:48 PM
+update=10/12/2020 2:37:54 PM
 version=1
 last_client=kicad
 [general]
@@ -29,9 +29,7 @@ version=1
 NetIExt=net
 [eeschema]
 version=1
-LibDir=../../libraries
-[eeschema/libraries]
-LibName1=sp721
+LibDir=
 [schematic_editor]
 version=1
 PageLayoutDescrFile=

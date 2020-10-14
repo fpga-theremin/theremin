@@ -1416,19 +1416,19 @@ SPDIF_IN
 $Comp
 L Connector:Conn_01x01_Male J11
 U 1 1 6032987F
-P 2650 1300
-F 0 "J11" H 2758 1481 50  0000 C CNN
-F 1 "Grounding" H 2758 1390 50  0000 C CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical" H 2650 1300 50  0001 C CNN
-F 3 "~" H 2650 1300 50  0001 C CNN
-	1    2650 1300
+P 2650 1200
+F 0 "J11" H 2758 1381 50  0000 C CNN
+F 1 "Grounding" H 2758 1290 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical" H 2650 1200 50  0001 C CNN
+F 3 "~" H 2650 1200 50  0001 C CNN
+	1    2650 1200
 	1    0    0    -1  
 $EndComp
 Entry Wire Line
-	3600 1300 3700 1400
+	3600 1200 3700 1300
 Wire Wire Line
-	2850 1300 3600 1300
-Text Label 3250 1300 0    50   ~ 0
+	2850 1200 3600 1200
+Text Label 3250 1200 0    50   ~ 0
 GND
 $Comp
 L Connector:Conn_01x01_Male J13
@@ -1442,6 +1442,75 @@ F 3 "~" H 3100 7200 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 NoConn ~ 3300 7200
+$Comp
+L Connector:Conn_01x01_Male J14
+U 1 1 60440E22
+P 2650 1450
+F 0 "J14" H 2758 1631 50  0000 C CNN
+F 1 "Grounding2" H 2758 1540 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Horizontal" H 2650 1450 50  0001 C CNN
+F 3 "~" H 2650 1450 50  0001 C CNN
+	1    2650 1450
+	1    0    0    -1  
+$EndComp
+Entry Wire Line
+	3600 1450 3700 1550
+Wire Wire Line
+	2850 1450 3600 1450
+Text Label 3250 1450 0    50   ~ 0
+GND
+$Comp
+L Connector:TestPoint TP1
+U 1 1 5F993081
+P 1200 4350
+F 0 "TP1" H 1258 4468 50  0000 L CNN
+F 1 "VIN1" H 1258 4377 50  0000 L CNN
+F 2 "Connector_PinHeader_1.27mm:PinHeader_1x01_P1.27mm_Vertical" H 1400 4350 50  0001 C CNN
+F 3 "~" H 1400 4350 50  0001 C CNN
+	1    1200 4350
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:TestPoint TP3
+U 1 1 5F993B3F
+P 2600 4350
+F 0 "TP3" H 2658 4468 50  0000 L CNN
+F 1 "VCCVOL" H 2658 4377 50  0000 L CNN
+F 2 "Connector_PinHeader_1.27mm:PinHeader_1x01_P1.27mm_Vertical" H 2800 4350 50  0001 C CNN
+F 3 "~" H 2800 4350 50  0001 C CNN
+	1    2600 4350
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:TestPoint TP2
+U 1 1 5F993FDD
+P 1200 5700
+F 0 "TP2" H 1258 5818 50  0000 L CNN
+F 1 "VIN2" H 1258 5727 50  0000 L CNN
+F 2 "Connector_PinHeader_1.27mm:PinHeader_1x01_P1.27mm_Vertical" H 1400 5700 50  0001 C CNN
+F 3 "~" H 1400 5700 50  0001 C CNN
+	1    1200 5700
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:TestPoint TP4
+U 1 1 5F99456C
+P 2600 5700
+F 0 "TP4" H 2658 5818 50  0000 L CNN
+F 1 "VCCPITCH" H 2658 5727 50  0000 L CNN
+F 2 "Connector_PinHeader_1.27mm:PinHeader_1x01_P1.27mm_Vertical" H 2800 5700 50  0001 C CNN
+F 3 "~" H 2800 5700 50  0001 C CNN
+	1    2600 5700
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1200 5700 1200 5950
+Wire Wire Line
+	2600 5700 2600 5950
+Wire Wire Line
+	2600 4350 2600 4650
+Wire Wire Line
+	1200 4350 1200 4650
 Wire Bus Line
 	9250 950  9250 2000
 Wire Bus Line
