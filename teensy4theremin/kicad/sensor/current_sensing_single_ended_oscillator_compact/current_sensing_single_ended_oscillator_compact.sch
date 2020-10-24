@@ -76,8 +76,8 @@ F 3 "" H 4100 5000 50  0001 C CNN
 	1    4100 5000
 	1    0    0    -1  
 $EndComp
-Text Notes 2250 5150 0    50   ~ 0
-IP4220CZ6 ESD protection is mandatory!\nThere is 200V voltage swing on antenna!!!
+Text Notes 2250 5000 0    50   ~ 0
+IP4220CZ6 ESD protection is mandatory!
 Wire Wire Line
 	3450 4500 4100 4500
 $Comp
@@ -99,7 +99,7 @@ GND
 Text Label 7400 3550 0    50   ~ 0
 5V
 Text Label 7400 3650 0    50   ~ 0
-OUT_P
+OUT
 Wire Wire Line
 	4950 1400 4900 1400
 Wire Wire Line
@@ -131,7 +131,7 @@ L Device:C C8
 U 1 1 5F6B3869
 P 5850 1800
 F 0 "C8" H 5965 1846 50  0000 L CNN
-F 1 "1uF" H 5965 1755 50  0000 L CNN
+F 1 "2.2uF" H 5965 1755 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 5888 1650 50  0001 C CNN
 F 3 "~" H 5850 1800 50  0001 C CNN
 	1    5850 1800
@@ -194,17 +194,6 @@ F 3 "~" H 3100 2300 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Connection ~ 5850 1300
-$Comp
-L Regulator_Linear:LD3985M33R_SOT23 U2
-U 1 1 5F6A75CD
-P 5250 1400
-F 0 "U2" H 5250 1742 50  0000 C CNN
-F 1 "LD3985M33R_SOT23" H 5250 1651 50  0000 C CNN
-F 2 "Package_TO_SOT_SMD:SOT-23-5" H 5250 1725 50  0001 C CIN
-F 3 "http://www.st.com/internet/com/TECHNICAL_RESOURCES/TECHNICAL_LITERATURE/DATASHEET/CD00003395.pdf" H 5250 1400 50  0001 C CNN
-	1    5250 1400
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	5550 1400 5600 1400
 Wire Wire Line
@@ -278,7 +267,7 @@ L Comparator:LT1711xMS8 U3
 U 1 1 5F930D29
 P 5600 3050
 F 0 "U3" H 5944 3096 50  0000 L CNN
-F 1 "LT1711xMS8" H 5944 3005 50  0000 L CNN
+F 1 "LT1711CMS8" H 5944 3005 50  0000 L CNN
 F 2 "Package_SO:MSOP-8_3x3mm_P0.65mm" H 5600 2650 50  0001 C CNN
 F 3 "https://www.analog.com/media/en/technical-documentation/data-sheets/171112f.pdf" H 5600 3050 50  0001 C CNN
 	1    5600 3050
@@ -392,9 +381,7 @@ $EndComp
 Wire Wire Line
 	5500 2750 5500 2300
 Wire Wire Line
-	5500 2300 6150 2300
-Wire Wire Line
-	6150 2300 6150 1300
+	6250 2300 6250 1300
 $Comp
 L Device:C C9
 U 1 1 5F99A62F
@@ -448,7 +435,7 @@ L Device:C C12
 U 1 1 5F9E3DBA
 P 4600 4750
 F 0 "C12" H 4715 4796 50  0000 L CNN
-F 1 "1uF" H 4715 4705 50  0000 L CNN
+F 1 "2.2uF" H 4715 4705 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 4638 4600 50  0001 C CNN
 F 3 "~" H 4600 4750 50  0001 C CNN
 	1    4600 4750
@@ -469,8 +456,6 @@ Wire Wire Line
 	4600 4900 4600 5000
 Wire Wire Line
 	4600 4500 4600 4600
-Wire Wire Line
-	5850 1300 6150 1300
 $Comp
 L IP4220CZ6:IP4220CZ6 U1
 U 1 1 5DF1ED71
@@ -587,12 +572,6 @@ Wire Wire Line
 Connection ~ 6450 2300
 Wire Wire Line
 	6450 2300 6900 2300
-Wire Wire Line
-	6150 2300 6450 2300
-Connection ~ 6150 2300
-Wire Wire Line
-	6150 1300 6450 1300
-Connection ~ 6150 1300
 $Comp
 L Connector:TestPoint TP2
 U 1 1 5F984E2F
@@ -631,4 +610,25 @@ F 3 "" H 7700 1400 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	7700 1150 7700 1400
+Connection ~ 6250 1300
+Wire Wire Line
+	6250 1300 6450 1300
+Connection ~ 6250 2300
+Wire Wire Line
+	6250 2300 6450 2300
+Wire Wire Line
+	5500 2300 6250 2300
+Wire Wire Line
+	5850 1300 6250 1300
+$Comp
+L Regulator_Linear:LD3985M33R_SOT23 U2
+U 1 1 5F6A75CD
+P 5250 1400
+F 0 "U2" H 5250 1742 50  0000 C CNN
+F 1 "LP2985AIM5-3.3" H 5250 1651 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT-23-5" H 5250 1725 50  0001 C CIN
+F 3 "http://www.st.com/internet/com/TECHNICAL_RESOURCES/TECHNICAL_LITERATURE/DATASHEET/CD00003395.pdf" H 5250 1400 50  0001 C CNN
+	1    5250 1400
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC
