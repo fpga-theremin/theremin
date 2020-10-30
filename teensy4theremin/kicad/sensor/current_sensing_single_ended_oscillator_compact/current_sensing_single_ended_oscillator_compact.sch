@@ -5,10 +5,10 @@ $Descr A4 11693 8268
 encoding utf-8
 Sheet 1 1
 Title "Theremin Oscillator"
-Date "2020-10-24"
-Rev "v1.2"
+Date "2020-10-30"
+Rev "v1.3"
 Comp ""
-Comment1 "Teensy 4 / FPGA Theremin Projects"
+Comment1 "For Digital Theremin Project"
 Comment2 "(c) Vadim Lopatin 2020"
 Comment3 ""
 Comment4 ""
@@ -48,8 +48,8 @@ F 3 "~" H 1450 1850 50  0001 C CNN
 $EndComp
 Text Notes 1000 1600 0    79   ~ 0
 To theremin antenna
-Text Notes 700  1050 0    79   ~ 0
-Theremin oscillator\ndigital output square 3.3V 700..2000KHz\nPower input: +3.6 .. 6V, 50mA\n
+Text Notes 650  1150 0    79   ~ 0
+Theremin oscillator rev 1.3\ndigital output square 3.3V 700..2000KHz\ndifferential or single ended\nPower input: +3.6 .. 6V, 50mA\n
 Text Notes 900  3300 0    79   ~ 0
 L: Air core coil, 1.5-3 mH\n0.1mm/0.125mm copper wire, \n32mm frame diameter, \n40..70mm winding length
 $Comp
@@ -81,25 +81,25 @@ IP4220CZ6 ESD protection is mandatory!
 Wire Wire Line
 	3450 4500 4100 4500
 $Comp
-L Connector:Conn_01x03_Male J6
+L Connector:Conn_01x04_Male J6
 U 1 1 5E5208E1
-P 7950 3650
-F 0 "J6" H 7923 3580 50  0000 R CNN
-F 1 "OSC" H 7923 3671 50  0000 R CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Horizontal" H 7950 3650 50  0001 C CNN
-F 3 "~" H 7950 3650 50  0001 C CNN
-	1    7950 3650
+P 8050 3850
+F 0 "J6" H 8023 3780 50  0000 R CNN
+F 1 "OSC" H 8023 3871 50  0000 R CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Horizontal" H 8050 3850 50  0001 C CNN
+F 3 "~" H 8050 3850 50  0001 C CNN
+	1    8050 3850
 	-1   0    0    1   
 $EndComp
 Wire Wire Line
-	7750 3750 7250 3750
+	7850 3950 7500 3950
 Connection ~ 4100 4500
-Text Label 7400 3750 0    50   ~ 0
+Text Label 7500 3950 0    50   ~ 0
 GND
-Text Label 7400 3550 0    50   ~ 0
-5V
-Text Label 7400 3650 0    50   ~ 0
-OUT
+Text Label 7500 3750 0    50   ~ 0
++5V
+Text Label 7500 3850 0    50   ~ 0
+OUTP
 Wire Wire Line
 	4950 1400 4900 1400
 Wire Wire Line
@@ -205,16 +205,16 @@ Wire Wire Line
 $Comp
 L power:GND #PWR015
 U 1 1 5F7D2E8E
-P 7250 3850
-F 0 "#PWR015" H 7250 3600 50  0001 C CNN
-F 1 "GND" H 7255 3677 50  0000 C CNN
-F 2 "" H 7250 3850 50  0001 C CNN
-F 3 "" H 7250 3850 50  0001 C CNN
-	1    7250 3850
+P 7500 4050
+F 0 "#PWR015" H 7500 3800 50  0001 C CNN
+F 1 "GND" H 7505 3877 50  0000 C CNN
+F 2 "" H 7500 4050 50  0001 C CNN
+F 3 "" H 7500 4050 50  0001 C CNN
+	1    7500 4050
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	7250 3750 7250 3850
+	7500 3950 7500 4050
 Wire Wire Line
 	4100 4900 4100 5000
 Wire Wire Line
@@ -252,14 +252,13 @@ F 3 "~" H 3100 2650 50  0001 C CNN
 	1    3100 2650
 	1    0    0    -1  
 $EndComp
-Text Notes 4950 950  0    50   ~ 0
-Analog part LDO
-Text Notes 7350 3400 0    50   ~ 0
+Text Notes 5100 900  0    50   ~ 0
+LDO 3.3V
+Text Notes 7500 3500 0    50   ~ 0
 To MCU or FPGA
 Wire Wire Line
 	4900 1300 4950 1300
 Connection ~ 4900 1300
-NoConn ~ 3450 4300
 Text Label 5900 1300 0    50   ~ 0
 3V3_A
 $Comp
@@ -330,10 +329,6 @@ F 3 "~" H 4850 3650 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 Wire Wire Line
-	6050 3650 6050 3150
-Wire Wire Line
-	6050 3150 5900 3150
-Wire Wire Line
 	4700 3650 4500 3650
 Text Notes 4350 4100 0    50   ~ 0
 Current sensing resistor.\nRecommended values: 10..47 Ohm.\nSmaller value gives bigger \nantenna voltage swing.
@@ -349,8 +344,6 @@ Wire Wire Line
 Wire Wire Line
 	5000 3650 5150 3650
 Connection ~ 5150 3650
-Wire Wire Line
-	5150 3650 6050 3650
 $Comp
 L power:GND #PWR05
 U 1 1 5F9798D4
@@ -478,12 +471,8 @@ Connection ~ 3100 1750
 Wire Wire Line
 	3100 1750 3650 1750
 Wire Wire Line
-	7250 750  7250 3550
-Wire Wire Line
-	7250 3550 7750 3550
+	7350 3750 7850 3750
 NoConn ~ 3450 4700
-Wire Wire Line
-	1600 3650 2200 3650
 $Comp
 L power:GND #PWR03
 U 1 1 5F7E2DD3
@@ -500,21 +489,6 @@ Wire Wire Line
 Wire Wire Line
 	4100 2300 4100 4500
 Connection ~ 5500 2300
-Connection ~ 2200 3650
-Wire Wire Line
-	2200 3650 4500 3650
-Wire Wire Line
-	4750 750  7250 750 
-Wire Wire Line
-	5900 2950 6900 2950
-Wire Wire Line
-	6900 2950 6900 3650
-Wire Wire Line
-	6900 3650 7750 3650
-Wire Wire Line
-	2200 4700 2700 4700
-Wire Wire Line
-	2200 3650 2200 4700
 NoConn ~ 2700 4300
 Wire Wire Line
 	2550 4500 2700 4500
@@ -631,4 +605,123 @@ F 3 "http://www.st.com/internet/com/TECHNICAL_RESOURCES/TECHNICAL_LITERATURE/DAT
 	1    5250 1400
 	1    0    0    -1  
 $EndComp
+Wire Wire Line
+	5900 2950 6500 2950
+Wire Wire Line
+	6500 2950 6500 3650
+Wire Wire Line
+	5150 3650 6500 3650
+Text Label 6200 3650 0    50   ~ 0
+DRIVE
+Text Label 2650 3650 0    50   ~ 0
+IND_IN
+Wire Wire Line
+	1600 3650 3800 3650
+Wire Wire Line
+	3450 4300 3800 4300
+Wire Wire Line
+	3800 4300 3800 3650
+Connection ~ 3800 3650
+Wire Wire Line
+	3800 3650 4500 3650
+NoConn ~ 2700 4700
+Text Label 7500 3650 0    50   ~ 0
+OUTN
+$Comp
+L Device:R R2
+U 1 1 5F9F5CAB
+P 6700 3150
+F 0 "R2" V 6493 3150 50  0000 C CNN
+F 1 "10" V 6584 3150 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 6630 3150 50  0001 C CNN
+F 3 "~" H 6700 3150 50  0001 C CNN
+	1    6700 3150
+	0    -1   -1   0   
+$EndComp
+$Comp
+L Device:R R3
+U 1 1 5F9F6405
+P 6700 3650
+F 0 "R3" V 6493 3650 50  0000 C CNN
+F 1 "10" V 6584 3650 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 6630 3650 50  0001 C CNN
+F 3 "~" H 6700 3650 50  0001 C CNN
+	1    6700 3650
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	6550 3650 6500 3650
+Connection ~ 6500 3650
+Wire Wire Line
+	6850 3150 7200 3150
+Wire Wire Line
+	5900 3150 6550 3150
+Wire Wire Line
+	6850 3650 6950 3650
+Wire Wire Line
+	7200 3150 7200 3850
+Wire Wire Line
+	7200 3850 7850 3850
+Wire Wire Line
+	7350 3750 7350 750 
+Wire Wire Line
+	4750 750  7350 750 
+$Comp
+L Device:R R5
+U 1 1 5FA30029
+P 7200 4350
+F 0 "R5" V 6993 4350 50  0000 C CNN
+F 1 "100" V 7084 4350 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 7130 4350 50  0001 C CNN
+F 3 "~" H 7200 4350 50  0001 C CNN
+	1    7200 4350
+	-1   0    0    1   
+$EndComp
+$Comp
+L Device:R R4
+U 1 1 5FA30551
+P 6950 4100
+F 0 "R4" V 6743 4100 50  0000 C CNN
+F 1 "100" V 6834 4100 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 6880 4100 50  0001 C CNN
+F 3 "~" H 6950 4100 50  0001 C CNN
+	1    6950 4100
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6950 3650 6950 3950
+Connection ~ 6950 3650
+Wire Wire Line
+	6950 3650 7850 3650
+Wire Wire Line
+	7200 3850 7200 4200
+Connection ~ 7200 3850
+$Comp
+L power:GND #PWR012
+U 1 1 5FA38968
+P 7200 4550
+F 0 "#PWR012" H 7200 4300 50  0001 C CNN
+F 1 "GND" H 7205 4377 50  0000 C CNN
+F 2 "" H 7200 4550 50  0001 C CNN
+F 3 "" H 7200 4550 50  0001 C CNN
+	1    7200 4550
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7200 4500 7200 4550
+$Comp
+L power:GND #PWR011
+U 1 1 5FA3B6E7
+P 6950 4550
+F 0 "#PWR011" H 6950 4300 50  0001 C CNN
+F 1 "GND" H 6955 4377 50  0000 C CNN
+F 2 "" H 6950 4550 50  0001 C CNN
+F 3 "" H 6950 4550 50  0001 C CNN
+	1    6950 4550
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6950 4250 6950 4550
+Text Notes 6700 5250 0    50   ~ 0
+Use R2, R3, R4, R5 \nto match line impedance \nand decrease ringing.\nR3, R4 are not needed \nfor single ended out
 $EndSCHEMATC

@@ -1,0 +1,65 @@
+Version 4
+SymbolType BLOCK
+LINE Normal -16 32 -16 -32
+LINE Normal 32 0 -16 32
+LINE Normal -16 -32 32 0
+LINE Normal -4 -16 -12 -16
+LINE Normal -8 -12 -8 -20
+LINE Normal -4 16 -12 16
+LINE Normal 48 -16 16 -16
+LINE Normal 48 -48 48 -16
+LINE Normal -48 -16 -48 -48
+LINE Normal -16 -16 -48 -16
+LINE Normal -48 16 -16 16
+LINE Normal -48 48 -48 16
+LINE Normal 48 16 8 16
+LINE Normal 48 48 48 16
+LINE Normal -96 48 -48 48
+LINE Normal -48 -48 -96 -48
+LINE Normal 64 -48 48 -48
+LINE Normal 48 48 64 48
+LINE Normal -128 -48 -96 -48
+LINE Normal -16 0 -128 0
+LINE Normal -96 48 -128 48
+LINE Normal -16 64 -16 96
+LINE Normal 96 48 64 48
+LINE Normal 96 -48 64 -48
+LINE Normal 96 -48 96 -48
+LINE Normal -16 -64 -16 -96
+RECTANGLE Normal 64 64 -96 -64 2
+CIRCLE Normal 16 -13 10 -19
+TEXT 61 39 Right 1 +OUT
+TEXT 61 -38 Right 1 -OUT
+TEXT -93 -40 Left 1 +IN
+TEXT -91 41 Left 1 -IN
+TEXT -90 -8 Left 1 Vocm
+TEXT -13 -56 Center 1 V+
+TEXT -15 54 Center 1 V-
+WINDOW 3 -73 84 Center 2
+WINDOW 0 -105 -82 Left 2
+SYMATTR Value AD8137
+SYMATTR Prefix X
+SYMATTR SpiceModel ad8137
+SYMATTR Description Low Cost, High Speed Differential ADC Driver
+SYMATTR ModelFile AD8137.cir
+PIN -128 -48 NONE 8
+PINATTR PinName +IN
+PINATTR SpiceOrder 1
+PIN -128 48 NONE 8
+PINATTR PinName -IN
+PINATTR SpiceOrder 2
+PIN -16 -96 NONE 8
+PINATTR PinName V+
+PINATTR SpiceOrder 3
+PIN -16 96 NONE 8
+PINATTR PinName V-
+PINATTR SpiceOrder 4
+PIN 96 -48 NONE 8
+PINATTR PinName -OUT
+PINATTR SpiceOrder 6
+PIN 96 48 NONE 8
+PINATTR PinName +OUT
+PINATTR SpiceOrder 5
+PIN -128 0 NONE 8
+PINATTR PinName Vocm
+PINATTR SpiceOrder 7

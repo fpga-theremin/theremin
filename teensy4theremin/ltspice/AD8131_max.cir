@@ -1,0 +1,157 @@
+* AD8131 SPICE Macro-model maximum values
+* Description: Amplifier
+* Generic Desc: High speed diff video line driver
+* Developed by: JG/ADI
+* Revision History: 08/10/2012 - Updated to new header style
+* 2.0 (10/2000)                              
+* Copyright 1999, 2012 by Analog Devices, Inc.
+*
+* Refer to http://www.analog.com/Analog_Root/static/techSupport/designTools/spiceModels/license/spice_general.html for License Statement. Use of this model
+* indicates your acceptance with the terms and provisions in the License Statement.
+*
+* BEGIN Notes:
+*
+* Not Modeled:
+*     Distortion is not characterized
+*     vnoise, not included in this version
+*     inoise, not included in this version
+*     -3dB BW on Vocm to output is not included
+*     Vocm Cmrr Vs. Frequency not included
+*
+* Parameters modeled include:
+*     closed loop gain and phase vs bandwidth
+*     output current and voltage limiting
+*     offset voltage (is  non-static, will  vary with gain)
+*     ibias (again, is static, will not vary with vcm)
+*     slew rate and step response performance
+*     (slew rate is based on 10-90% of step response)
+*     current on output will be reflected to the supplies 
+*     Vocm is variable and include input typical offset
+*     cmrr is characterized in this version.
+*
+* END Notes
+*
+* Node assignments
+*                non-inverting input
+*                | inverting input
+*                | |  positive supply
+*                | |  |  negative supply
+*                | |  |  |  output negative
+*                | |  |  |  |   output positve
+*                | |  |  |  |   |   vocm input
+*                | |  |  |  |   |   |
+.SUBCKT AD8131  3a 9a 99 98 71 71b 110
+ 
+************Test Conditions***********
+rg1 3a 3 742
+rf1 2 71 1.51E3
+rg2 9a 9  750
+rf2 9 71b 1.509E3
+****************************input stage*******************************************
+
+
+*****positive input left side********
+I1 99 5 .4E-3
+Q1 98 2 5 QX
+vos 3 2 -3.43E-3
+
+**RAIL CLIPING****
+Dlim+ 14 14b dx
+Vlim+ 99 14b 1.93
+Dlim 14c 14 dx
+Vlim 14c  98 1.93
+Dlim- 13b 13 DX
+Vlim- 13b 98 1.93
+Dlim-B 13 13C dx
+Vlim-B 99 13C 1.93
+
+** VOCM INPUT RAIL CLIPING****
+DOCMa 100 100A dx
+VOCMa 99 100A 2.88
+DOCMb 100b 100 DX
+VOCMb 100b 98 2.88
+
+*****negative input right side*****
+I2 99 6 .4E-3
+Q2 98 9 6 QX
+
+***********Input capacitance/impedance*******
+CMRR 2 0 .150p
+Cin 2 0 .7p
+Cin2 9 0  .7p
+***************************************pole, zero pole stage********************************************
+****FIRST TRY**c1 14 13 .910p
+c2 13 0 1.65E-12
+c3 14 0 1.65E-12
+G1 13 14   5 6   5E-3
+r11 13 0 250k
+r12 14 0 250k
+*********pole zero stage( POSITIVE SIDE)*******
+gp1 0 75 14 0 1
+RP1 75 0 1
+CP1 75 0 .98E-13
+*********pole zero stage( NEGATIVE SIDE)*******
+gp2 0 76 13 0 1
+RP2 76 0 1
+CP2 76 0 .98E-13
+**********output stage Positive side*************
+D17 76 84 DX
+VO1  84 70 .177V
+VO2  70 85 .177V
+D16 85 76  DX
+G30 70 99c 99 76  91E-3
+G31 98c 70 76 98  91E-3
+RO30 70 99c 11
+RO31 98c 70 11
+VIOUT1 99 99c 0V
+VIOUT2 98 98c 0V
+VIOUT3 70 71 0V
+
+********** Output Stage Negative side *************
+D17b 75 84b DX
+VO1b  84b 70b .177V
+VO2b  70b 85b .177V
+D16b 85b 75  DX
+G30b 70b 99d 99 75  91E-3
+G31b 98d 70b 75 98  91E-3
+RO30b 70b 99d 11
+RO31b 98d 70b 11
+VIOUTB1 99 99d 0V
+VIOUTB2 98d 98 0V
+VIOUTB3 70b 71b 0V
+
+*********VOCM STAGE*************************
+*Cocm 100 99 3.5E-3
+*R 100 99 1E3
+Gocm_a 0 75 110 0 1
+Gocm_b 0 76 110 0 1
+Rocm1 99 100 240k
+Rocm2 100 98 240k
+**Voffset 100 110 -1E-3
+Voffset 100 110 -7E-3
+********CURRENT MIRROR TO SUPPLIES POSITVIE SIDE*********
+FO1 0 99 poly(2) VIOUT1 VI1 -19.803E-3 1 -1
+FO2 0 98 poly(2) VIOUT2 VI2 -19.803E-3 1 -1
+FO3 0 400 VIOUT1 1
+VI1 401 0 0
+VI2 0 402 0
+DM1 400 401 DX
+DM2 402 400 DX 
+********CURRENT MIRROR TO SUPPLIES NEGATIVE SIDE*********
+FO1B 0 99 poly(2) VIOUTB1 VIB1 -19.803E-3 1 -1
+FO2B 0 98 poly(2) VIOUTB2 VIB2 -19.803E-3 1 -1
+FO3B 0 400B VIOUTB1 1
+VIB1 401B 0 0
+VIB2 0 402B 0
+DMB1 400B 401B DX
+DMB2 402B 400B DX 
+.MODEL QX PNP (BF=228.57 Is=1E-15)
+.MODEL DX D(IS=1E-15)
+.ENDS
+
+
+
+
+
+
+

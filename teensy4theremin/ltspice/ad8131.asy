@@ -1,0 +1,105 @@
+Version 4
+SymbolType BLOCK
+LINE Normal -16 32 -16 -32
+LINE Normal 32 0 -16 32
+LINE Normal -16 -32 32 0
+LINE Normal -4 -16 -12 -16
+LINE Normal -8 -12 -8 -20
+LINE Normal -4 16 -12 16
+LINE Normal 4 -55 0 -48
+LINE Normal 7 -42 4 -55
+LINE Normal 12 -55 7 -42
+LINE Normal 16 -42 12 -55
+LINE Normal 21 -55 16 -42
+LINE Normal 24 -42 21 -55
+LINE Normal 29 -55 24 -42
+LINE Normal 32 -48 29 -55
+LINE Normal -76 -55 -80 -48
+LINE Normal -73 -42 -76 -55
+LINE Normal -68 -55 -73 -42
+LINE Normal -64 -42 -68 -55
+LINE Normal -59 -55 -64 -42
+LINE Normal -56 -42 -59 -55
+LINE Normal -51 -55 -56 -42
+LINE Normal -48 -48 -51 -55
+LINE Normal 4 41 0 48
+LINE Normal 7 54 4 41
+LINE Normal 12 41 7 54
+LINE Normal 16 54 12 41
+LINE Normal 21 41 16 54
+LINE Normal 24 54 21 41
+LINE Normal 29 41 24 54
+LINE Normal 32 48 29 41
+LINE Normal -76 41 -80 48
+LINE Normal -73 54 -76 41
+LINE Normal -68 41 -73 54
+LINE Normal -64 54 -68 41
+LINE Normal -59 41 -64 54
+LINE Normal -56 54 -59 41
+LINE Normal -51 41 -56 54
+LINE Normal -48 48 -51 41
+LINE Normal 48 -16 16 -16
+LINE Normal 48 -48 48 -16
+LINE Normal 32 -48 48 -48
+LINE Normal -48 -48 0 -48
+LINE Normal -32 -16 -32 -48
+LINE Normal -16 -16 -32 -16
+LINE Normal -32 16 -16 16
+LINE Normal -32 48 -32 16
+LINE Normal 0 48 -48 48
+LINE Normal 48 16 8 16
+LINE Normal 48 48 48 16
+LINE Normal 32 48 48 48
+LINE Normal -96 48 -80 48
+LINE Normal -80 -48 -96 -48
+LINE Normal 64 -48 48 -48
+LINE Normal 48 48 64 48
+LINE Normal -127 -48 -96 -48
+LINE Normal -96 0 -128 0
+LINE Normal -96 48 -128 48
+LINE Normal -16 64 -16 96
+LINE Normal 96 48 64 48
+LINE Normal 96 -48 64 -48
+LINE Normal 96 -48 96 -48
+LINE Normal -16 -64 -16 -96
+RECTANGLE Normal 64 64 -96 -64 2
+CIRCLE Normal 16 -13 10 -19
+TEXT -64 -32 Center 0 750
+TEXT -64 32 Center 0 750
+TEXT 16 32 Center 0 1.5K
+TEXT 16 -32 Center 0 1.5K
+TEXT 96 39 Right 1 +OUT
+TEXT 96 -57 Right 1 -OUT
+TEXT -127 -57 Left 1 +IN
+TEXT -127 38 Left 1 -IN
+TEXT -124 -9 Left 1 Vocm
+TEXT -1 -89 Center 1 V+
+TEXT -3 86 Center 1 V-
+WINDOW 3 -73 84 Center 2
+WINDOW 0 -89 -85 Left 2
+SYMATTR Value AD8131
+SYMATTR Prefix X
+SYMATTR SpiceModel AD8131
+SYMATTR Description Low-Cost High-Speed Differential Driver
+SYMATTR ModelFile AD8131_max.cir
+PIN -128 -48 NONE 8
+PINATTR PinName +IN
+PINATTR SpiceOrder 1
+PIN -128 48 NONE 8
+PINATTR PinName -IN
+PINATTR SpiceOrder 2
+PIN -16 -96 NONE 8
+PINATTR PinName V+
+PINATTR SpiceOrder 3
+PIN -16 96 NONE 8
+PINATTR PinName V-
+PINATTR SpiceOrder 4
+PIN 96 -48 NONE 8
+PINATTR PinName -OUT
+PINATTR SpiceOrder 5
+PIN 96 48 NONE 8
+PINATTR PinName +OUT
+PINATTR SpiceOrder 6
+PIN -128 0 NONE 8
+PINATTR PinName Vocm
+PINATTR SpiceOrder 7
