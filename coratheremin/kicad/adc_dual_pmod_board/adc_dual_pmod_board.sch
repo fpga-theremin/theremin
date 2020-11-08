@@ -241,7 +241,7 @@ U 1 1 5FA79DC5
 P 8550 3550
 F 0 "U5" H 8900 4300 50  0000 C CNN
 F 1 "AD9283" H 8900 2850 50  0000 C CNN
-F 2 "Package_SO:SSOP-20_4.4x6.5mm_P0.65mm" H 8550 3550 50  0001 C CNN
+F 2 "Package_SO:SSOP-20_5.3x7.2mm_P0.65mm" H 8550 3550 50  0001 C CNN
 F 3 "https://www.analog.com/media/en/technical-documentation/data-sheets/AD9283.pdf" H 8550 3550 50  0001 C CNN
 	1    8550 3550
 	1    0    0    -1  
@@ -523,7 +523,7 @@ U 1 1 5FABED49
 P 8550 8100
 F 0 "U6" H 8900 8850 50  0000 C CNN
 F 1 "AD9283" H 8900 7400 50  0000 C CNN
-F 2 "Package_SO:SSOP-20_4.4x6.5mm_P0.65mm" H 8550 8100 50  0001 C CNN
+F 2 "Package_SO:SSOP-20_5.3x7.2mm_P0.65mm" H 8550 8100 50  0001 C CNN
 F 3 "https://www.analog.com/media/en/technical-documentation/data-sheets/AD9283.pdf" H 8550 8100 50  0001 C CNN
 	1    8550 8100
 	1    0    0    -1  

@@ -5,8 +5,8 @@ $Descr A4 11693 8268
 encoding utf-8
 Sheet 1 1
 Title "Teensy Theremin Display and Controls Board"
-Date "2020-10-09"
-Rev "rev 1.0"
+Date "2020-11-08"
+Rev "rev 1.2"
 Comp "(c) Vadim Lopatin 2020"
 Comment1 ""
 Comment2 ""
@@ -85,10 +85,10 @@ U 1 1 5F778498
 P 850 3650
 F 0 "RV1" H 781 3696 50  0000 R CNN
 F 1 "25K" H 781 3605 50  0000 R CNN
-F 2 "Potentiometer_THT:Potentiometer_Bourns_PTV09A-1_Single_Vertical" H 850 3650 50  0001 C CNN
+F 2 "Potentiometer_THT:Potentiometer_TT_P0915N" H 850 3650 50  0001 C CNN
 F 3 "~" H 850 3650 50  0001 C CNN
 	1    850  3650
-	1    0    0    -1  
+	1    0    0    1   
 $EndComp
 $Comp
 L Switch:SW_Push SW6
@@ -503,10 +503,10 @@ U 1 1 5F84638B
 P 850 4950
 F 0 "RV2" H 781 4996 50  0000 R CNN
 F 1 "25K" H 781 4905 50  0000 R CNN
-F 2 "Potentiometer_THT:Potentiometer_Bourns_PTV09A-1_Single_Vertical" H 850 4950 50  0001 C CNN
+F 2 "Potentiometer_THT:Potentiometer_TT_P0915N" H 850 4950 50  0001 C CNN
 F 3 "~" H 850 4950 50  0001 C CNN
 	1    850  4950
-	1    0    0    -1  
+	1    0    0    1   
 $EndComp
 $Comp
 L Device:C C2
@@ -569,10 +569,10 @@ U 1 1 5F849F10
 P 850 6250
 F 0 "RV3" H 781 6296 50  0000 R CNN
 F 1 "25K" H 781 6205 50  0000 R CNN
-F 2 "Potentiometer_THT:Potentiometer_Bourns_PTV09A-1_Single_Vertical" H 850 6250 50  0001 C CNN
+F 2 "Potentiometer_THT:Potentiometer_TT_P0915N" H 850 6250 50  0001 C CNN
 F 3 "~" H 850 6250 50  0001 C CNN
 	1    850  6250
-	1    0    0    -1  
+	1    0    0    1   
 $EndComp
 $Comp
 L Device:C C3
@@ -635,10 +635,10 @@ U 1 1 5F84F78B
 P 3000 3600
 F 0 "RV4" H 2931 3646 50  0000 R CNN
 F 1 "25K" H 2931 3555 50  0000 R CNN
-F 2 "Potentiometer_THT:Potentiometer_Bourns_PTV09A-1_Single_Vertical" H 3000 3600 50  0001 C CNN
+F 2 "Potentiometer_THT:Potentiometer_TT_P0915N" H 3000 3600 50  0001 C CNN
 F 3 "~" H 3000 3600 50  0001 C CNN
 	1    3000 3600
-	1    0    0    -1  
+	1    0    0    1   
 $EndComp
 $Comp
 L Device:C C4
@@ -701,10 +701,10 @@ U 1 1 5F85676F
 P 3000 4900
 F 0 "RV5" H 2931 4946 50  0000 R CNN
 F 1 "25K" H 2931 4855 50  0000 R CNN
-F 2 "Potentiometer_THT:Potentiometer_Bourns_PTV09A-1_Single_Vertical" H 3000 4900 50  0001 C CNN
+F 2 "Potentiometer_THT:Potentiometer_TT_P0915N" H 3000 4900 50  0001 C CNN
 F 3 "~" H 3000 4900 50  0001 C CNN
 	1    3000 4900
-	1    0    0    -1  
+	1    0    0    1   
 $EndComp
 $Comp
 L Device:C C5
@@ -2269,4 +2269,6 @@ Wire Bus Line
 	1500 950  1500 7000
 Wire Bus Line
 	3650 950  3650 7650
+Text Notes 950  750  0    118  ~ 0
+Teensy 4.1 Theremin Display and Controls Board rev 1.2
 $EndSCHEMATC
