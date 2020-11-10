@@ -5,7 +5,7 @@ $Descr A3 16535 11693
 encoding utf-8
 Sheet 1 1
 Title "ADC dual PMOD board for Digital Theremin"
-Date "2020-10-31"
+Date "2020-11-10"
 Rev "0.1"
 Comp "Vadim Lopatin"
 Comment1 ""
@@ -2022,15 +2022,29 @@ Wire Wire Line
 Connection ~ 9950 2150
 Wire Bus Line
 	9950 7500 11800 7500
+Connection ~ 11800 7500
+$Comp
+L Connector_Generic:Conn_01x03 J6
+U 1 1 5FB3BB5E
+P 1550 5250
+F 0 "J6" H 1468 5567 50  0000 C CNN
+F 1 "Conn_mount" H 1468 5476 50  0000 C CNN
+F 2 "Connector_PinSocket_2.54mm:PinSocket_1x03_P2.54mm_Vertical" H 1550 5250 50  0001 C CNN
+F 3 "~" H 1550 5250 50  0001 C CNN
+	1    1550 5250
+	-1   0    0    -1  
+$EndComp
+NoConn ~ 1750 5350
+NoConn ~ 1750 5250
+NoConn ~ 1750 5150
 Wire Bus Line
 	9950 2900 11800 2900
 Wire Bus Line
-	11800 2900 11800 7500
-Wire Bus Line
 	11800 7500 11800 8450
+Wire Bus Line
+	11800 2900 11800 7500
 Wire Bus Line
 	9950 2900 9950 4100
 Wire Bus Line
 	9950 7500 9950 8650
-Connection ~ 11800 7500
 $EndSCHEMATC
