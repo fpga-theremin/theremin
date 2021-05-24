@@ -1,4 +1,4 @@
-update=11/10/2020 9:20:08 PM
+update=5/21/2021 5:10:28 PM
 version=1
 last_client=kicad
 [general]
@@ -34,7 +34,7 @@ LibDir=
 [schematic_editor]
 version=1
 PageLayoutDescrFile=
-PlotDirectoryName=
+PlotDirectoryName=../../../../theremin-pages/z7_lite_theremin/pdf/
 SubpartIdSeparator=0
 SubpartFirstId=65
 NetFmtName=
