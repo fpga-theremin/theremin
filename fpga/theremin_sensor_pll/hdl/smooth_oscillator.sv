@@ -3,12 +3,13 @@
     FPGA theremin project.
     (c) Vadim Lopatin, 2021
     
-    smooth_oscillator is implementation of high precision periodig signal generator.
-    Target signal period is being filtered by 2-stage iir filter.
+    smooth_oscillator is implementation of high precision periodig signal generator (NCO).
+    Target signal period value is being filtered by 2-stage iir filter.
+    Target singnal period may be optionally replaced with OVERRIDE value for calibration.
 
     Period value is fixed point value. Int part corresponds to CLK cycles (150MHz)
     
-    Resources: 183 LUTs for 30-bit period precision and 11 bits filter shift
+    Resources: 218 LUTs for 30-bit period precision and 11 bits filter shift on Xilinx platform.
 */
 module smooth_oscillator
 #(
@@ -26,12 +27,14 @@ module smooth_oscillator
     input logic CE,
     // period value in 150MHz serdes clock cycles (29..20 - int part, 19..0 - frac part)
     input logic [PERIOD_INT_PART+PERIOD_FRAC_PART-1:0] PERIOD_IN,
-    // min period value
+    // period value in 150MHz serdes clock cycles (29..20 - int part, 19..0 - frac part)
+    input logic [PERIOD_INT_PART+PERIOD_FRAC_PART-1:0] OVERRIDE_PERIOD_IN,
+    // min period value: used instead of PERIOD_IN if PERIOD_IN < MIN_PERIOD
     input logic [PERIOD_INT_PART+LIMIT_FRAC_PART-1:0] MIN_PERIOD,
-    // max period value
+    // max period value: used instead of PERIOD_IN if PERIOD_IN > MAX_PERIOD
     input logic [PERIOD_INT_PART+LIMIT_FRAC_PART-1:0] MAX_PERIOD,
-    // 1 to enable IIR filter, 0 to set
-    //input logic FILTER_EN,
+    // 1 to set period to OVERRIDE_PERIOD_IN instead of PERIOD_IN
+    input logic OVERRIDE_EN,
 
     // current filtered and limited period value
     output logic [PERIOD_INT_PART+PERIOD_FRAC_PART-1:0] FILTERED_PERIOD,
@@ -57,14 +60,19 @@ always_ff @(posedge CLK) begin
     if (RESET) begin
         limited_period <= 'b0;  
     end else if (CE) begin
-        limited_period[PERIOD_FRAC_PART-LIMIT_FRAC_PART-1:0] <= 
-                (min_limit_exceeded | max_limit_exceeded) 
-                ? 'b0 
-                : PERIOD_IN[PERIOD_FRAC_PART-LIMIT_FRAC_PART-1:0];  
-        limited_period[PERIOD_INT_PART+PERIOD_FRAC_PART-1:PERIOD_FRAC_PART-LIMIT_FRAC_PART] 
-                        <= (min_limit_exceeded) ? MIN_PERIOD
-                        : (max_limit_exceeded) ? MAX_PERIOD
-                        :                        PERIOD_IN[PERIOD_INT_PART+PERIOD_FRAC_PART-1:PERIOD_FRAC_PART-LIMIT_FRAC_PART];  
+        if (OVERRIDE_EN) begin
+            // optionally, override
+            limited_period <= OVERRIDE_PERIOD_IN;
+        end else begin
+            limited_period[PERIOD_FRAC_PART-LIMIT_FRAC_PART-1:0] <= 
+                    (min_limit_exceeded | max_limit_exceeded) 
+                    ? 'b0 
+                    : PERIOD_IN[PERIOD_FRAC_PART-LIMIT_FRAC_PART-1:0];  
+            limited_period[PERIOD_INT_PART+PERIOD_FRAC_PART-1:PERIOD_FRAC_PART-LIMIT_FRAC_PART] 
+                            <= (min_limit_exceeded) ? MIN_PERIOD
+                            : (max_limit_exceeded) ? MAX_PERIOD
+                            :                        PERIOD_IN[PERIOD_INT_PART+PERIOD_FRAC_PART-1:PERIOD_FRAC_PART-LIMIT_FRAC_PART];
+        end  
     end
 end
 
