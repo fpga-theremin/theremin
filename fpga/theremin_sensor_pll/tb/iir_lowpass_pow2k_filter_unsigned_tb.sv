@@ -57,24 +57,24 @@ end
 
 always @(posedge CLK) begin
     if (CE) begin
-        #3 $display("%d \t %b \t : %d \t %b", IN_VALUE, IN_VALUE, OUT_VALUE, OUT_VALUE);
+        #3 $display("%x \t %b \t : %x \t %b", IN_VALUE, IN_VALUE, OUT_VALUE, OUT_VALUE);
     end
 end
 
 always begin
     IN_VALUE = 100_000_000;
     @(posedge CE);
-    IN_VALUE = 100_000_000;
+    IN_VALUE = 30'h00ff_ffff;
     repeat (500) @(posedge CLK);    
-    IN_VALUE =  50_000_000;
+    IN_VALUE =  30'h14ff_0000;
     repeat (500) @(posedge CLK);  
-    IN_VALUE =  -1_000_000;
+    IN_VALUE =  30'h3fff_ffff;
     repeat (500) @(posedge CLK);    
-    IN_VALUE = 200_000_000;
+    IN_VALUE = 30'h1345_f234;
     repeat (500) @(posedge CLK);    
-    IN_VALUE = -100_000_000;
+    IN_VALUE = 30'h7345_f234;
     repeat (500) @(posedge CLK);    
-    IN_VALUE = -200_000_000;
+    IN_VALUE = 30'h0575_f234;
     repeat (500) @(posedge CLK);    
     #100 $finish();
 end

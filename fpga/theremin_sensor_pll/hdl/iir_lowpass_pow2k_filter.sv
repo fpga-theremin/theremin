@@ -31,12 +31,12 @@ module iir_lowpass_pow2k_filter
 logic sign_extension_enabled;
 always_comb sign_extension_enabled <= SIGNED_DATA ? 1'b1 : 1'b0;
 
-logic signed [RESULT_BITS + FILTER_SHIFT_BITS - 1:0] stage0_in;
+logic [RESULT_BITS + FILTER_SHIFT_BITS - 1:0] stage0_in;
 always_comb stage0_in <= { IN_VALUE, { (RESULT_BITS + FILTER_SHIFT_BITS - INPUT_BITS) {1'b0}} };
 
-logic signed [RESULT_BITS:0] diff[FILTER_STAGES];
+logic signed [RESULT_BITS+1:0] diff[FILTER_STAGES];
 
-logic signed [RESULT_BITS + FILTER_SHIFT_BITS - 1:0] state[FILTER_STAGES];
+logic [RESULT_BITS + FILTER_SHIFT_BITS - 1:0] state[FILTER_STAGES];
 
 always_comb begin
     for (int i = 0; i < FILTER_STAGES; i++) begin
@@ -44,10 +44,20 @@ always_comb begin
                 (
                     // new value
                     (i == 0) 
-                    ? { sign_extension_enabled & stage0_in[RESULT_BITS + FILTER_SHIFT_BITS - 1], stage0_in[RESULT_BITS + FILTER_SHIFT_BITS - 1:FILTER_SHIFT_BITS] } 
-                    : { sign_extension_enabled & state[i-1][RESULT_BITS + FILTER_SHIFT_BITS - 1], state[i-1][RESULT_BITS + FILTER_SHIFT_BITS - 1:FILTER_SHIFT_BITS] }
+                    ? { 
+                        { 1{ (sign_extension_enabled & stage0_in[RESULT_BITS + FILTER_SHIFT_BITS - 1]) }}, 
+                         stage0_in[RESULT_BITS + FILTER_SHIFT_BITS - 1:FILTER_SHIFT_BITS] 
+                      } 
+                    : { 
+                        { 1{ sign_extension_enabled & state[i-1][RESULT_BITS + FILTER_SHIFT_BITS - 1] }}, 
+                        state[i-1][RESULT_BITS + FILTER_SHIFT_BITS - 1:FILTER_SHIFT_BITS] 
+                      }
                 ) 
-                - { state[i][RESULT_BITS + FILTER_SHIFT_BITS - 1], state[i][RESULT_BITS + FILTER_SHIFT_BITS - 1 : FILTER_SHIFT_BITS] };
+                - 
+                { 
+                    { 1{sign_extension_enabled & state[i][RESULT_BITS + FILTER_SHIFT_BITS - 1]} }, 
+                    state[i][RESULT_BITS + FILTER_SHIFT_BITS - 1 : FILTER_SHIFT_BITS] 
+                };
     end
 end
 
